@@ -1,0 +1,42 @@
+{
+  "track": "Spa",
+  "layout": "GP",
+  "trackLength_m": 6938,
+  "segments":[
+    {
+      "segment_id": 1,
+      "segmentDescription": "La Source and Eau-Rouge, Raidillon to Kemmel-straight",
+      "segmentStart_m": 0,
+      "segmentEnd_m": 1800,
+      "corner_ids": [1001, 1002]
+    },
+    {
+      "segment_id": 2,
+      "segmentDescription": "Kemmel straight going into Les Combes and Malmedy",
+      "segmentStart_m": 1800,
+      "segmentEnd_m": 2740,
+      "corner_ids": [1003, 1004]
+    },
+    {
+      "segment_id": 3,
+      "segmentDescription": "Onto Bruxelles and downhill onto Double Gauche.",
+      "segmentStart_m": 2740,
+      "segmentEnd_m": 4200,
+      "corner_ids": [1005, 1006, 1007]
+    },
+    {
+      "segment_id": 4,
+      "segmentDescription": "Les Fanges onto Campus and Paul Frere.",
+      "segmentStart_m": 4200,
+      "segmentEnd_m": 5350,
+      "corner_ids": [1008, 1009, 1010, 1011]
+    },
+    {
+      "segment_id": 5,
+      "segmentDescription": "Long straight Blanchimont into Bus Stop right-left Chicane onto long start/finish straight.",
+      "segmentStart_m": 5350,
+      "segmentEnd_m": 6938,
+      "corner_ids": [1012, 1013]
+    }
+  ]
+}

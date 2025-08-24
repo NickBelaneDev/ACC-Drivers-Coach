@@ -1,0 +1,19 @@
+{
+  "track": "Spa",
+  "layout": "GP",
+  "corners": [
+    { "corner_id": 1001, "segment_id": 1,  "cornerName": "T1 La Source",               "cornerDescription": "Hairpin to the start/finish straight.",                         "cornerStart_m": 342,  "cornerApex_m": 388,  "cornerEnd_m": 440 },
+    { "corner_id": 1002, "segment_id": 1,  "cornerName": "T2-4 Eau Rouge/Raidillon",   "cornerDescription": "Downhill high-speed left-right with compression.",              "cornerStart_m": 930,  "cornerApex_m": 1123, "cornerEnd_m": 1380 },
+    { "corner_id": 1003, "segment_id": 2,  "cornerName": "T5-6 Les Combes",            "cornerDescription": "Right-left chicane at the hilltop.",                            "cornerStart_m": 2300, "cornerApex_m": 2481, "cornerEnd_m": 2555 },
+    { "corner_id": 1004, "segment_id": 2,  "cornerName": "T7 Malmedy",                 "cornerDescription": "Medium right onto short straight.",                             "cornerStart_m": 2555, "cornerApex_m": 2641, "cornerEnd_m": 2727 },
+    { "corner_id": 1005, "segment_id": 3,  "cornerName": "T8 Bruxelles Turn 01",       "cornerDescription": "Long downhill right-hander.",                                   "cornerStart_m": 2928, "cornerApex_m": 3048, "cornerEnd_m": 3150 },
+    { "corner_id": 1006, "segment_id": 3,  "cornerName": "T9 Bruxelles Turn 02",       "cornerDescription": "Important left onto medium straight.",                          "cornerStart_m": 3221, "cornerApex_m": 3294, "cornerEnd_m": 3367 },
+    { "corner_id": 1007, "segment_id": 3,  "cornerName": "T10-11 Double Gauche",       "cornerDescription": "Fast double left (Pouhon).",                                    "cornerStart_m": 3678, "cornerApex_m": 3828, "cornerEnd_m": 4165 },
+    { "corner_id": 1008, "segment_id": 4,  "cornerName": "T12 Les Fagnes Turn 01",     "cornerDescription": "Right before quick left.",                                      "cornerStart_m": 4445, "cornerApex_m": 4500, "cornerEnd_m": 4550 },
+    { "corner_id": 1009, "segment_id": 4,  "cornerName": "T13 Les Fagnes Turn 02",     "cornerDescription": "Quick left out of Fagnes.",                                     "cornerStart_m": 4609, "cornerApex_m": 4665, "cornerEnd_m": 4760 },
+    { "corner_id": 1010, "segment_id": 4,  "cornerName": "T14 Campus",                 "cornerDescription": "Key right onto long full-throttle section.",                     "cornerStart_m": 4904, "cornerApex_m": 4940, "cornerEnd_m": 5002 },
+    { "corner_id": 1011, "segment_id": 4,  "cornerName": "T15 Paul Frere",             "cornerDescription": "Fast right onto the back straight.",                             "cornerStart_m": 5141, "cornerApex_m": 5222, "cornerEnd_m": 5260 },
+    { "corner_id": 1012, "segment_id": 5,  "cornerName": "T16-17 Blanchimont",         "cornerDescription": "High-speed left, usually flat in GT3.",                          "cornerStart_m": 6130, "cornerApex_m": 6235, "cornerEnd_m": 6300 },
+    { "corner_id": 1013, "segment_id": 5,  "cornerName": "T18-19 Bus Stop Chicane",    "cornerDescription": "Right-left chicane onto the start/finish straight.",             "cornerStart_m": 6712, "cornerApex_m": 6736, "cornerEnd_m": 6802 }
+  ]
+}
