@@ -1,0 +1,15 @@
+{
+  "track": "Donington",
+  "layout": "GP",
+  "corners": [
+    { "corner_id": 2001, "segment_id": 1, "cornerName": "T1 Redgate",        "cornerDescription": "Opening right-hander onto downhill section.",            "cornerStart_m": 200,  "cornerApex_m": 270,  "cornerEnd_m": 340 },
+    { "corner_id": 2002, "segment_id": 1, "cornerName": "T2-3 Craner Curves","cornerDescription": "High-speed downhill left-right sweep.",                   "cornerStart_m": 400,  "cornerApex_m": 600,  "cornerEnd_m": 800 },
+    { "corner_id": 2003, "segment_id": 1, "cornerName": "T4 Old Hairpin",    "cornerDescription": "Fast right at the valley bottom.",                        "cornerStart_m": 850,  "cornerApex_m": 950,  "cornerEnd_m": 1100 },
+    { "corner_id": 2004, "segment_id": 2, "cornerName": "T5 Starkey’s Bridge","cornerDescription": "Gentle kink left under the bridge.",                      "cornerStart_m": 1250, "cornerApex_m": 1290, "cornerEnd_m": 1330 },
+    { "corner_id": 2005, "segment_id": 2, "cornerName": "T7 McLeans",        "cornerDescription": "Tight right uphill onto short straight.",                 "cornerStart_m": 1600, "cornerApex_m": 1700, "cornerEnd_m": 1800 },
+    { "corner_id": 2006, "segment_id": 3, "cornerName": "T8 Coppice",        "cornerDescription": "Double-apex right onto Starkey Straight.",                 "cornerStart_m": 2150, "cornerApex_m": 2250, "cornerEnd_m": 2400 },
+    { "corner_id": 2007, "segment_id": 4, "cornerName": "T9-10 Fogarty Esses","cornerDescription": "Chicane left-right before Melbourne.",                     "cornerStart_m": 2750, "cornerApex_m": 2850, "cornerEnd_m": 2950 },
+    { "corner_id": 2008, "segment_id": 4, "cornerName": "T11 Melbourne",     "cornerDescription": "Heavy braking into tight right hairpin.",                  "cornerStart_m": 3100, "cornerApex_m": 3200, "cornerEnd_m": 3350 },
+    { "corner_id": 2009, "segment_id": 5, "cornerName": "T12 Goddards",      "cornerDescription": "Final left-hander back onto the pit straight.",            "cornerStart_m": 3650, "cornerApex_m": 3750, "cornerEnd_m": 3900 }
+  ]
+}

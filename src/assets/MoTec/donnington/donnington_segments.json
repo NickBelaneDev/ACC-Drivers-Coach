@@ -1,0 +1,42 @@
+{
+  "track": "Donington",
+  "layout": "GP",
+  "trackLength_m": 4020,
+  "segments": [
+    {
+      "segment_id": 1,
+      "segmentDescription": "Start/finish into Redgate, down through Craner Curves and Old Hairpin.",
+      "segmentStart_m": 0,
+      "segmentEnd_m": 1200,
+      "corner_ids": [2001, 2002, 2003]
+    },
+    {
+      "segment_id": 2,
+      "segmentDescription": "Through Starkey’s Bridge kink and McLeans uphill right.",
+      "segmentStart_m": 1200,
+      "segmentEnd_m": 2100,
+      "corner_ids": [2004, 2005]
+    },
+    {
+      "segment_id": 3,
+      "segmentDescription": "Coppice double-right onto Starkey Straight.",
+      "segmentStart_m": 2100,
+      "segmentEnd_m": 2700,
+      "corner_ids": [2006]
+    },
+    {
+      "segment_id": 4,
+      "segmentDescription": "Fogarty Esses chicane into Melbourne Hairpin.",
+      "segmentStart_m": 2700,
+      "segmentEnd_m": 3600,
+      "corner_ids": [2007, 2008]
+    },
+    {
+      "segment_id": 5,
+      "segmentDescription": "Final Goddards left-hander back to start/finish straight.",
+      "segmentStart_m": 3600,
+      "segmentEnd_m": 4020,
+      "corner_ids": [2009]
+    }
+  ]
+}

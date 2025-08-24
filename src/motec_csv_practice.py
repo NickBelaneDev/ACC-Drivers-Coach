@@ -5,15 +5,12 @@ import json
 from pathlib import Path
 log = get_logger(to_console=False)
 
-MOTEC_FOLDER = Path("assets/MoTec")
+file_path_user = "assets/MoTec/spa/Spa-ferrari_296_gt3-8-hotlap_2-17-880.csv"
+file_path_fastest_lap = "assets/MoTec/spa/Spa-ferrari_296_gt3-fastest_lap.csv"
 
-file_path_user = "assets/MoTec/Spa/Spa-ferrari_296_gt3-8-hotlap_2-17-880.csv"
-file_path_fastest_lap = "assets/MoTec/Spa/Spa-ferrari_296_gt3-fastest_lap.csv"
-
-class LapTelemetry:
+class TelemetryAnalyzer:
     def __init__(self, lap_df: DataFrame):
         self.telemetry_lap_df = lap_df or pd.DataFrame()
-
 
     @staticmethod
     def get_break_points(telemetry_df: DataFrame) -> DataFrame:
@@ -47,24 +44,24 @@ class LapTelemetry:
 
         return apex_df
 
-class MoTec:
-    def __init__(self):
+class TelemetryLoader:
+    def __init__(self, base_dir: Path):
         self.telemetry_lap_df: pd.DataFrame | None = None
+        self.base_dir = base_dir
 
-    def telemetry_from_csv(self, file_path: str, track: str) -> DataFrame | None:
+    def telemetry_from_csv(self, hotlap_path: str, track: str) -> DataFrame | None:
         """Loads the Telemetry from a MoTec csv file and validates it for further use."""
-
+        #base_dir = (Path(__file__).resolve().parent / "assets" / "MoTec")
         def _get_file_paths(_track: str):
             """
 
             :param _track: Name of the racetrack
             :return: segments_file_path, corners_file_path
             """
-            corners = ""
-            segments = ""
 
             try:
-                track_folder = MOTEC_FOLDER / _track.lower()
+                track_folder = self.base_dir / "assets"  / "MoTec" / _track.lower()
+                log.debug(f"track_folder: {track_folder}")
                 _segments_path = track_folder / f"{_track.lower()}_segments.json"
                 _corners_path = track_folder / f"{_track.lower()}_corners.json"
                 return _segments_path, _corners_path
@@ -73,40 +70,40 @@ class MoTec:
                 print(f"Segmente und Corners konnten nicht geladen werden! {e}")
                 return ""
 
-        try:
-            segments_path, corners_path = _get_file_paths(track)
-            segments_df, corners_df  = self._load_map(segments_path, corners_path)
+        segments_path, corners_path = _get_file_paths(track)
+        segments_df, corners_df  = self._load_map(segments_path, corners_path)
 
-            _telemetry_df = pd.read_csv(file_path, skiprows=14).drop(0)
-            telemetry_df = self._resample_df(_telemetry_df)
+        # Red the telemetry.csv
+        orig_hotlap_path = self.base_dir / hotlap_path
 
-            telemetry_df_sorted = telemetry_df.sort_values("Distance")
-            # merge the segments with the telemetry
-            telemetry_with_segments_df = pd.merge_asof(
-                left=telemetry_df_sorted,
-                right=segments_df,
-                left_on="Distance",
-                right_on="segmentStart_m",
-                direction="backward"
-            )
-            # Add the corners on top
-            full_telemetry_df = pd.merge_asof(
-                left=telemetry_with_segments_df,
-                right=corners_df,
-                left_on="Distance",
-                right_on="cornerStart_m",
-                direction="backward"
-            )
+        _telemetry_df = pd.read_csv(orig_hotlap_path, skiprows=14).drop(0)
+        telemetry_df = self._resample_df(_telemetry_df)
 
-            self.telemetry_lap_df = full_telemetry_df
+        telemetry_df_sorted = telemetry_df.sort_values("Distance")
+        # merge the segments with the telemetry
+        telemetry_with_segments_df = pd.merge_asof(
+            left=telemetry_df_sorted,
+            right=segments_df,
+            left_on="Distance",
+            right_on="segmentStart_m",
+            direction="backward"
+        )
+        # Add the corners on top
+        full_telemetry_df = pd.merge_asof(
+            left=telemetry_with_segments_df,
+            right=corners_df,
+            left_on="Distance",
+            right_on="cornerStart_m",
+            direction="backward"
+        )
 
-            return full_telemetry_df
+        self.telemetry_lap_df = full_telemetry_df
 
-        except Exception as e:
-            print(f"load_from_csv[ERROR]: {e}")
-            return None
+        return full_telemetry_df
 
-    def _load_map(self, file_path_segments, file_path_corners) -> tuple[pd.DataFrame, pd.DataFrame]:
+
+    @staticmethod
+    def _load_map(file_path_segments, file_path_corners) -> tuple[pd.DataFrame, pd.DataFrame]:
         """
         Loads the segments- and corners-JSON to a DataFrame and returns it as a tuple
         :param file_path_segments:
@@ -125,7 +122,6 @@ class MoTec:
         segments_df_sorted = segments_df.sort_values("segmentStart_m")
 
         return segments_df_sorted, corners_df_sorted
-
 
     @staticmethod
     def _resample_df(lap_data: DataFrame, step=1.0) -> pd.DataFrame:
@@ -157,11 +153,12 @@ class MoTec:
 
 if __name__ == "__main__":
 
-    motec = MoTec()
+    motec = TelemetryLoader(Path(__file__).resolve().parent)
+
     user_df = motec.telemetry_from_csv(file_path_user, "spa")
     record_df = motec.telemetry_from_csv(file_path_fastest_lap, "spa")
 
-    record_df.to_csv("record_telemetry.csv", index=False, encoding="utf-8")
-    user_df.to_csv("user_telemetry.csv", index=False, encoding="utf-8")
+    #record_df.to_csv("record_telemetry.csv", index=False, encoding="utf-8")
+    #user_df.to_csv("user_telemetry.csv", index=False, encoding="utf-8")
 
     print(user_df.info())
