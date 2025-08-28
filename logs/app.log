@@ -497,3 +497,133 @@ Um das Heck des Ferrari zu stabilisieren und das "schwammige" Gefühl in schnell
   ],
   total_token_count=1301
 ) automatic_function_calling_history=[] parsed=None
+2025-08-27 11:06:14.225 | INFO | my_app:19 | App startet…
+2025-08-27 11:06:14.225 | DEBUG | my_app:20 | Konfiguration geladen
+2025-08-27 11:06:54.951 | DEBUG | my_app:130 | Parts: [dict_keys(['video_metadata', 'thought', 'inline_data', 'file_data', 'thought_signature', 'code_execution_result', 'executable_code', 'function_call', 'function_response', 'text']), dict_keys(['video_metadata', 'thought', 'inline_data', 'file_data', 'thought_signature', 'code_execution_result', 'executable_code', 'function_call', 'function_response', 'text'])]
+2025-08-27 11:06:54.952 | INFO | my_app:149 | Setup-Daten erfolgreich geladen: {"carName": "ferrari_296_gt3", "tyres_and_alignment": {"tyrePressure": [52, 57, 49, 52], "camberFront": 2, "camberRear": 2, "toeFront": 10, "toeRear": 32, "caster": 30}, "electronics": {"tC1": 7, "tC2": 0, "abs": 2, "eCUMap": 0, "fuelMix": 0, "telemetryLaps": 99}, "mechanical_balance": {"aRBFront": 6, "aRBRear": 0, "wheelRateFront": 0, "wheelRateRear": 0, "drivetrain": {"preload": 0}, "brakeBias": 48, "steerRatio": 3}, "dampers": {"bumpSlowFront": 0, "bumpSlowRear": 0, "bumpFastFront": 0, "bumpFastRear": 0, "reboundSlowFront": 11, "reboundSlowRear": 11, "reboundFastFront": 11, "reboundFastRear": 11, "bumpStopRateFront": 2, "bumpStopRateRear": 2}, "aero": {"rideHeightFront": 0, "rideHeightRear": 2, "rearWing": 6, "brakeDuctFront": 3, "brakeDuctRear": 3}}
+2025-08-27 11:06:57.746 | INFO | my_app:162 | Final Response after the function Call:
+sdk_http_response=HttpResponse(
+  headers=<dict len=11>
+) candidates=[Candidate(
+  avg_logprobs=-0.05545561562483559,
+  content=Content(
+    parts=[
+      Part(
+        text="""**Change**: 
+```json
+{
+    "Setup-Changes": {
+        "rearWing": {
+            "Old Value": "6",
+            "New Value": "7"
+        },
+        "aRBFront": {
+            "Old Value": "6",
+            "New Value": "5"
+        },
+        "reboundSlowFront": {
+            "Old Value": "11",
+            "New Value": "10"
+        },
+        "bumpSlowFront": {
+            "Old Value": "0",
+            "New Value": "1"
+        },
+        "brakeBias": {
+            "Old Value": "48",
+            "New Value": "50"
+        }
+    }
+}
+```
+**Explanation**
+Um den Oversteer beim Einlenken zu reduzieren, erhöhe ich den Heckflügel um 1, um mehr Stabilität ins Auto zu bekommen. Zusätzlich reduziere ich den vorderen Stabilisator um 1, um die Vorderachse etwas weicher zu machen und das Einlenkverhalten zu verbessern. Ich reduziere die Dämpfer vorne (reboundSlowFront) um 1 und erhöhe die bumpSlowFront um 1. Zuletzt verschiebe ich die Bremsbalance um 2% nach vorne, um das Auto beim Anbremsen zu stabilisieren.
+"""
+      ),
+    ],
+    role='model'
+  ),
+  finish_reason=<FinishReason.STOP: 'STOP'>
+)] create_time=None model_version='gemini-2.0-flash' prompt_feedback=None response_id='sMquaLS3MaWbkdUP49W92AM' usage_metadata=GenerateContentResponseUsageMetadata(
+  candidates_token_count=297,
+  candidates_tokens_details=[
+    ModalityTokenCount(
+      modality=<MediaModality.TEXT: 'TEXT'>,
+      token_count=297
+    ),
+  ],
+  prompt_token_count=957,
+  prompt_tokens_details=[
+    ModalityTokenCount(
+      modality=<MediaModality.TEXT: 'TEXT'>,
+      token_count=957
+    ),
+  ],
+  total_token_count=1254
+) automatic_function_calling_history=[] parsed=None
+2025-08-27 11:14:09.758 | INFO | my_app:19 | App startet…
+2025-08-27 11:14:09.758 | DEBUG | my_app:20 | Konfiguration geladen
+2025-08-27 11:14:41.613 | DEBUG | my_app:130 | Parts: [dict_keys(['video_metadata', 'thought', 'inline_data', 'file_data', 'thought_signature', 'code_execution_result', 'executable_code', 'function_call', 'function_response', 'text']), dict_keys(['video_metadata', 'thought', 'inline_data', 'file_data', 'thought_signature', 'code_execution_result', 'executable_code', 'function_call', 'function_response', 'text'])]
+2025-08-27 11:14:41.613 | INFO | my_app:149 | Setup-Daten erfolgreich geladen: {"carName": "ferrari_296_gt3", "tyres_and_alignment": {"tyrePressure": [52, 57, 49, 52], "camberFront": 2, "camberRear": 2, "toeFront": 10, "toeRear": 32, "caster": 30}, "electronics": {"tC1": 7, "tC2": 0, "abs": 2, "eCUMap": 0, "fuelMix": 0, "telemetryLaps": 99}, "mechanical_balance": {"aRBFront": 6, "aRBRear": 0, "wheelRateFront": 0, "wheelRateRear": 0, "drivetrain": {"preload": 0}, "brakeBias": 48, "steerRatio": 3}, "dampers": {"bumpSlowFront": 0, "bumpSlowRear": 0, "bumpFastFront": 0, "bumpFastRear": 0, "reboundSlowFront": 11, "reboundSlowRear": 11, "reboundFastFront": 11, "reboundFastRear": 11, "bumpStopRateFront": 2, "bumpStopRateRear": 2}, "aero": {"rideHeightFront": 0, "rideHeightRear": 2, "rearWing": 6, "brakeDuctFront": 3, "brakeDuctRear": 3}}
+2025-08-27 11:14:44.312 | INFO | my_app:162 | Final Response after the function Call:
+sdk_http_response=HttpResponse(
+  headers=<dict len=11>
+) candidates=[Candidate(
+  avg_logprobs=-0.04410974657213366,
+  content=Content(
+    parts=[
+      Part(
+        text="""Okay, ich habe mir dein Setup angesehen. Hier sind ein paar Vorschläge, um den Oversteer beim Einlenken in Bruxelles zu reduzieren:
+
+**Change**: 
+```json
+{
+"Setup-Changes":{
+    "rearWing": {
+        "Old Value": "6",
+        "New Value": "7"
+         },
+    "aRBRear": {
+        "Old Value": "0",
+        "New Value": "1"
+         },
+    "reboundSlowFront": {
+        "Old Value": "11",
+        "New Value": "10"
+         },
+    "bumpSlowFront": {
+        "Old Value": "0",
+        "New Value": "1"
+         }
+       }
+}
+```
+**Explanation**
+*   **rearWing:** Erhöhe den Wert des Heckflügels um 1. Dies erhöht den Anpressdruck auf der Hinterachse und verbessert die Stabilität beim Einlenken.
+*   **aRBRear:** Erhöhe den Wert des hinteren Stabilisators um 1. Dies reduziert die Rollneigung des Fahrzeugs und verbessert die Stabilität beim Einlenken.
+*   **reboundSlowFront:** Reduziere den Wert des langsamen Rebounds an der Vorderachse um 1. Dadurch kann sich die Vorderachse schneller setzen und mehr Grip aufbauen.
+*   **bumpSlowFront:** Erhöhe den Wert des langsamen Bumps an der Vorderachse um 1. Dies reduziert die Nickneigung des Fahrzeugs beim Einlenken und verbessert die Stabilität.
+
+Diese Änderungen sollten dir helfen, den Oversteer beim Einlenken in Bruxelles zu reduzieren und das Auto stabiler zu machen."""
+      ),
+    ],
+    role='model'
+  ),
+  finish_reason=<FinishReason.STOP: 'STOP'>
+)] create_time=None model_version='gemini-2.0-flash' prompt_feedback=None response_id='g8yuaNf-HZzkxN8P-oqbsA0' usage_metadata=GenerateContentResponseUsageMetadata(
+  candidates_token_count=370,
+  candidates_tokens_details=[
+    ModalityTokenCount(
+      modality=<MediaModality.TEXT: 'TEXT'>,
+      token_count=370
+    ),
+  ],
+  prompt_token_count=956,
+  prompt_tokens_details=[
+    ModalityTokenCount(
+      modality=<MediaModality.TEXT: 'TEXT'>,
+      token_count=956
+    ),
+  ],
+  total_token_count=1326
+) automatic_function_calling_history=[] parsed=None

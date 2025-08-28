@@ -1,6 +1,7 @@
 import pandas as pd, numpy as np
 from pandas import DataFrame
 from logger import get_logger
+from lap_dataclasses import CornerMetrics
 import json
 from pathlib import Path
 log = get_logger(to_console=False)
@@ -37,8 +38,6 @@ class TelemetryAnalyzer:
         is_accelerating = telemetry_df["SPEED"].shift(1) > telemetry_df["SPEED"]
         is_slowing_down = telemetry_df["SPEED"].shift(-1) > telemetry_df["SPEED"]
         is_steering = telemetry_df["STEERING"].shift(1) > telemetry_df["STEERING"]
-
-
 
         apex_df = telemetry_df[is_accelerating & is_slowing_down]
 
