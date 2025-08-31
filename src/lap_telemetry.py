@@ -2,8 +2,8 @@ from pathlib import Path
 import openpyxl
 import pandas as pd
 from logger import get_logger
-from src.lap_dataclasses import CornerMetrics
-from src.motec_csv_practice import TelemetryLoader
+from src.lap_dataclasses import CornerMetrics, Corner
+from src.telemetry_loader import TelemetryLoader
 from src.telemetry_analyzer import Analyze
 
 log = get_logger(to_console=False,log_file="lap_telemetry_log.log")
@@ -20,38 +20,57 @@ class LapTelemetry:
         self.analyze = Analyze(lap_df)
 
     def _get_segment_data(self, segment_id: int) -> dict:
-        if 0 > segment_id > self.lap_df["segment_id_x"].max():
-            raise IndexError(f"segment_id: {segment_id} out of range!")
+        max_seg = int(self.lap_df["segment_id_x"].max())
+        if segment_id < 0 or segment_id > max_seg:
+            raise IndexError(f"segment_id: {segment_id} out of range 0..{max_seg}")
 
         segment = self.lap_df[self.lap_df["segment_id_x"] == segment_id]
 
         segment_start = segment["segmentStart_m"].iloc[0]
         segment_end = segment["segmentEnd_m"].iloc[0]
 
-        def _get_corner_dfs_from_seg_df(segment_df: pd.DataFrame) -> list[CornerMetrics]:
+        def _get_corner_dfs_from_seg_df(segment_df: pd.DataFrame) -> list[Corner]:
             """
 
             :param segment_df:
             :return: All corner_dfs from a segment together in a list
             """
-            _corner_dfs = []
+            _corners = []
             corner_ids = segment_df["corner_ids"].iloc[0]
+
+            corner_ids = sorted(set(int(c) for c in corner_ids))
+            for corner in corner_ids:
+                print(type(corner))
+
+            #print(f"corner_ids: {corner_ids}")
             for corner_id in corner_ids:
                 # if corner_id is invalid
-                if 0 > corner_id > self.lap_df["corner_id"].max():
-                    raise ValueError(f"corner_id '{corner_id}' out of range")
+                max_corner = int(self.lap_df["corner_id"].max())
+                if corner_id < 0 or corner_id > max_corner:
+                    raise ValueError(f"corner_id '{corner_id}' out of range 0..{max_corner}")
                 # load all relevant raw corner_data
-                corner_df = segment_df[segment_df["corner_id"] == corner_id]
-                corner_metrics = self.analyze.corner(corner_df)
-                _corner_dfs.append(corner_metrics)
-            return _corner_dfs
+                _corner_df = segment_df[segment_df["corner_id"] == corner_id]
+                if _corner_df.empty:
+                    # try float fallback (falls Quelle noch floatig ist)
+                    _corner_df = segment_df[segment_df["corner_id"] == float(corner_id)]
+                if _corner_df.empty:
+                    log.warning(f"Segment {segment_id}: corner_id {corner_id} nicht gefunden (Typproblem?)")
+                    continue
+
+                _corner = self.analyze.corner(_corner_df)
+                _corners.append(_corner)
+
+            return _corners
 
         time_delta = self.analyze.get_time_delta(segment_start, segment_end)
-        corner_dfs = _get_corner_dfs_from_seg_df(segment)
-        #corner_data = [corner for corner in Analyze.corner()]
+        corners = _get_corner_dfs_from_seg_df(segment)
+        for _c in corners:
+            print(f"id: {_c.id}")
 
-        print(corner_dfs)
-        # Hier muss ich die CornerMetrics haben und kann dann mit einer
+
+        #log.debug(f"corners: {corners}")
+
+        # Hier muss ich schon ie CornerMetrics haben und kann dann mit einer
         # Loop alles im Dictionary füllen, was an Kurvendaten da ist.
 
         segment_data = {
@@ -72,62 +91,59 @@ class LapTelemetry:
 
             "corners":[
                 {
-                "id": "EMPTY",   # later corner.id
-                "name": "EMPTY", # later corner.name
+                "id": corner.id,   # later corner.id
+                "name": corner.name, # later corner.name
                 "metrics":{
-                    "entry_speed_kmh": float,
-                    "apex_speed_kmh": float,
-                    "exit_speed_kmh": float,
-                    "avg_speed_kmh": float,
-                    "min_speed_kmh": float,
-                    "min_speed_m": float,
+                    "entry_speed_kmh": corner.metrics.entry_speed_kmh,
+                    "apex_speed_kmh": corner.metrics.apex_speed_kmh,
+                    "exit_speed_kmh": corner.metrics.exit_speed_kmh,
+                    "avg_speed_kmh": corner.metrics.avg_speed_kmh,
+                    "min_speed_kmh": corner.metrics.min_speed_kmh,
+                    "min_speed_m": corner.metrics.min_speed_m,
 
                     # G-Forces
-                    "g_lat_avg": float,
-                    "g_lat_max": float,
-                    "g_lat_min": float,
-                    "g_long_avg": float,
-                    "g_long_max": float,
-                    "g_long_min": float,
+                    "g_lat_avg": corner.metrics.g_lat_avg,
+                    "g_lat_max": corner.metrics.g_lat_max,
+                    "g_lat_min": corner.metrics.g_lat_min,
+                    "g_long_avg": corner.metrics.g_lon_avg,
+                    "g_long_max": corner.metrics.g_lon_max,
+                    "g_long_min": corner.metrics.g_lon_min,
 
                     # Driver's Input
-                    "avg_steering_dgr": float,
-                    "max_steering_dgr": float,
-                    "max_steering_m": float,
+                    "avg_steering_dgr": corner.metrics.avg_steerangle,
+                    "max_steering_dgr": corner.metrics.max_steerangle,
+                    "max_steering_m": corner.metrics.max_steerangle_m,
 
-                    "avg_brake": float,
-                    "max_brake": float,
+                    "avg_brake": corner.metrics.avg_brake,
+                    "max_brake": corner.metrics.max_brake,
 
                     # OPTIONAL!
-                    "tbf95_s": Optional[float],  # tbf95_s = 'Time where Brake-Input >= 95% in seconds'
+                    "tbf95_s": corner.metrics.tbf95_s,  # tbf95_s = 'Time where Brake-Input >= 95% in seconds'
 
-                    "avg_throttle": float,
-                    "ttf95_s": Optional[float],  # ttf95_s = 'Time where Throttle-Input >= 95% in seconds'
+                    "avg_throttle": corner.metrics.avg_throttle,
+                    "ttf95_s": corner.metrics.ttf95_s,  # ttf95_s = 'Time where Throttle-Input >= 95% in seconds'
 
                     # Abstract Metrics
-                    "brake_point_m": Optional[float],  #
-                    "brake_delta_m": Optional[float],  #
-                    "brake_delta_s": Optional[float],  #
-                    "trail_brake_delta_s": Optional[float],
-                    "trail_brake_delta_m": Optional[float],
+                    "brake_point_m": corner.metrics.brake_point_m,  #
+                    "brake_delta_m": corner.metrics.brake_delta_m,  #
+                    "brake_delta_s": corner.metrics.brake_delta_s,  #
+                    "trail_brake_delta_s": corner.metrics.trail_brake_delta_s,
+                    "trail_brake_delta_m": corner.metrics.trail_brake_delta_m,
 
-                    "exit_throttle_init_m": Optional[float],
+                    "exit_throttle_init_m": corner.metrics.exit_throttle_init_m,
                     # Measurement from where the driver is on the gas again on corner_exit.
-                    "avg_exit_throttle": Optional[float],  # avg. throttle input from apex_m to exit_m + 100
-                    "exit_speed_delta_s": Optional[float],  # avg. Speed from apex_m to exit_m + 100m
+                    "avg_exit_throttle": corner.metrics.avg_exit_throttle,  # avg. throttle input from apex_m to exit_m + 100
+                    "exit_speed_delta_s": corner.metrics.exit_speed_delta_s,  # avg. Speed from apex_m to exit_m + 100m
 
-                    "rolling_delta_s": Optional[float],  # Time/s without throttle or brake
-                    "rolling_delta_m": Optional[float],
+                    "rolling_delta_s": corner.metrics.rolling_delta_s,  # Time/s without throttle or brake
+                    "rolling_delta_m": corner.metrics.rolling_delta_m,
 
-                    "steering_delta_s": Optional[float],
-
-                    "time_delta_s": float,
-                    "cpi_factor": Optional[float],
-
+                    "time_delta_s": corner.metrics.time_delta_s,
+                    "cpi_factor": corner.metrics.cpi_factor,
                 }
             } # ACHTUNG HIER WEITERMACHEN!!
 
-            for corner_metric in corner_dfs]
+            for corner in corners]
         }
 
 
@@ -161,13 +177,10 @@ if __name__ == "__main__":
 
     total_time_r = 0
 
-    #print("======================")
-    total_time_u = 0
+    print("======================")
     for segment in u_all_segments:
-    #    print("====== SEGMENT =======")
-        for k, v in segment.items():
-            print(f"{k}: {v}")
-        total_time_u += segment["metrics"]["timeDelta"]
-    #print(f"total_time_r: {total_time_r}")
+        for k,_ in segment.items():
+            if k == "corners":
+                for corner in segment[k]:
+                    print(corner["id"])
 
-    #print(f"Segments: {lap.get_all_segments()}")

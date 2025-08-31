@@ -104,7 +104,7 @@ class TelemetryLoader:
     @staticmethod
     def _load_map(file_path_segments, file_path_corners) -> tuple[pd.DataFrame, pd.DataFrame]:
         """
-        Loads the segments- and corners-JSON to a DataFrame and returns it as a tuple
+        Loads the map specific segments- and corners-JSON to a DataFrame as a Template.
         :param file_path_segments:
         :param file_path_corners:
         :return: segments_df, corners_df

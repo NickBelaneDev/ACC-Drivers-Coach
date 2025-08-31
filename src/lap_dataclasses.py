@@ -33,9 +33,9 @@ class CornerMetrics:
     g_lat_avg: float
     g_lat_max: float
     g_lat_min: float
-    g_long_avg: float
-    g_long_max: float
-    g_long_min: float
+    g_lon_avg: float
+    g_lon_max: float
+    g_lon_min: float
 
     # Driver's Input
     avg_steerangle: float
@@ -64,8 +64,6 @@ class CornerMetrics:
     rolling_delta_s: Optional[float] = 0.0        # Time/s without throttle or brake
     rolling_delta_m: Optional[float] = 0.0
 
-    steering_delta_s: Optional[float] = 0.0
-
     cpi_factor: Optional[float] = 0.0
 
 @dataclass(frozen=True)
@@ -75,4 +73,4 @@ class Corner:
     start_m: float
     apex_m: float
     end_m: float
-    corner_metrics: CornerMetrics
+    metrics: CornerMetrics
