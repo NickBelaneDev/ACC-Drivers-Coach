@@ -48,16 +48,18 @@ class Analyze:
                 "brake_delta_s": brake_delta_s,
                 "tbf95": 0}
 
-    def _get_throttle_data(self, telemetry_df: pd.DataFrame) -> pd.DataFrame | None:
-        ttf95_s = 0
-        exit_throttle_init_m = 0
-        avg_exit_throttle = 0
+    def _get_throttle_data(self, telemetry_df: pd.DataFrame, threshold=60) -> pd.DataFrame | None:
+#        ttf95_s = telemetry_df[telemetry_df[""]]
+        exit_throttle_init_df = telemetry_df[(telemetry_df["THROTTLE"].shift(1) < threshold) & (telemetry_df["THROTTLE"] >= threshold) & (telemetry_df["BRAKE"] <= 3)]
+        exit_throttle_init_m = exit_throttle_init_df["Distance"].min()
+
+        avg_exit_throttle = telemetry_df[(telemetry_df["cornerApex_m"] <= telemetry_df["Distance"]) & (telemetry_df["Distance"] <= telemetry_df["Distance"].max())]["THROTTLE"].mean()
         exit_speed_delta_s = 0
         return {
             "ttf95_s": 0,
-            "exit_throttle_init_m": 0,
-            "avg_exit_throttle": 0,
-            "exit_speed_delta_s": 0
+            "exit_throttle_init_m": exit_throttle_init_m,
+            "avg_exit_throttle": avg_exit_throttle,
+            "exit_speed_delta_s": exit_speed_delta_s
         }
 
     def get_break_point_difference(self, break_points_01_df: pd.DataFrame, break_points_02_df: pd.DataFrame) -> pd.DataFrame:
@@ -92,68 +94,99 @@ class Analyze:
         return trail_brake_delta_s, trail_brake_delta_m
 
     def corner(self, corner_df: pd.DataFrame) -> Corner:
-        c = Corner
+        # Zuerst alle Metriken für die CornerMetrics-Instanz sammeln
+        time_delta_s = self.get_time_delta(int(corner_df["cornerStart_m"].iloc[0]),
+                                           int(corner_df["cornerEnd_m"].iloc[0]))
+        entry_speed_kmh = corner_df["SPEED"].iloc[0]
+        exit_speed_kmh = corner_df["SPEED"].iloc[-1]  # Letzten Wert für den Ausgang nehmen
+        apex_speed_kmh = corner_df[corner_df["Distance"] == corner_df["cornerApex_m"].iloc[0]]["SPEED"].mean()
+        avg_speed_kmh = corner_df["SPEED"].mean()
+        max_speed_kmh = corner_df["SPEED"].max()
+        min_speed_kmh = corner_df["SPEED"].min()
+        min_speed_m = corner_df[corner_df["SPEED"] == min_speed_kmh]["Distance"].mean()
 
-        c.name = corner_df["cornerName"].iloc[0]
-        c.id = corner_df["corner_id"].iloc[0]
-        c.start_m = corner_df["cornerEnd_m"].iloc[0]
-        c.apex_m = corner_df["cornerApex_m"].iloc[0]
-        c.end_m = corner_df["cornerStart_m"].iloc[0]
+        g_lat_avg = corner_df["G_LAT"].abs().mean()
+        g_lat_max = corner_df["G_LAT"].max()
+        g_lat_min = corner_df["G_LAT"].min()
+        g_lon_avg = corner_df["G_LON"].abs().mean()
+        g_lon_max = corner_df["G_LON"].max()
+        g_lon_min = corner_df["G_LON"].min()
 
-        cm = CornerMetrics
-        # Speed Measurements
-        cm.time_delta_s = self.get_time_delta(int(c.start_m), int(c.end_m))
+        avg_steerangle = corner_df["STEERANGLE"].abs().mean()
 
-        cm.entry_speed_kmh = corner_df["SPEED"].iloc[0]
-        cm.exit_speed_kmh = corner_df["SPEED"].iloc[1]
-        cm.apex_speed_kmh = corner_df[corner_df["Distance"] == c.apex_m]["SPEED"].mean()
-        cm.avg_speed_kmh = corner_df["SPEED"].mean()
-        cm.max_speed_kmh = corner_df["SPEED"].max()
-        cm.min_speed_kmh = corner_df["SPEED"].min()
-        cm.min_speed_m = corner_df[corner_df["SPEED"] == cm.min_speed_kmh]["Distance"].mean()
+        max_steerangle = corner_df["STEERANGLE"].abs().max()
+        max_steerangle_m = corner_df[corner_df["STEERANGLE"].abs() == max_steerangle]["Distance"].mean()
 
-        # G-Forces
-        cm.g_lat_avg = corner_df["G_LAT"].mean()
-        cm.g_lat_max = corner_df["G_LAT"].max()
-        cm.g_lat_min = corner_df["G_LAT"].min()
-        cm.g_lon_avg = corner_df["G_LON"].mean()
-        cm.g_lon_max = corner_df["G_LON"].max()
-        cm.g_lon_min = corner_df["G_LON"].min()
-
-        # Driver's Input
-        # - Steering
-        cm.avg_steerangle = corner_df["STEERANGLE"].mean()
-        cm.max_steerangle = corner_df["STEERANGLE"].max()
-        cm.max_steerangle_m = corner_df[corner_df["STEERANGLE"] == cm.max_steerangle]["Distance"].mean()
-
-        # - Brake
-        cm.avg_brake = corner_df["BRAKE"].mean()
-        cm.max_brake = corner_df["BRAKE"].max()
+        avg_brake = corner_df["BRAKE"].mean()
+        max_brake = corner_df["BRAKE"].max()
 
         _advanced_brake_data = self._get_brakepoints(corner_df)
-        cm.brake_point_m = _advanced_brake_data["brake_point_m"]
-        cm.brake_delta_m = _advanced_brake_data["brake_delta_m"]
-        cm.brake_delta_s = _advanced_brake_data["brake_delta_s"]
-        cm.tbf95_s = _advanced_brake_data["tbf95"]
+        brake_point_m = _advanced_brake_data["brake_point_m"]
+        brake_delta_m = _advanced_brake_data["brake_delta_m"]
+        brake_delta_s = _advanced_brake_data["brake_delta_s"]
+        tbf95_s = _advanced_brake_data["tbf95"]
 
         _trail_brake_delta = self._trail_brake_delta(corner_df)
-        cm.trail_brake_delta_s = _trail_brake_delta[0]
-        cm.trail_brake_delta_m = _trail_brake_delta[1]
+        trail_brake_delta_s = _trail_brake_delta[0]
+        trail_brake_delta_m = _trail_brake_delta[1]
 
-        # - Throttle
-        cm.avg_throttle = corner_df["THROTTLE"].mean()
+        avg_throttle = corner_df["THROTTLE"].mean()
 
         _advanced_throttle_data = self._get_throttle_data(corner_df)
-        cm.ttf95_s = _advanced_throttle_data["ttf95_s"]
-        cm.exit_throttle_init_m = _advanced_throttle_data["exit_throttle_init_m"]
-        cm.avg_exit_throttle = _advanced_throttle_data["avg_exit_throttle"]
-        cm.exit_speed_delta_s = _advanced_throttle_data["exit_speed_delta_s"]
+        ttf95_s = _advanced_throttle_data["ttf95_s"]
+        exit_throttle_init_m = _advanced_throttle_data["exit_throttle_init_m"]
+        avg_exit_throttle = _advanced_throttle_data["avg_exit_throttle"]
+        exit_speed_delta_s = _advanced_throttle_data["exit_speed_delta_s"]
 
-        # - Rolling
         is_rolling = corner_df[(corner_df["THROTTLE"] == 0) & (corner_df["BRAKE"] == 0)]
-        cm.rolling_delta_m = is_rolling["Distance"].max() - is_rolling["Distance"].min()
-        cm.rolling_delta_s = is_rolling["Time"].max() - is_rolling["Time"].min()
+        rolling_delta_m = is_rolling["Distance"].max() - is_rolling["Distance"].min()
+        rolling_delta_s = is_rolling["Time"].max() - is_rolling["Time"].min()
 
-        c.metrics = cm
-        #print(self.corner_metrics.max_brake)
-        return c
+        # Jetzt die CornerMetrics-Instanz erstellen
+        corner_metrics = CornerMetrics(
+            time_delta_s=time_delta_s,
+            entry_speed_kmh=entry_speed_kmh,
+            apex_speed_kmh=apex_speed_kmh,
+            exit_speed_kmh=exit_speed_kmh,
+            avg_speed_kmh=avg_speed_kmh,
+            max_speed_kmh=max_speed_kmh,
+            min_speed_kmh=min_speed_kmh,
+            min_speed_m=min_speed_m,
+            g_lat_avg=g_lat_avg,
+            g_lat_max=g_lat_max,
+            g_lat_min=g_lat_min,
+            g_lon_avg=g_lon_avg,
+            g_lon_max=g_lon_max,
+            g_lon_min=g_lon_min,
+            avg_steerangle=avg_steerangle,
+            max_steerangle=max_steerangle,
+            max_steerangle_m=max_steerangle_m,
+            avg_brake=avg_brake,
+            max_brake=max_brake,
+            avg_throttle=avg_throttle,
+            tbf95_s=tbf95_s,
+            ttf95_s=ttf95_s,
+            brake_point_m=brake_point_m,
+            brake_delta_m=brake_delta_m,
+            brake_delta_s=brake_delta_s,
+            trail_brake_delta_s=trail_brake_delta_s,
+            trail_brake_delta_m=trail_brake_delta_m,
+            exit_throttle_init_m=exit_throttle_init_m,
+            avg_exit_throttle=avg_exit_throttle,
+            exit_speed_delta_s=exit_speed_delta_s,
+            rolling_delta_s=rolling_delta_s,
+            rolling_delta_m=rolling_delta_m,
+            cpi_factor=0.0  # Platzhalter, falls dieser Wert noch berechnet werden muss
+        )
+
+        # Und jetzt die Corner-Instanz mit der CornerMetrics-Instanz erstellen
+        corner_instance = Corner(
+            id=corner_df["corner_id"].iloc[0],
+            name=corner_df["cornerName"].iloc[0],
+            start_m=corner_df["cornerStart_m"].iloc[0],
+            apex_m=corner_df["cornerApex_m"].iloc[0],
+            end_m=corner_df["cornerEnd_m"].iloc[0],
+            metrics=corner_metrics
+        )
+
+        return corner_instance

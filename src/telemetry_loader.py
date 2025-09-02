@@ -96,6 +96,9 @@ class TelemetryLoader:
             direction="backward"
         )
 
+        mask = full_telemetry_df["Distance"] > full_telemetry_df["cornerEnd_m"]
+        corner_cols = corners_df.columns
+        full_telemetry_df.loc[mask, corner_cols] = np.nan
         self.telemetry_lap_df = full_telemetry_df
 
         return full_telemetry_df

@@ -10,7 +10,7 @@ log = get_logger(to_console=False,log_file="lap_telemetry_log.log")
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
-hot_lap_file_path = "assets/MoTec/spa/Spa-ferrari_296_gt3-fastest_lap.csv"
+hot_lap_file_path = "assets/MoTec/spa/Spa-ferrari_296_gt3-fastest_lap_glat-float.csv"
 user_lap_file_path = "assets/MoTec/spa/Spa-ferrari_296_gt3-8-hotlap_2-17-880.csv"
 
 
@@ -29,7 +29,7 @@ class LapTelemetry:
         segment_start = segment["segmentStart_m"].iloc[0]
         segment_end = segment["segmentEnd_m"].iloc[0]
 
-        def _get_corner_dfs_from_seg_df(segment_df: pd.DataFrame) -> list[Corner]:
+        def _get_corners_from_seg_df(segment_df: pd.DataFrame) -> list[Corner]:
             """
 
             :param segment_df:
@@ -39,20 +39,19 @@ class LapTelemetry:
             corner_ids = segment_df["corner_ids"].iloc[0]
 
             corner_ids = sorted(set(int(c) for c in corner_ids))
-            for corner in corner_ids:
-                print(type(corner))
 
-            #print(f"corner_ids: {corner_ids}")
             for corner_id in corner_ids:
                 # if corner_id is invalid
                 max_corner = int(self.lap_df["corner_id"].max())
                 if corner_id < 0 or corner_id > max_corner:
                     raise ValueError(f"corner_id '{corner_id}' out of range 0..{max_corner}")
+
                 # load all relevant raw corner_data
                 _corner_df = segment_df[segment_df["corner_id"] == corner_id]
                 if _corner_df.empty:
                     # try float fallback (falls Quelle noch floatig ist)
                     _corner_df = segment_df[segment_df["corner_id"] == float(corner_id)]
+
                 if _corner_df.empty:
                     log.warning(f"Segment {segment_id}: corner_id {corner_id} nicht gefunden (Typproblem?)")
                     continue
@@ -63,15 +62,7 @@ class LapTelemetry:
             return _corners
 
         time_delta = self.analyze.get_time_delta(segment_start, segment_end)
-        corners = _get_corner_dfs_from_seg_df(segment)
-        for _c in corners:
-            print(f"id: {_c.id}")
-
-
-        #log.debug(f"corners: {corners}")
-
-        # Hier muss ich schon ie CornerMetrics haben und kann dann mit einer
-        # Loop alles im Dictionary füllen, was an Kurvendaten da ist.
+        corners = _get_corners_from_seg_df(segment)
 
         segment_data = {
             "metrics":{
@@ -92,7 +83,10 @@ class LapTelemetry:
             "corners":[
                 {
                 "id": corner.id,   # later corner.id
-                "name": corner.name, # later corner.name
+                "name": corner.name,
+                "start_m": corner.start_m,
+                "end_m": corner.end_m,
+                "apex_m": corner.apex_m,
                 "metrics":{
                     "entry_speed_kmh": corner.metrics.entry_speed_kmh,
                     "apex_speed_kmh": corner.metrics.apex_speed_kmh,
@@ -150,6 +144,14 @@ class LapTelemetry:
         for key in segment_data["metrics"]:
             segment_data["metrics"][key]  = round(segment_data["metrics"][key], 3)
 
+        for i, _ in enumerate(segment_data["corners"]):
+            _corner = segment_data["corners"][i]
+            for k in _corner:
+                if k == "metrics":
+                    for _key in _corner["metrics"]:
+                        _corner["metrics"][_key] = round(_corner["metrics"][_key], 3)
+            segment_data["corners"][i] = _corner
+
         log.info(f"segment_data successfully loaded: {segment_data}")
 
         return segment_data
@@ -174,13 +176,22 @@ if __name__ == "__main__":
     lap_user = LapTelemetry(user_df)
 
     u_all_segments = lap_user.get_all_segments()
+    r_all_segments = lap_record.get_all_segments()
 
     total_time_r = 0
 
     print("======================")
-    for segment in u_all_segments:
-        for k,_ in segment.items():
-            if k == "corners":
-                for corner in segment[k]:
-                    print(corner["id"])
+    for segment in r_all_segments:
+        for _k,_ in segment.items():
+            if _k == "corners":
+                for corner in segment[_k]:
+                    print("======================")
+                    print(f"{corner["id"]}\n"
+                          f"{corner["name"]}\n"
+                          f"start: {corner["start_m"]}  end: {corner["end_m"]}")
+
+                    _metrics = corner["metrics"]
+                    for o, l in _metrics.items():
+                        print(f" - {o}: {l}")
+
 
