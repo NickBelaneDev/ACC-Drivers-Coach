@@ -1,7 +1,6 @@
 import pandas as pd, numpy as np
 from pandas import DataFrame
 from logger import get_logger
-from lap_dataclasses import CornerMetrics
 import json
 from pathlib import Path
 log = get_logger(to_console=False)
@@ -107,7 +106,8 @@ class TelemetryLoader:
     @staticmethod
     def _load_map(file_path_segments, file_path_corners) -> tuple[pd.DataFrame, pd.DataFrame]:
         """
-        Loads the map specific segments- and corners-JSON to a DataFrame as a Template.
+        Returns the segments- and corners-JSON converted to a DataFrame.
+
         :param file_path_segments:
         :param file_path_corners:
         :return: segments_df, corners_df
@@ -118,7 +118,7 @@ class TelemetryLoader:
             corners = json.load(f)
 
         corners_df = pd.json_normalize(corners["corners"])
-        corners_df_sorted = corners_df.sort_values('cornerStart_m')
+        corners_df_sorted = corners_df.sort_values('brakeArea_m')
 
         segments_df = pd.json_normalize(segments["segments"])
         segments_df_sorted = segments_df.sort_values("segmentStart_m")

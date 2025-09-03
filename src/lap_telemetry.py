@@ -1,10 +1,13 @@
 from pathlib import Path
+
+import numpy as np
 import openpyxl
 import pandas as pd
 from logger import get_logger
-from src.lap_dataclasses import CornerMetrics, Corner
+from src.lap_dataclasses import CornerMetrics, Corner, Segment
 from src.telemetry_loader import TelemetryLoader
 from src.telemetry_analyzer import Analyze
+import math
 
 log = get_logger(to_console=False,log_file="lap_telemetry_log.log")
 
@@ -16,23 +19,28 @@ user_lap_file_path = "assets/MoTec/spa/Spa-ferrari_296_gt3-8-hotlap_2-17-880.csv
 
 class LapTelemetry:
     def __init__(self, lap_df: pd.DataFrame):
-        self.lap_df = lap_df
-        self.analyze = Analyze(lap_df)
+
+
+
+        # Calculate the gForceVector, I know it's ugly yet, will fix it later.
+        self.lap_df = Analyze.calc_g_force_vector(lap_df)
+        self.analyze = Analyze(self.lap_df)
 
     def _get_segment_data(self, segment_id: int) -> dict:
         max_seg = int(self.lap_df["segment_id_x"].max())
         if segment_id < 0 or segment_id > max_seg:
             raise IndexError(f"segment_id: {segment_id} out of range 0..{max_seg}")
 
-        segment = self.lap_df[self.lap_df["segment_id_x"] == segment_id]
 
-        segment_start = segment["segmentStart_m"].iloc[0]
-        segment_end = segment["segmentEnd_m"].iloc[0]
+        segment_df = self.lap_df[self.lap_df["segment_id_x"] == segment_id]
 
-        def _get_corners_from_seg_df(segment_df: pd.DataFrame) -> list[Corner]:
+        segment_start = segment_df["segmentStart_m"].iloc[0]
+        segment_end = segment_df["segmentEnd_m"].iloc[0]
+
+
+        def _get_corners_from_seg_df() -> list[Corner]:
             """
 
-            :param segment_df:
             :return: All corner_dfs from a segment together in a list
             """
             _corners = []
@@ -49,7 +57,7 @@ class LapTelemetry:
                 # load all relevant raw corner_data
                 _corner_df = segment_df[segment_df["corner_id"] == corner_id]
                 if _corner_df.empty:
-                    # try float fallback (falls Quelle noch floatig ist)
+                    # try float fallback (if source is still floaty)
                     _corner_df = segment_df[segment_df["corner_id"] == float(corner_id)]
 
                 if _corner_df.empty:
@@ -62,15 +70,16 @@ class LapTelemetry:
             return _corners
 
         time_delta = self.analyze.get_time_delta(segment_start, segment_end)
-        corners = _get_corners_from_seg_df(segment)
+        corners = _get_corners_from_seg_df()
 
         segment_data = {
             "metrics":{
-                "avgThrottle": segment["THROTTLE"].mean(),
-                "avgBreak": segment["BRAKE"].mean(),
-                "avgSpeed": segment["SPEED"].mean(),
-                "topSpeed": segment["SPEED"].max(),
-                "minSpeed": segment["SPEED"].min(),
+                "avgThrottle": segment_df["THROTTLE"].mean(),
+                "avgBreak": segment_df["BRAKE"].mean(),
+                "avgSpeed": segment_df["SPEED"].mean(),
+                "topSpeed": segment_df["SPEED"].max(),
+                "minSpeed": segment_df["SPEED"].min(),
+                "maxGForceVector": segment_df["gForceVector"].mean(),
                 "timeDelta": time_delta
             },
 
@@ -118,7 +127,8 @@ class LapTelemetry:
                     "ttf95_s": corner.metrics.ttf95_s,  # ttf95_s = 'Time where Throttle-Input >= 95% in seconds'
 
                     # Abstract Metrics
-                    "brake_point_m": corner.metrics.brake_point_m,  #
+                    "brake_point_m": corner.metrics.brake_point_m,
+                    "brake_release_m": corner.metrics.brake_release_m, #
                     "brake_delta_m": corner.metrics.brake_delta_m,  #
                     "brake_delta_s": corner.metrics.brake_delta_s,  #
                     "trail_brake_delta_s": corner.metrics.trail_brake_delta_s,
@@ -190,8 +200,9 @@ if __name__ == "__main__":
                           f"{corner["name"]}\n"
                           f"start: {corner["start_m"]}  end: {corner["end_m"]}")
 
-                    _metrics = corner["metrics"]
-                    for o, l in _metrics.items():
-                        print(f" - {o}: {l}")
+                    _metrics = corner["metrics"]["cpi_factor"]
+                    print(_metrics)
+                    #for o, l in _metrics.item():
+                    #    print(f" - {o}: {l}")
 
 
