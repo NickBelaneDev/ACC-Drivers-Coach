@@ -84,7 +84,8 @@ class LapAnalyzer:
         _brake_point_df = brake_df[is_braking & was_not_braking]
         if _brake_point_df.empty:
             return {"brake_point_m": 0,"brake_delta_m": 0, "brake_delta_s": 0.0,
-                "brake_release_m": 0,"avg_brake": 0, "max_brake": 0, "trail_brake_delta_m": 0, "trail_brake_delta_s": 0, "tbf95": 0}
+                "brake_release_m": 0,"avg_brake": 0, "max_brake": 0, "trail_brake_delta_m": 0,
+                "trail_brake_delta_s": 0, "trail_brake_start_m": 0, "trail_brake_end_m": 0,  "tbf95": 0}
 
         # The brake point has been validated
         brake_point_m = _brake_point_df["Distance"].min()            # this is only a row and we need the lowest "Distance"
@@ -103,7 +104,8 @@ class LapAnalyzer:
 
         if pd.isna(brake_point_m) or pd.isna(brake_release_m):
             return {"brake_point_m": 0,"brake_delta_m": 0, "brake_delta_s": 0.0,
-                "brake_release_m": 0,"avg_brake": 0, "max_brake": 0, "tbf95": 0}
+                "brake_release_m": 0,"avg_brake": 0, "max_brake": 0, "trail_brake_delta_m": 0,
+                "trail_brake_delta_s": 0, "trail_brake_start_m": 0, "trail_brake_end_m": 0,  "tbf95": 0}
 
         # Set final variables
         brake_delta_m = brake_release_m - brake_point_m
@@ -164,6 +166,8 @@ class LapAnalyzer:
         """
         # Brake Input muss niedriger als Schwellwert sein
         delta_df = df[((df["BRAKE"].shift(1) > 0) & (df["BRAKE"].shift(1) < threshold)) & ((df["BRAKE"].shift(-1) > 0) & (df["BRAKE"].shift(-1) < threshold))]
+
+        delta_df = df[(df["BRAKE"].shift(1) > df["BRAKE"])]
         trail_brake_start_m = delta_df["Distance"].min()
         trail_brake_end_m = delta_df["Distance"].max()
         trail_brake_delta_m = trail_brake_end_m - trail_brake_start_m

@@ -19,6 +19,8 @@ class LapCompare:
         self.analyzer = LapAnalyzer()
 
     def _load_corners(self):
+
+
         pass
 
     def get_comparison_df(self, df):

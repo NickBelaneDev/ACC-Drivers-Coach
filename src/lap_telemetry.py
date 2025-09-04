@@ -7,6 +7,7 @@ from logger import get_logger
 from src.lap_dataclasses import CornerMetrics, Corner, Segment
 from src.telemetry_loader import TelemetryLoader
 from src.lap_analyzer import LapAnalyzer
+from src.telemetry_utils import get_corner_df_from_df
 import math
 
 log = get_logger(to_console=False,log_file="lap_telemetry_log.log")
@@ -26,7 +27,8 @@ class LapTelemetry:
         self.lap_df = LapAnalyzer.calc_g_force_vector(lap_df)
         self.analyze = LapAnalyzer(self.lap_df)
 
-
+    def get_lap_df(self):
+        return self.lap_df
 
     def get_corner_df_from_df(self, corner_id: int, df:pd.DataFrame) -> pd.DataFrame:
         try:
@@ -70,7 +72,7 @@ class LapTelemetry:
             # if corner_id is invalid
 
 
-            _corner_df = self.get_corner_df_from_df(corner_id, df)
+            _corner_df = get_corner_df_from_df(corner_id, df)
             _corner = self.analyze.corner(_corner_df)
             _corners.append(_corner)
 
@@ -93,6 +95,7 @@ class LapTelemetry:
 
         corners = self._get_analyzed_corners_from_df(segment_df)
 
+        # Dieses Dictionary sollst du für Streamlit verfügbar machen.
         segment_data = {
             "metrics": {
                 "avgThrottle": segment_df["THROTTLE"].mean(),
@@ -141,11 +144,7 @@ class LapTelemetry:
                     "avg_brake": corner.metrics.avg_brake,
                     "max_brake": corner.metrics.max_brake,
 
-                    # OPTIONAL!
                     "tbf95_s": corner.metrics.tbf95_s,  # tbf95_s = 'Time where Brake-Input >= 95% in seconds'
-
-                    "avg_throttle": corner.metrics.avg_throttle,
-                    "ttf95_s": corner.metrics.ttf95_s,  # ttf95_s = 'Time where Throttle-Input >= 95% in seconds'
 
                     # Abstract Metrics
                     "brake_point_m": corner.metrics.brake_point_m,
@@ -156,6 +155,9 @@ class LapTelemetry:
                     "trail_brake_delta_m": corner.metrics.trail_brake_delta_m,
                     "trail_brake_start_m": corner.metrics.trail_brake_start_m,
                     "trail_brake_end_m": corner.metrics.trail_brake_end_m,
+
+                    "avg_throttle": corner.metrics.avg_throttle,
+                    "ttf95_s": corner.metrics.ttf95_s,  # ttf95_s = 'Time where Throttle-Input >= 95% in seconds'
 
                     "exit_throttle_init_m": corner.metrics.exit_throttle_init_m,
                     # Measurement from where the driver is on the gas again on corner_exit.

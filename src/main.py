@@ -9,7 +9,7 @@ log = get_logger(to_console=False,log_file="lap_telemetry_log.log")
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 hot_lap_file_path = "assets/MoTec/spa/Spa-ferrari_296_gt3-fastest_lap_glat-float.csv"
-user_lap_file_path = "assets/MoTec/spa/Spa-ferrari_296_gt3-8-hotlap_2-17-880.csv"
+user_lap_file_path = "assets/MoTec/spa/Spa-ferrari_296_gt3-8-hotlap_2-17-860.csv"
 
 
 if __name__ == "__main__":
@@ -42,7 +42,7 @@ if __name__ == "__main__":
 
     if to_print:
         print("======================")
-        for segment in r_all_segments:
+        for segment in u_all_segments:
             for _k, _ in segment.items():
                 if _k == "corners":
                     for corner in segment[_k]:
