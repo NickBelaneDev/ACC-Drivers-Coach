@@ -6,7 +6,7 @@ import pandas as pd
 from logger import get_logger
 from src.lap_dataclasses import CornerMetrics, Corner, Segment
 from src.telemetry_loader import TelemetryLoader
-from src.telemetry_analyzer import Analyze
+from src.lap_analyzer import LapAnalyzer
 import math
 
 log = get_logger(to_console=False,log_file="lap_telemetry_log.log")
@@ -16,64 +16,85 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 hot_lap_file_path = "assets/MoTec/spa/Spa-ferrari_296_gt3-fastest_lap_glat-float.csv"
 user_lap_file_path = "assets/MoTec/spa/Spa-ferrari_296_gt3-8-hotlap_2-17-880.csv"
 
-
 class LapTelemetry:
     def __init__(self, lap_df: pd.DataFrame):
-
-
-
+        """
+        Get all relevant data metrics for the LLM.
+        :param lap_df:
+        """
         # Calculate the gForceVector, I know it's ugly yet, will fix it later.
-        self.lap_df = Analyze.calc_g_force_vector(lap_df)
-        self.analyze = Analyze(self.lap_df)
+        self.lap_df = LapAnalyzer.calc_g_force_vector(lap_df)
+        self.analyze = LapAnalyzer(self.lap_df)
 
+
+
+    def get_corner_df_from_df(self, corner_id: int, df:pd.DataFrame) -> pd.DataFrame:
+        try:
+            max_corner = int(self.lap_df["corner_id"].max())
+        except Exception as e:
+            print("max_corner not found!")
+            max_corner = int(df["corner_id"].max())
+            pass
+
+
+        if corner_id < 0 or corner_id > max_corner:
+            raise ValueError(f"corner_id '{corner_id}' out of range 0..{max_corner}")
+
+        # load all relevant raw corner_data
+        _corner_df = df[df["corner_id"] == corner_id]
+        if _corner_df.empty:
+            # try float fallback (if source is still floaty)
+            _corner_df = df[df["corner_id"] == float(corner_id)]
+
+        if _corner_df.empty:
+            log.warning(f"Segment {df}: corner_id {corner_id} nicht gefunden (Typproblem?)")
+
+        return _corner_df
+
+    def _get_analyzed_corners_from_df(self, df:pd.DataFrame):
+        """
+        The given Dataframe must have corner_ids as alist in iloc[0]
+        :param df:
+        :return:
+        """
+
+        _corners = []
+        corner_ids = df["corner_ids"].iloc[0]
+
+        if not corner_ids:
+            raise ValueError(f"corner_ids_df is empty!\n{corner_ids}")
+
+        corner_ids = sorted(set(int(c) for c in corner_ids))
+
+        for corner_id in corner_ids:
+            # if corner_id is invalid
+
+
+            _corner_df = self.get_corner_df_from_df(corner_id, df)
+            _corner = self.analyze.corner(_corner_df)
+            _corners.append(_corner)
+
+        return _corners
     def _get_segment_data(self, segment_id: int) -> dict:
+        """
+
+        :param segment_id:
+        :return: A dictionary with the corresponding segments and laps.
+        """
         max_seg = int(self.lap_df["segment_id_x"].max())
         if segment_id < 0 or segment_id > max_seg:
             raise IndexError(f"segment_id: {segment_id} out of range 0..{max_seg}")
-
 
         segment_df = self.lap_df[self.lap_df["segment_id_x"] == segment_id]
 
         segment_start = segment_df["segmentStart_m"].iloc[0]
         segment_end = segment_df["segmentEnd_m"].iloc[0]
-
-
-        def _get_corners_from_seg_df() -> list[Corner]:
-            """
-
-            :return: All corner_dfs from a segment together in a list
-            """
-            _corners = []
-            corner_ids = segment_df["corner_ids"].iloc[0]
-
-            corner_ids = sorted(set(int(c) for c in corner_ids))
-
-            for corner_id in corner_ids:
-                # if corner_id is invalid
-                max_corner = int(self.lap_df["corner_id"].max())
-                if corner_id < 0 or corner_id > max_corner:
-                    raise ValueError(f"corner_id '{corner_id}' out of range 0..{max_corner}")
-
-                # load all relevant raw corner_data
-                _corner_df = segment_df[segment_df["corner_id"] == corner_id]
-                if _corner_df.empty:
-                    # try float fallback (if source is still floaty)
-                    _corner_df = segment_df[segment_df["corner_id"] == float(corner_id)]
-
-                if _corner_df.empty:
-                    log.warning(f"Segment {segment_id}: corner_id {corner_id} nicht gefunden (Typproblem?)")
-                    continue
-
-                _corner = self.analyze.corner(_corner_df)
-                _corners.append(_corner)
-
-            return _corners
-
         time_delta = self.analyze.get_time_delta(segment_start, segment_end)
-        corners = _get_corners_from_seg_df()
+
+        corners = self._get_analyzed_corners_from_df(segment_df)
 
         segment_data = {
-            "metrics":{
+            "metrics": {
                 "avgThrottle": segment_df["THROTTLE"].mean(),
                 "avgBreak": segment_df["BRAKE"].mean(),
                 "avgSpeed": segment_df["SPEED"].mean(),
@@ -151,6 +172,7 @@ class LapTelemetry:
         }
 
 
+        # Round all Data
         for key in segment_data["metrics"]:
             segment_data["metrics"][key]  = round(segment_data["metrics"][key], 3)
 
@@ -166,7 +188,13 @@ class LapTelemetry:
 
         return segment_data
 
-    def get_all_segments(self):
+    def get_segment_list(self) -> list:
+        """
+        Returns a list witch all analysed segments as Dictionaries inside.
+        Ment to be sent to LLMs for drivers analysis.
+        Do not use this, if you want to calc with the data!!
+        :return:
+        """
         segments_num = self.lap_df["segment_id_x"].max()
         all_segments = []
 
@@ -185,8 +213,11 @@ if __name__ == "__main__":
     lap_record = LapTelemetry(telemetry_df)
     lap_user = LapTelemetry(user_df)
 
-    u_all_segments = lap_user.get_all_segments()
-    r_all_segments = lap_record.get_all_segments()
+    u_all_segments = lap_user.get_segment_list()
+    r_all_segments = lap_record.get_segment_list()
+
+
+
 
     total_time_r = 0
 

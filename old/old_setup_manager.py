@@ -1,19 +1,20 @@
 import dotenv
 import google.generativeai as genai
+import os
 import json
-
+from pydantic_core.core_schema import JsonType
 
 from setup_parser import ACCSetup
 
 
-API_KEY = dotenv.get_key(".env", "GEMINI_API_KEY")
+API_KEY = dotenv.get_key("../.env", "GEMINI_API_KEY")
 
 genai.configure(api_key=API_KEY)
 
 
 def ask_aero_specialist(problem: str, setup=None):
     """Konsultiert den Aerodynamik-Spezialisten bei Problemen mit der Aero-Balance eines Fahrzeugs."""
-    _aero_prompt_path = "src/assets/prompts/aero_prompt.txt"
+    _aero_prompt_path = "../src/assets/prompts/aero_prompt.txt"
     with open(_aero_prompt_path, "r", encoding="utf-8") as _aero_prompt:
         aero_prompt = _aero_prompt.read()
         aero_prompt += "\n\n"
@@ -26,7 +27,7 @@ def ask_aero_specialist(problem: str, setup=None):
     return aero_response.text
 def ask_mech_grip_specialist(problem: str, setup=None):
     """Konsultiert den Mechanischen-Grip-Spezialisten bei Problemen mit dem mechanischen Grip eines Fahrzeugs."""
-    _mech_prompt_path = "src/assets/prompts/mechanical_grip.txt"
+    _mech_prompt_path = "../src/assets/prompts/mechanical_grip.txt"
     with open(_mech_prompt_path, "r", encoding="utf-8") as _mechanical_prompt:
         mechanical_prompt = _mechanical_prompt.read()
 
@@ -36,7 +37,7 @@ def ask_mech_grip_specialist(problem: str, setup=None):
     return mech_response.text
 def ask_tyre_specialist(problem: str, setup=None):
     """Konsultiert den Reifen-Spezialisten bei Problemen mit Reifen, Sturz, Spur, Nachlauf und so weiter eines Fahrzeugs."""
-    _tyre_prompt_path = "src/assets/prompts/tyres_prompt.txt"
+    _tyre_prompt_path = "../src/assets/prompts/tyres_prompt.txt"
     with open(_tyre_prompt_path, "r", encoding="utf-8") as _tyre_prompt:
         tyre_prompt = _tyre_prompt.read()
 
@@ -46,7 +47,7 @@ def ask_tyre_specialist(problem: str, setup=None):
     return tyre_response.text
 def ask_damper_specialist(problem: str, setup=None):
     """Konsultiert den Daempfer-Spezialisten bei Problemen mit den Daempfern eines Fahrzeugs."""
-    _damper_prompt_path = "src/assets/prompts/dampers_prompt.txt"
+    _damper_prompt_path = "../src/assets/prompts/dampers_prompt.txt"
     with open(_damper_prompt_path, "r", encoding="utf-8") as _damper_prompt:
         damper_prompt = _damper_prompt.read()
 
@@ -56,7 +57,7 @@ def ask_damper_specialist(problem: str, setup=None):
     return damper_response.text
 def ask_electronics_specialist(problem: str, setup=None):
     """Konsultiert den Daempfer-Spezialisten bei Problemen mit den Daempfern eines Fahrzeugs."""
-    _electronics_prompt_path = "src/assets/prompts/electronics_prompt.txt"
+    _electronics_prompt_path = "../src/assets/prompts/electronics_prompt.txt"
     with open(_electronics_prompt_path, "r", encoding="utf-8") as _electronics_prompt:
         electronics_prompt = _electronics_prompt.read()
 
@@ -66,9 +67,10 @@ def ask_electronics_specialist(problem: str, setup=None):
     return electronics_response.text
 
 
+
 class SetupManager:
     def __init__(self, setup_path=""):
-        mp_file_path = "src/assets/prompts/manager_prompt.txt"
+        mp_file_path = "../src/assets/prompts/manager_prompt.txt"
         with open(mp_file_path, "r", encoding="utf-8") as f:
             self.prompt = f.read()
 
@@ -138,26 +140,8 @@ class SetupManager:
             print("Es konnte kein Setup geladen werden!")
         return False
 
-    def send_function_response(self, chat, tool_name, payload_dict):
-        pass
-
-    def find_function_call(self, response):
-        for part in response.candidates[0].content.parts:
-            if part.function_call:
-                return part.function_call
-
-        return None
-
-    def send_function_response(self, chat, tool_name, payload_dict):
-
-        chat.send_message(
-            content=[genai.protos.Part(
-                function_response=genai.protos.FunctionResponse(
-                    name=tool_name,
-                    response={'result': tool_response}
-                )
-            )]
-        )
+    def send_message(self, message:str):
+        return self.chat.send_message(message)
 
     def ask(self, message:str):
         response = self.chat.send_message(message)
@@ -240,7 +224,7 @@ class SetupManager:
 if __name__ == "__main__":
 
 
-    setup_path = "src/assets/setups/SPA RACE BERNA 24 32.json"
+    setup_path = "../src/assets/setups/SPA RACE BERNA 24 32.json"
     setup_manager = SetupManager(setup_path=setup_path)
     #setup_manager = SetupManager()
     while True:

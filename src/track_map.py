@@ -2,6 +2,8 @@ import json
 from logger import get_logger
 
 log = get_logger()
+
+
 def validate_corner_map(path: str) -> bool:
     log.info(f" -> Validate Corner Map, path: {path}")
     with open(path, "r", encoding="utf-8") as f:

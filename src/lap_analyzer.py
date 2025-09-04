@@ -5,7 +5,7 @@ from logger import get_logger
 
 log = get_logger("telemetry_analyzer", to_console=False)
 
-class Analyze:
+class LapAnalyzer:
     def __init__(self, df: pd.DataFrame=pd.DataFrame()):
         self.corner_metrics = CornerMetrics
         self.lap_df = df
@@ -24,17 +24,6 @@ class Analyze:
 
     def set_lap_df(self, df: pd.DataFrame):
         self.lap_df = df
-
-    def _get_df_from_corner(self, corner: Corner) -> pd.DataFrame:
-        _start = Corner.start_m
-        _end = Corner.end_m
-
-        corner_df = self.lap_df[(self.lap_df["Distance"] >= _start) & (self.lap_df["Distance"] <= _end)]
-
-        if corner_df.empty:
-            return pd.DataFrame()
-
-        return corner_df
 
     def get_time_delta(self,start_m: int, end_m: int):
         time_start_df =  self.lap_df[self.lap_df["Distance"] == start_m]
@@ -138,7 +127,8 @@ class Analyze:
                 "tbf95": tbf95_s}
 
 
-    def _get_throttle_data(self, telemetry_df: pd.DataFrame, threshold=60) -> pd.DataFrame | None:
+    @staticmethod
+    def _get_throttle_data(telemetry_df: pd.DataFrame, threshold=60) -> pd.DataFrame | None:
 #        ttf95_s = telemetry_df[telemetry_df[""]]
         exit_throttle_init_df = telemetry_df[(telemetry_df["THROTTLE"].shift(1) < threshold) & (telemetry_df["THROTTLE"] >= threshold) & (telemetry_df["BRAKE"] <= 3)]
         exit_throttle_init_m = exit_throttle_init_df["Distance"].min()
@@ -289,3 +279,4 @@ class Analyze:
         )
 
         return corner_instance
+

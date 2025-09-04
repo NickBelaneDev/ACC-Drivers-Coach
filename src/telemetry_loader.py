@@ -8,39 +8,6 @@ log = get_logger(to_console=False)
 file_path_user = "assets/MoTec/spa/Spa-ferrari_296_gt3-8-hotlap_2-17-880.csv"
 file_path_fastest_lap = "assets/MoTec/spa/Spa-ferrari_296_gt3-fastest_lap.csv"
 
-class TelemetryAnalyzer:
-    def __init__(self, lap_df: DataFrame):
-        self.telemetry_lap_df = lap_df or pd.DataFrame()
-
-    @staticmethod
-    def get_break_points(telemetry_df: DataFrame) -> DataFrame:
-
-        was_not_braking = telemetry_df["BRAKE"].shift(1) < 99
-        is_braking = telemetry_df["BRAKE"] >= 99
-
-        brake_point_df = telemetry_df[is_braking & was_not_braking]
-
-        return brake_point_df
-    def get_break_point_difference(self, break_points_01_df: DataFrame, break_points_02_df: DataFrame) -> DataFrame:
-        u_b_p = self.get_break_points(break_points_01_df)
-        r_b_p = self.get_break_points(break_points_02_df)
-
-        user_break_points = u_b_p.reset_index(drop=True)
-        record_break_points = r_b_p.reset_index(drop=True)
-
-        difference_df = user_break_points["Distance"] - record_break_points["Distance"]
-        return difference_df
-
-    @staticmethod
-    def get_apex_df(telemetry_df: DataFrame):
-
-        is_accelerating = telemetry_df["SPEED"].shift(1) > telemetry_df["SPEED"]
-        is_slowing_down = telemetry_df["SPEED"].shift(-1) > telemetry_df["SPEED"]
-        is_steering = telemetry_df["STEERING"].shift(1) > telemetry_df["STEERING"]
-
-        apex_df = telemetry_df[is_accelerating & is_slowing_down]
-
-        return apex_df
 
 class TelemetryLoader:
     def __init__(self, base_dir: Path):
@@ -48,9 +15,15 @@ class TelemetryLoader:
         self.base_dir = base_dir
 
     def telemetry_from_csv(self, hotlap_path: str, track: str) -> DataFrame | None:
-        """Loads the Telemetry from a MoTec csv file and validates it for further use."""
-        #base_dir = (Path(__file__).resolve().parent / "assets" / "MoTec")
+        """
+
+        :param hotlap_path: path to the hotlap.csv file from MoTec
+        :param track: name of the track the hotlap corresponds to
+        :return: A sorted DataFrame with the complete raw telemetry and track meta-data normed to Distance by 1m.
+        """
+
         def _get_file_paths(_track: str):
+
             """
 
             :param _track: Name of the racetrack
@@ -102,12 +75,10 @@ class TelemetryLoader:
 
         return full_telemetry_df
 
-
     @staticmethod
     def _load_map(file_path_segments, file_path_corners) -> tuple[pd.DataFrame, pd.DataFrame]:
         """
         Returns the segments- and corners-JSON converted to a DataFrame.
-
         :param file_path_segments:
         :param file_path_corners:
         :return: segments_df, corners_df
