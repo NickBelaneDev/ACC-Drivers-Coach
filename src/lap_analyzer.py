@@ -62,7 +62,7 @@ class LapAnalyzer:
 
         return _df[columns] if not _df.empty else pd.DataFrame()
 
-    def _get_brake_points(self, telemetry_df: pd.DataFrame) -> dict | None:
+    def _get_brake_points(self, telemetry_df: pd.DataFrame, threshold=2) -> dict | None:
         """
         ACHTUNG! Noch muss geprüft werden, ob es überhaupt einen Bremspunkt gibt!
         :param telemetry_df:
@@ -72,7 +72,7 @@ class LapAnalyzer:
         brake_area_start_m = telemetry_df["brakeArea_m"].iloc[0]
         brake_area_end_m = telemetry_df["cornerApex_m"].iloc[0]
 
-        # "Distance" ist always added in get_data_from_area!!
+        # "Distance" is always added in get_data_from_area!!
         cols = ["SPEED", "BRAKE", "G_LAT", "G_LON", "STEERANGLE", "Time"]
 
         brake_df = self.get_df_from_area(brake_area_start_m, brake_area_end_m, cols)
@@ -112,7 +112,13 @@ class LapAnalyzer:
         max_brake = brake_df["BRAKE"].max()
         avg_brake = brake_df[(brake_df["Distance"] >= brake_point_m) & (brake_df["Distance"] <= brake_release_m)]["BRAKE"].mean() #  soll vom Bremspunkt des Fahrers bis zum kompletten Release gehen.
 
-        trail_brake_delta_s, trail_brake_delta_m = self._trail_brake_delta(brake_df)
+        _trail_brake_data = self._trail_brake_delta(brake_df)
+
+        trail_brake_delta_s = _trail_brake_data["trail_brake_delta_s"]
+        trail_brake_delta_m = _trail_brake_data["trail_brake_delta_m"]
+        trail_brake_start_m = _trail_brake_data["trail_brake_start_m"]
+        trail_brake_end_m = _trail_brake_data["trail_brake_end_m"]
+
         tbf95_s = brake_df[brake_df["BRAKE"] >= 95]["Time"].max() - brake_df[brake_df["BRAKE"] >= 95]["Time"].min()
 
 
@@ -124,6 +130,8 @@ class LapAnalyzer:
                 "avg_brake": avg_brake,
                 "trail_brake_delta_m": trail_brake_delta_m,
                 "trail_brake_delta_s": trail_brake_delta_s,
+                "trail_brake_start_m": trail_brake_start_m,
+                "trail_brake_end_m": trail_brake_end_m,
                 "tbf95": tbf95_s}
 
 
@@ -146,7 +154,7 @@ class LapAnalyzer:
         }
 
     @staticmethod
-    def _trail_brake_delta(df: pd.DataFrame, threshold: int=15) -> tuple[float, float]:
+    def _trail_brake_delta(df: pd.DataFrame, threshold: int=15) -> dict:
         """
         Indicates an area where the driver is braking less than the threshold parameter while steering in a single direction.
 
@@ -155,13 +163,20 @@ class LapAnalyzer:
         :return: trail_brake_delta_s, trail_brake_delta_m
         """
         # Brake Input muss niedriger als Schwellwert sein
-        delta_df = df[(df["BRAKE"].shift(1) > 0) & (df["BRAKE"].shift(1) < threshold) & (df["BRAKE"].shift(-1) > 0) & (df["BRAKE"].shift(-1) < threshold)]
-        trail_brake_start = delta_df["Distance"].min()
-        trail_brake_end = delta_df["Distance"].max()
-        trail_brake_delta_m = trail_brake_end - trail_brake_start
+        delta_df = df[((df["BRAKE"].shift(1) > 0) & (df["BRAKE"].shift(1) < threshold)) & ((df["BRAKE"].shift(-1) > 0) & (df["BRAKE"].shift(-1) < threshold))]
+        trail_brake_start_m = delta_df["Distance"].min()
+        trail_brake_end_m = delta_df["Distance"].max()
+        trail_brake_delta_m = trail_brake_end_m - trail_brake_start_m
         trail_brake_delta_s = delta_df["Time"].max() - delta_df["Time"].min()
 
-        return trail_brake_delta_s, trail_brake_delta_m
+        trail_brake_dict = {
+            "trail_brake_start_m": trail_brake_start_m,
+            "trail_brake_end_m": trail_brake_end_m,
+            "trail_brake_delta_m": trail_brake_delta_m,
+            "trail_brake_delta_s": trail_brake_delta_s
+        }
+
+        return trail_brake_dict
 
     def corner(self, corner_df: pd.DataFrame) -> Corner:
         """
@@ -205,6 +220,8 @@ class LapAnalyzer:
 
         trail_brake_delta_m = _advanced_brake_data["trail_brake_delta_m"]
         trail_brake_delta_s = _advanced_brake_data["trail_brake_delta_s"]
+        trail_brake_start_m = _advanced_brake_data["trail_brake_start_m"]
+        trail_brake_end_m = _advanced_brake_data["trail_brake_end_m"]
 
         tbf95_s = _advanced_brake_data["tbf95"]
 
@@ -260,6 +277,8 @@ class LapAnalyzer:
             brake_delta_s=brake_delta_s,
             trail_brake_delta_s=trail_brake_delta_s,
             trail_brake_delta_m=trail_brake_delta_m,
+            trail_brake_start_m=trail_brake_start_m,
+            trail_brake_end_m=trail_brake_end_m,
             exit_throttle_init_m=exit_throttle_init_m,
             avg_exit_throttle=avg_exit_throttle,
             exit_speed_delta_s=exit_speed_delta_s,

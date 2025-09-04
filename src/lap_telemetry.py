@@ -154,6 +154,8 @@ class LapTelemetry:
                     "brake_delta_s": corner.metrics.brake_delta_s,  #
                     "trail_brake_delta_s": corner.metrics.trail_brake_delta_s,
                     "trail_brake_delta_m": corner.metrics.trail_brake_delta_m,
+                    "trail_brake_start_m": corner.metrics.trail_brake_start_m,
+                    "trail_brake_end_m": corner.metrics.trail_brake_end_m,
 
                     "exit_throttle_init_m": corner.metrics.exit_throttle_init_m,
                     # Measurement from where the driver is on the gas again on corner_exit.

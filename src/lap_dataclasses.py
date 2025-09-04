@@ -57,6 +57,8 @@ class CornerMetrics:
     brake_delta_s: Optional[float] = 0.0      #
     trail_brake_delta_s: Optional[float] = 0.0
     trail_brake_delta_m: Optional[int] = 0
+    trail_brake_start_m: Optional[int] = 0
+    trail_brake_end_m: Optional[int] = 0
 
     exit_throttle_init_m: Optional[int] = 0 # Measurement from where the driver is on the gas again on corner_exit.
     avg_exit_throttle: Optional[float] = 0.0      # avg. throttle input from apex_m to exit_m + 100
