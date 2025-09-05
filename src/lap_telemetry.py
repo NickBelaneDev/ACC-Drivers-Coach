@@ -30,30 +30,7 @@ class LapTelemetry:
     def get_lap_df(self):
         return self.lap_df
 
-    def get_corner_df_from_df(self, corner_id: int, df:pd.DataFrame) -> pd.DataFrame:
-        try:
-            max_corner = int(self.lap_df["corner_id"].max())
-        except Exception as e:
-            print("max_corner not found!")
-            max_corner = int(df["corner_id"].max())
-            pass
-
-
-        if corner_id < 0 or corner_id > max_corner:
-            raise ValueError(f"corner_id '{corner_id}' out of range 0..{max_corner}")
-
-        # load all relevant raw corner_data
-        _corner_df = df[df["corner_id"] == corner_id]
-        if _corner_df.empty:
-            # try float fallback (if source is still floaty)
-            _corner_df = df[df["corner_id"] == float(corner_id)]
-
-        if _corner_df.empty:
-            log.warning(f"Segment {df}: corner_id {corner_id} nicht gefunden (Typproblem?)")
-
-        return _corner_df
-
-    def get_analyzed_corners_from_df(self, df:pd.DataFrame):
+    def _get_analyzed_corners_from_df(self, df:pd.DataFrame):
         """
         The given Dataframe must have corner_ids as alist in iloc[0]
         :param df:
@@ -86,13 +63,14 @@ class LapTelemetry:
         if segment_id < 0 or segment_id > max_seg:
             raise IndexError(f"segment_id: {segment_id} out of range 0..{max_seg}")
 
+        # Segment DataFrame
         segment_df = self.lap_df[self.lap_df["segment_id_x"] == segment_id]
 
         segment_start = segment_df["segmentStart_m"].iloc[0]
         segment_end = segment_df["segmentEnd_m"].iloc[0]
         time_delta = self.analyze.get_time_delta(segment_start, segment_end)
 
-        corners = self.get_analyzed_corners_from_df(segment_df)
+        corners = self._get_analyzed_corners_from_df(segment_df)
 
         # Dieses Dictionary sollst du für Streamlit verfügbar machen.
         segment_data = {
@@ -179,6 +157,7 @@ class LapTelemetry:
         for key in segment_data["metrics"]:
             segment_data["metrics"][key]  = round(segment_data["metrics"][key], 3)
 
+
         for i, _ in enumerate(segment_data["corners"]):
             _corner = segment_data["corners"][i]
             for k in _corner:
@@ -194,7 +173,7 @@ class LapTelemetry:
     def get_segment_list(self) -> list:
         """
         Returns a list witch all analysed segments as Dictionaries inside.
-        Ment to be sent to LLMs for drivers analysis.
+        Ment to be sent to LLMs for driver analysis.
         Do not use this, if you want to calc with the data!!
         :return:
         """
