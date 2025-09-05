@@ -2,6 +2,7 @@ from lap_dataclasses import Corner, CornerMetrics
 import pandas as pd
 import numpy as np
 from logger import get_logger
+from src.lap_dataclasses import Segment
 
 log = get_logger("telemetry_analyzer", to_console=False)
 
@@ -21,7 +22,6 @@ class LapAnalyzer:
 
         with_vector_df["gForceVector"] = np.sqrt(term_lat + term_lon)
         return with_vector_df
-
     def set_lap_df(self, df: pd.DataFrame):
         self.lap_df = df
 
@@ -34,7 +34,7 @@ class LapAnalyzer:
 
         return time_end - time_start
 
-    def get_df_from_area(self, start_m: int, end_m: int, data: list[str] | str, df: pd.DataFrame=None):
+    def _get_df_from_area(self, start_m: int, end_m: int, data: list[str] | str, df: pd.DataFrame=None):
         lap_df = self.lap_df.copy()
 
         if df:
@@ -75,7 +75,7 @@ class LapAnalyzer:
         # "Distance" is always added in get_data_from_area!!
         cols = ["SPEED", "BRAKE", "G_LAT", "G_LON", "STEERANGLE", "Time"]
 
-        brake_df = self.get_df_from_area(brake_area_start_m, brake_area_end_m, cols)
+        brake_df = self._get_df_from_area(brake_area_start_m, brake_area_end_m, cols)
 
         was_not_braking = brake_df["BRAKE"].shift(1).fillna(0) < 2
         is_braking = brake_df["BRAKE"] >= 2
@@ -245,7 +245,7 @@ class LapAnalyzer:
 
         _apex = corner_df["cornerApex_m"].iloc[0]
 
-        cpi_area_df = self.get_df_from_area(_apex - 50, _apex + 50, "gForceVector")
+        cpi_area_df = self._get_df_from_area(_apex - 50, _apex + 50, "gForceVector")
         g_force_vector = cpi_area_df["gForceVector"]
         distance = cpi_area_df["Distance"]
 
@@ -303,3 +303,36 @@ class LapAnalyzer:
 
         return corner_instance
 
+    def segment(self, segment_df: pd.DataFrame) -> Segment:
+        seg_id = segment_df["segment_id_x"].iloc[0]
+        seg_start = segment_df["Distance"].iloc[0]
+        seg_end = segment_df["Distance"].iloc[-1]
+        description = segment_df["segmentDescription"].iloc[0]
+
+        start_speed_kmh = segment_df[segment_df["Distance"].iloc[0]]["SPEED"]
+        end_speed_kmh = segment_df[segment_df["Distance"].iloc[-1]]["SPEED"]
+        start_time_s = segment_df[segment_df["Distance"].iloc[0]]["Time"]
+        end_time_s = segment_df[segment_df["Distance"].iloc[-1]]["Time"]
+        time_delta_s = end_time_s - start_time_s
+
+        avg_speed_kmh = segment_df["SPEED"].mean()
+        max_speed_kmh = segment_df["SPEED"].max()
+        min_speed_kmh = segment_df["SPEED"].min()
+
+        avg_throttle = segment_df["THROTTLE"].mean()
+        avg_brake = segment_df["BRAKE"].mean()
+
+        return Segment(
+            id=seg_id,
+            corner_ids=corner_ids,
+            start_m=seg_start,
+            end_m=seg_end,
+            description=description,
+            start_speed_kmh=start_speed_kmh,
+            end_speed_kmh=end_speed_kmh,
+            time_delta_s=time_delta_s,
+            avg_speed_kmh=avg_speed_kmh,
+            max_speed_kmh=max_speed_kmh,
+            min_speed_kmh=min_speed_kmh,
+            avg_throttle=avg_throttle,
+            avg_brake=avg_brake)

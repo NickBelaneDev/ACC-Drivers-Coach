@@ -1,5 +1,5 @@
 from src.lap_telemetry import LapTelemetry
-from src.lap_comparer import LapCompare
+
 from src.telemetry_loader import TelemetryLoader
 from logger import get_logger
 from pathlib import Path

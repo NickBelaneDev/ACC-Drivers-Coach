@@ -21,6 +21,8 @@ class TelemetryLoader:
         :param track: name of the track the hotlap corresponds to
         :return: A sorted DataFrame with the complete raw telemetry and track meta-data normed to Distance by 1m.
         """
+        if track.lower() not in ["spa", "donnington"]:
+            raise ValueError(f"track: {track} could not be found!")
 
         def _get_file_paths(_track: str):
 

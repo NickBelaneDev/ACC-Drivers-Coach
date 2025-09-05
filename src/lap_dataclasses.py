@@ -7,15 +7,24 @@ from pyasn1_modules.rfc5914 import TrustAnchorInfo
 @dataclass(frozen=True)
 class Segment:
     id: int
-    name: str
     start_m: int
     end_m: int
+    description: str
 
 @dataclass(frozen=True)
 class SegmentMetrics:
-    segment: Segment
-    time_user_s: float
+    start_speed_kmh: Optional[float] = 0.0
+    end_speed_kmh: Optional[float] = 0.0
 
+    avg_speed_kmh: Optional[float] = 0.0
+    max_speed_kmh: Optional[float] = 0.0
+    min_speed_kmh: Optional[float] = 0.0
+
+    avg_throttle: Optional[float] = 0.0
+    avg_brake: Optional[float] = 0.0
+
+    time_delta_s: Optional[float] = 0.0
+    total_cpi_score: Optional[float] = 0.0
 @dataclass(frozen=True)
 class CornerMetrics:
     time_delta_s: float

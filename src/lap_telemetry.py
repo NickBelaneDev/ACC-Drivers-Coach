@@ -53,7 +53,7 @@ class LapTelemetry:
 
         return _corner_df
 
-    def _get_analyzed_corners_from_df(self, df:pd.DataFrame):
+    def get_analyzed_corners_from_df(self, df:pd.DataFrame):
         """
         The given Dataframe must have corner_ids as alist in iloc[0]
         :param df:
@@ -70,7 +70,6 @@ class LapTelemetry:
 
         for corner_id in corner_ids:
             # if corner_id is invalid
-
 
             _corner_df = get_corner_df_from_df(corner_id, df)
             _corner = self.analyze.corner(_corner_df)
@@ -93,7 +92,7 @@ class LapTelemetry:
         segment_end = segment_df["segmentEnd_m"].iloc[0]
         time_delta = self.analyze.get_time_delta(segment_start, segment_end)
 
-        corners = self._get_analyzed_corners_from_df(segment_df)
+        corners = self.get_analyzed_corners_from_df(segment_df)
 
         # Dieses Dictionary sollst du für Streamlit verfügbar machen.
         segment_data = {
