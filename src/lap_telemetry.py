@@ -27,6 +27,7 @@ class LapTelemetry:
         self.lap_df = LapAnalyzer.calc_g_force_vector(lap_df)
         self.analyze = LapAnalyzer(self.lap_df)
 
+
     def get_lap_df(self):
         return self.lap_df
 
