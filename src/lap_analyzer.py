@@ -2,7 +2,7 @@ from lap_dataclasses import Corner, CornerMetrics
 import pandas as pd
 import numpy as np
 from logger import get_logger
-from src.lap_dataclasses import Segment
+from src.lap_dataclasses import Segment, SegmentMetrics
 
 log = get_logger("telemetry_analyzer", to_console=False)
 
@@ -33,7 +33,6 @@ class LapAnalyzer:
         time_end = time_end_df["Time"].iloc[0]
 
         return time_end - time_start
-
     def _get_df_from_area(self, start_m: int, end_m: int, data: list[str] | str, df: pd.DataFrame=None):
         lap_df = self.lap_df.copy()
 
@@ -61,7 +60,6 @@ class LapAnalyzer:
         ]
 
         return _df[columns] if not _df.empty else pd.DataFrame()
-
     def _get_brake_points(self, telemetry_df: pd.DataFrame, threshold=2) -> dict | None:
         """
         ACHTUNG! Noch muss geprüft werden, ob es überhaupt einen Bremspunkt gibt!
@@ -77,8 +75,8 @@ class LapAnalyzer:
 
         brake_df = self._get_df_from_area(brake_area_start_m, brake_area_end_m, cols)
 
-        was_not_braking = brake_df["BRAKE"].shift(1).fillna(0) < 2
-        is_braking = brake_df["BRAKE"] >= 2
+        was_not_braking = brake_df["BRAKE"].shift(1).fillna(0) < threshold
+        is_braking = brake_df["BRAKE"] >= threshold
 
         # This DataFrame is
         _brake_point_df = brake_df[is_braking & was_not_braking]
@@ -303,8 +301,9 @@ class LapAnalyzer:
 
         return corner_instance
 
-    def segment(self, segment_df: pd.DataFrame) -> Segment:
+    def segment(self, segment_df: pd.DataFrame) -> tuple[Segment, SegmentMetrics]:
         seg_id = segment_df["segment_id_x"].iloc[0]
+        corner_ids = segment_df["corner_ids"].iloc[0]
         seg_start = segment_df["Distance"].iloc[0]
         seg_end = segment_df["Distance"].iloc[-1]
         description = segment_df["segmentDescription"].iloc[0]
@@ -322,12 +321,15 @@ class LapAnalyzer:
         avg_throttle = segment_df["THROTTLE"].mean()
         avg_brake = segment_df["BRAKE"].mean()
 
-        return Segment(
+        return (
+            Segment(
             id=seg_id,
             corner_ids=corner_ids,
             start_m=seg_start,
             end_m=seg_end,
-            description=description,
+            description=description),
+            SegmentMetrics(
+            id=seg_id,
             start_speed_kmh=start_speed_kmh,
             end_speed_kmh=end_speed_kmh,
             time_delta_s=time_delta_s,
@@ -336,3 +338,5 @@ class LapAnalyzer:
             min_speed_kmh=min_speed_kmh,
             avg_throttle=avg_throttle,
             avg_brake=avg_brake)
+            )
+

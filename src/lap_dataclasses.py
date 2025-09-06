@@ -10,9 +10,11 @@ class Segment:
     start_m: int
     end_m: int
     description: str
-
+    corner_ids: list
 @dataclass(frozen=True)
+
 class SegmentMetrics:
+    id: int
     start_speed_kmh: Optional[float] = 0.0
     end_speed_kmh: Optional[float] = 0.0
 

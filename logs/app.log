@@ -627,3 +627,64 @@ Diese Änderungen sollten dir helfen, den Oversteer beim Einlenken in Bruxelles 
   ],
   total_token_count=1326
 ) automatic_function_calling_history=[] parsed=None
+2025-09-05 22:36:46.611 | INFO | my_app:19 | App startet…
+2025-09-05 22:36:46.611 | DEBUG | my_app:20 | Konfiguration geladen
+2025-09-05 22:37:10.465 | DEBUG | my_app:130 | Parts: [dict_keys(['video_metadata', 'thought', 'inline_data', 'file_data', 'thought_signature', 'code_execution_result', 'executable_code', 'function_call', 'function_response', 'text'])]
+2025-09-05 22:37:10.465 | INFO | my_app:149 | Setup-Daten erfolgreich geladen: {"carName": "ferrari_296_gt3", "tyres_and_alignment": {"tyrePressure": [52, 57, 49, 52], "camberFront": 2, "camberRear": 2, "toeFront": 10, "toeRear": 32, "caster": 30}, "electronics": {"tC1": 7, "tC2": 0, "abs": 2, "eCUMap": 0, "fuelMix": 0, "telemetryLaps": 99}, "mechanical_balance": {"aRBFront": 6, "aRBRear": 0, "wheelRateFront": 0, "wheelRateRear": 0, "drivetrain": {"preload": 0}, "brakeBias": 48, "steerRatio": 3}, "dampers": {"bumpSlowFront": 0, "bumpSlowRear": 0, "bumpFastFront": 0, "bumpFastRear": 0, "reboundSlowFront": 11, "reboundSlowRear": 11, "reboundFastFront": 11, "reboundFastRear": 11, "bumpStopRateFront": 2, "bumpStopRateRear": 2}, "aero": {"rideHeightFront": 0, "rideHeightRear": 2, "rearWing": 6, "brakeDuctFront": 3, "brakeDuctRear": 3}}
+2025-09-05 22:37:12.545 | INFO | my_app:162 | Final Response after the function Call:
+sdk_http_response=HttpResponse(
+  headers=<dict len=11>
+) candidates=[Candidate(
+  avg_logprobs=-0.04683052447804233,
+  content=Content(
+    parts=[
+      Part(
+        text="""**Change**: 
+```json
+{
+"Setup-Changes":{
+    "rearWing": {
+        "Old Value": "6",
+        "New Value": "8"
+        },
+    "aRBRear": {
+        "Old Value": "0",
+        "New Value": "2"
+        },
+    "reboundSlowRear": {
+        "Old Value": "11",
+        "New Value": "9"
+        },
+    "bumpSlowRear": {
+        "Old Value": "0",
+        "New Value": "2"
+        }
+    }
+}
+```
+
+**Explanation**
+Um das Übersteuern in Eau Rouge zu reduzieren, erhöhe ich den Heckflügel, um mehr Stabilität im Heck zu erzeugen. Zusätzlich erhöhe ich den hinteren Stabilisator (ARBRear), um die Rollsteifigkeit zu erhöhen und das Heck stabiler zu machen. Um das Heck etwas weicher zu machen, reduziere ich den Rebound hinten und erhöhe den Bumpstop hinten.
+"""
+      ),
+    ],
+    role='model'
+  ),
+  finish_reason=<FinishReason.STOP: 'STOP'>
+)] create_time=None model_version='gemini-2.0-flash' prompt_feedback=None response_id='90m7aKvbHruHxs0P8pvigAQ' usage_metadata=GenerateContentResponseUsageMetadata(
+  candidates_token_count=228,
+  candidates_tokens_details=[
+    ModalityTokenCount(
+      modality=<MediaModality.TEXT: 'TEXT'>,
+      token_count=228
+    ),
+  ],
+  prompt_token_count=936,
+  prompt_tokens_details=[
+    ModalityTokenCount(
+      modality=<MediaModality.TEXT: 'TEXT'>,
+      token_count=936
+    ),
+  ],
+  total_token_count=1164
+) automatic_function_calling_history=[] parsed=None

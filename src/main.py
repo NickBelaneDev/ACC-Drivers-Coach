@@ -1,5 +1,5 @@
 from src.lap_telemetry import LapTelemetry
-
+from src.lap_comparer import LapCompare
 from src.telemetry_loader import TelemetryLoader
 from logger import get_logger
 from pathlib import Path
@@ -21,8 +21,11 @@ if __name__ == "__main__":
     user_df = t_loader.telemetry_from_csv(user_lap_file_path, "spa")
 
     #lap_compare = LapCompare(user_df, record_df)
+    lap_compare = LapCompare(record_df)
 
 
+    print(lap_compare.load_segments_df())
+    p#rint(lap_compare.load_segments_df(_lap_df=user_df))
 
 
 
@@ -34,11 +37,7 @@ if __name__ == "__main__":
     u_all_segments = lap_user.get_segment_list()
     r_all_segments = lap_record.get_segment_list()
 
-
-
-    print(u_all_segments)
-
-    to_print = True
+    to_print = False
 
     if to_print:
         print("======================")

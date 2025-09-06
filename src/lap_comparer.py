@@ -3,7 +3,7 @@ import numpy as np
 from lap_dataclasses import Corner, CornerMetrics, Segment
 from src.lap_analyzer import LapAnalyzer
 
-from src.telemetry_utils import get_corner_df_from_df
+from src.telemetry_utils import get_corner_df_from_df, get_segment_df_from_lap_fd
 
 
 # LapCompare bekommt zwei DFs der ganzen Lap und vergleicht die Analysedaten der Kurven und Segmente.
@@ -20,39 +20,47 @@ class LapCompare:
         self.analyze = LapAnalyzer(self.lap_df)
 
 
-    def _load_segments(self, _lap_df=None) -> pd.DataFrame:
+    def load_segments_df(self, _lap_df: pd.DataFrame=None) -> pd.DataFrame:
         lap_df = self.lap_df
-        if _lap_df:
+        if _lap_df is not None:
             lap_df = _lap_df
 
-        _n_segments = lap_df["segment_id_x"].max()
-        _segment_ids = set(lap_df["segment_id_x"])
+        cols = ["timeDelta",
+                "start_m",
+                "end_m",
+                "totalDistance",
+                "avgThrottle",
+                "avgBreak",
+                "avgSpeed",
+                "topSpeed",
+                "minSpeed",
+                "avgGForceVector"]
+        segment_df = pd.DataFrame(columns=cols)
 
-        _columns = ["Test"]
+        rows = []
 
-        segment_data = {
-            "metrics": {
-                "avgThrottle": lap_df["THROTTLE"].mean(),
-                "avgBreak": lap_df["BRAKE"].mean(),
-                "avgSpeed": lap_df["SPEED"].mean(),
-                "topSpeed": lap_df["SPEED"].max(),
-                "minSpeed": lap_df["SPEED"].min(),
-                "maxGForceVector": lap_df["gForceVector"].mean(),
-                "timeDelta": time_delta
-            },
+        for _id in sorted(lap_df["segment_id_x"].unique()):
+            _segment_df = get_segment_df_from_lap_fd(_id, lap_df)
+            segment_end = _segment_df["segmentEnd_m"].iloc[0]
+            segment_start = _segment_df["segmentStart_m"].iloc[0]
+            time_delta = _segment_df["Time"].iloc[-1] - _segment_df["Time"].iloc[0]
 
-            "geo": {
-                "start_m": segment_start,
-                "end_m": segment_end,
-                "totalDistance": segment_end - segment_start
-            }}
+            row = {
+                    "timeDelta": time_delta,
+                    "start_m": segment_start,
+                    "end_m": segment_end,
+                    "totalDistance": segment_end - segment_start,
+                    "avgThrottle": _segment_df["THROTTLE"].mean(),
+                    "avgBreak": _segment_df["BRAKE"].mean(),
+                    "avgSpeed": _segment_df["SPEED"].mean(),
+                    "topSpeed": _segment_df["SPEED"].max(),
+                    "minSpeed": _segment_df["SPEED"].min(),
+                    "avgGForceVector": _segment_df["gForceVector"].mean()
+                }
 
-        segments = pd.DataFrame(columns=_columns)
-
-        for n in range(1, _n_segments + 1):
-            pass
-
-
+            rows.append(row)
+        segment_df = pd.DataFrame(rows, columns=cols).sort_values("start_m").reset_index(drop=True)
+        return segment_df
 
     def _load_corners(self, df: pd.DataFrame, ):
 
