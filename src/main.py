@@ -19,21 +19,29 @@ if __name__ == "__main__":
 
     record_df = t_loader.telemetry_from_csv(hot_lap_file_path, "spa")
     user_df = t_loader.telemetry_from_csv(user_lap_file_path, "spa")
-
-    #lap_compare = LapCompare(user_df, record_df)
+    #print(user_df)
+    lap_compare_u = LapCompare(user_df)
     lap_compare = LapCompare(record_df)
 
-    #print(record_df.info())
-    rec_df = lap_compare.load_segments_df()
-    print(rec_df.info())
-    print(lap_compare.load_segments_df(_lap_df=user_df))
+    rec_seg_df = lap_compare.load_segments_df()
+    #print(rec_seg_df)
+    u_seg_df = lap_compare_u.load_segments_df()
+    #print(u_seg_df)
+
+    u_c_df = lap_compare_u.load_corners()
+    r_c_df = lap_compare.load_corners()
+    print("========= USER ========")
+    print(u_c_df)
+    print("========= REC ========")
+    print(r_c_df)
+
 
     #print(record_df.info())
-    lap_record = LapTelemetry(record_df)
-    lap_user = LapTelemetry(user_df)
+    #lap_record = LapTelemetry(record_df)
+    #lap_user = LapTelemetry(user_df)
 
-    u_all_segments = lap_user.get_segment_list()
-    r_all_segments = lap_record.get_segment_list()
+    u_all_segments = None
+    #r_all_segments = lap_record.get_segment_list()
 
     to_print = False
 

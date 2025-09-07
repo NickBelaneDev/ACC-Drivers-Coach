@@ -136,4 +136,4 @@ if __name__ == "__main__":
     #record_df.to_csv("record_telemetry.csv", index=False, encoding="utf-8")
     #user_df.to_csv("user_telemetry.csv", index=False, encoding="utf-8")
 
-    print(user_df.info())
+    #print(user_df.info())
