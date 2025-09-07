@@ -25,7 +25,7 @@ if __name__ == "__main__":
 
 
     print(lap_compare.load_segments_df())
-    p#rint(lap_compare.load_segments_df(_lap_df=user_df))
+    print(lap_compare.load_segments_df(_lap_df=user_df))
 
 
 

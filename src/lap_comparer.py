@@ -3,8 +3,8 @@ import numpy as np
 from lap_dataclasses import Corner, CornerMetrics, Segment
 from src.lap_analyzer import LapAnalyzer
 
-from src.telemetry_utils import get_corner_df_from_df, get_segment_df_from_lap_fd
-
+from src.telemetry_utils import get_corner_df_from_df, get_segment_df_from_lap_fd, segment_to_df
+from logger import get_logger
 
 # LapCompare bekommt zwei DFs der ganzen Lap und vergleicht die Analysedaten der Kurven und Segmente.
 #
@@ -12,7 +12,7 @@ from src.telemetry_utils import get_corner_df_from_df, get_segment_df_from_lap_f
 #
 # 1.) TelemetryLoader
 
-
+log = get_logger(to_console=False)
 class LapCompare:
 
     def __init__(self, lap_df: pd.DataFrame):
@@ -20,50 +20,36 @@ class LapCompare:
         self.analyze = LapAnalyzer(self.lap_df)
 
 
-    def load_segments_df(self, _lap_df: pd.DataFrame=None) -> pd.DataFrame:
+    def new_lap(self, lap_df):
+        self.lap_df = self.analyze.calc_g_force_vector(lap_df)
+        return self.lap_df
+
+    def load_segments_df(self, _lap_df:pd.DataFrame=None) -> pd.DataFrame:
         lap_df = self.lap_df
         if _lap_df is not None:
-            lap_df = _lap_df
 
-        cols = ["timeDelta",
-                "start_m",
-                "end_m",
-                "totalDistance",
-                "avgThrottle",
-                "avgBreak",
-                "avgSpeed",
-                "topSpeed",
-                "minSpeed",
-                "avgGForceVector"]
-        segment_df = pd.DataFrame(columns=cols)
+            lap_df: pd.DataFrame = self.new_lap(_lap_df)
+            log.debug(f"{lap_df.info()=}")
 
-        rows = []
-
-        for _id in sorted(lap_df["segment_id_x"].unique()):
+        segments = []
+        # Filling all the rows
+        for _id in sorted(lap_df["segment_id_x"].dropna().unique()):
             _segment_df = get_segment_df_from_lap_fd(_id, lap_df)
-            segment_end = _segment_df["segmentEnd_m"].iloc[0]
-            segment_start = _segment_df["segmentStart_m"].iloc[0]
-            time_delta = _segment_df["Time"].iloc[-1] - _segment_df["Time"].iloc[0]
+            _segment, _segment_metrics = self.analyze.segment(_segment_df)
+            segment_df = segment_to_df(_segment, _segment_metrics)
+            segments.append(segment_df)
+            
+        return pd.DataFrame([segments])
 
-            row = {
-                    "timeDelta": time_delta,
-                    "start_m": segment_start,
-                    "end_m": segment_end,
-                    "totalDistance": segment_end - segment_start,
-                    "avgThrottle": _segment_df["THROTTLE"].mean(),
-                    "avgBreak": _segment_df["BRAKE"].mean(),
-                    "avgSpeed": _segment_df["SPEED"].mean(),
-                    "topSpeed": _segment_df["SPEED"].max(),
-                    "minSpeed": _segment_df["SPEED"].min(),
-                    "avgGForceVector": _segment_df["gForceVector"].mean()
-                }
+    def load_corners(self, _lap_df:pd.DataFrame=None, ):
+        lap_df = self.lap_df
+        if _lap_df is not None:
 
-            rows.append(row)
-        segment_df = pd.DataFrame(rows, columns=cols).sort_values("start_m").reset_index(drop=True)
-        return segment_df
+            lap_df: pd.DataFrame = self.new_lap(_lap_df)
+            log.debug(f"{lap_df.info()=}")
 
-    def _load_corners(self, df: pd.DataFrame, ):
-
+        for _id in sorted(lap_df["corner_id"].dropna().unique()):
+            _corner_df = get_corner_df_from_df(_id, lap_df)
 
         pass
 
