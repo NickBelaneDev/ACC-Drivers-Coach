@@ -1,0 +1,93 @@
+ #   Column                   Non-Null Count  Dtype
+---  ------                   --------------  -----
+ 0   Distance                 6940 non-null   int64
+ 1   Time                     6940 non-null   float64
+ 2   Corr Dist                6940 non-null   float64
+ 3   Corr Dist (Unstretched)  6940 non-null   float64
+ 4   Corr Speed               6940 non-null   float64
+ 5   Damper Vel FL            6939 non-null   float64
+ 6   Damper Vel FR            6939 non-null   float64
+ 7   Damper Vel RL            6939 non-null   float64
+ 8   Damper Vel RR            6939 non-null   float64
+ 9   glat                     6940 non-null   float64
+ 10  glong                    6940 non-null   float64
+ 11  Oversteer                6936 non-null   float64
+ 12  steered angle            6940 non-null   float64
+ 13  is1st                    6940 non-null   float64
+ 14  is2nd                    6940 non-null   float64
+ 15  is3rd                    6940 non-null   float64
+ 16  is4th                    6940 non-null   float64
+ 17  is5th                    6940 non-null   float64
+ 18  is6th                    6940 non-null   float64
+ 19  is2ndWOT                 6940 non-null   float64
+ 20  is3rdWOT                 6940 non-null   float64
+ 21  isWOT                    6940 non-null   float64
+ 22  LAP_BEACON               6940 non-null   float64
+ 23  G_LAT                    6940 non-null   float64
+ 24  ROTY                     6940 non-null   float64
+ 25  STEERANGLE               6940 non-null   float64
+ 26  SPEED                    6940 non-null   float64
+ 27  THROTTLE                 6940 non-null   float64
+ 28  BRAKE                    6940 non-null   float64
+ 29  GEAR                     6940 non-null   float64
+ 30  G_LON                    6940 non-null   float64
+ 31  CLUTCH                   6940 non-null   float64
+ 32  RPMS                     6940 non-null   float64
+ 33  TC                       6940 non-null   float64
+ 34  ABS                      6940 non-null   float64
+ 35  SUS_TRAVEL_LF            6940 non-null   float64
+ 36  SUS_TRAVEL_RF            6940 non-null   float64
+ 37  SUS_TRAVEL_LR            6940 non-null   float64
+ 38  SUS_TRAVEL_RR            6940 non-null   float64
+ 39  BRAKE_TEMP_LF            6940 non-null   float64
+ 40  BRAKE_TEMP_RF            6940 non-null   float64
+ 41  BRAKE_TEMP_LR            6940 non-null   float64
+ 42  BRAKE_TEMP_RR            6940 non-null   float64
+ 43  TYRE_PRESS_LF            6940 non-null   float64
+ 44  TYRE_PRESS_RF            6940 non-null   float64
+ 45  TYRE_PRESS_LR            6940 non-null   float64
+ 46  TYRE_PRESS_RR            6940 non-null   float64
+ 47  TYRE_TAIR_LF             6940 non-null   float64
+ 48  TYRE_TAIR_RF             6940 non-null   float64
+ 49  TYRE_TAIR_LR             6940 non-null   float64
+ 50  TYRE_TAIR_RR             6940 non-null   float64
+ 51  WHEEL_SPEED_LF           6940 non-null   float64
+ 52  WHEEL_SPEED_RF           6940 non-null   float64
+ 53  WHEEL_SPEED_LR           6940 non-null   float64
+ 54  WHEEL_SPEED_RR           6940 non-null   float64
+ 55  BUMPSTOPUP_RIDE_LF       6940 non-null   float64
+ 56  BUMPSTOPUP_RIDE_RF       6940 non-null   float64
+ 57  BUMPSTOPUP_RIDE_LR       6940 non-null   float64
+ 58  BUMPSTOPUP_RIDE_RR       6940 non-null   float64
+ 59  BUMPSTOPDN_RIDE_LF       6940 non-null   float64
+ 60  BUMPSTOPDN_RIDE_RF       6940 non-null   float64
+ 61  BUMPSTOPDN_RIDE_LR       6940 non-null   float64
+ 62  BUMPSTOPDN_RIDE_RR       6940 non-null   float64
+ 63  BUMPSTOP_FORCE_LF        6940 non-null   float64
+ 64  BUMPSTOP_FORCE_RF        6940 non-null   float64
+ 65  BUMPSTOP_FORCE_LR        6940 non-null   float64
+ 66  BUMPSTOP_FORCE_RR        6940 non-null   float64
+ 67  EN_ET                    6940 non-null   float64
+ 68  EN_TL                    6940 non-null   float64
+ 69  EN_TD                    6940 non-null   float64
+ 70  EN_TB                    6940 non-null   float64
+ 71  EN_TW                    6940 non-null   float64
+ 72  EN_W                     6940 non-null   float64
+ 73  EN_Dy                    6940 non-null   float64
+ 74  EN_AP                    6940 non-null   float64
+ 75  EN_GR                    6940 non-null   float64
+ 76  TIME                     6940 non-null   float64
+ 77  segment_id_x             6940 non-null   int64
+ 78  segmentDescription       6940 non-null   object
+ 79  segmentStart_m           6940 non-null   int64
+ 80  segmentEnd_m             6940 non-null   int64
+ 81  corner_ids               6940 non-null   object
+ 82  corner_id                2557 non-null   float64
+ 83  segment_id_y             6598 non-null   float64
+ 84  cornerName               2557 non-null   object
+ 85  cornerDescription        2557 non-null   object
+ 86  brakeArea_m              2557 non-null   float64
+ 87  cornerStart_m            2557 non-null   float64
+ 88  cornerApex_m             2557 non-null   float64
+ 89  cornerEnd_m              2557 non-null   float64
+ 90  segment_id               0 non-null      float64
