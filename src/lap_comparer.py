@@ -36,12 +36,13 @@ class LapCompare:
         for _id in sorted(lap_df["segment_id_x"].dropna().unique()):
             _segment_df = get_segment_df_from_lap_fd(_id, lap_df)
             _segment, _segment_metrics = self.analyze.segment(_segment_df)
+
             segment_df = segment_to_df(_segment, _segment_metrics)
             segments.append(segment_df)
             
         return pd.DataFrame([segments])
 
-    def load_corners(self, _lap_df:pd.DataFrame=None, ):
+    def load_corners(self, _lap_df:pd.DataFrame=None):
         lap_df = self.lap_df
         if _lap_df is not None:
 

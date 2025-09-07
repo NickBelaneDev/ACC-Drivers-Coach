@@ -23,14 +23,12 @@ if __name__ == "__main__":
     #lap_compare = LapCompare(user_df, record_df)
     lap_compare = LapCompare(record_df)
 
-
-    print(lap_compare.load_segments_df())
+    #print(record_df.info())
+    rec_df = lap_compare.load_segments_df()
+    print(rec_df.info())
     print(lap_compare.load_segments_df(_lap_df=user_df))
 
-
-
-    #
-    print(record_df.info())
+    #print(record_df.info())
     lap_record = LapTelemetry(record_df)
     lap_user = LapTelemetry(user_df)
 

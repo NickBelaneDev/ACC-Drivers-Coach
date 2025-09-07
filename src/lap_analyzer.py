@@ -308,10 +308,10 @@ class LapAnalyzer:
         seg_end = segment_df["Distance"].iloc[-1]
         description = segment_df["segmentDescription"].iloc[0]
 
-        start_speed_kmh = segment_df[segment_df["Distance"].iloc[0]]["SPEED"]
-        end_speed_kmh = segment_df[segment_df["Distance"].iloc[-1]]["SPEED"]
-        start_time_s = segment_df[segment_df["Distance"].iloc[0]]["Time"]
-        end_time_s = segment_df[segment_df["Distance"].iloc[-1]]["Time"]
+        start_speed_kmh = segment_df[segment_df["Distance"] == seg_start]["SPEED"]
+        end_speed_kmh = segment_df[segment_df["Distance"] == seg_end]["SPEED"]
+        start_time_s = segment_df[segment_df["Distance"] == seg_start]["Time"]
+        end_time_s = segment_df[segment_df["Distance"] == seg_end]["Time"]
         time_delta_s = end_time_s - start_time_s
 
         avg_speed_kmh = segment_df["SPEED"].mean()
