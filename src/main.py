@@ -3,6 +3,7 @@ from src.lap_comparer import LapCompare
 from src.telemetry_loader import TelemetryLoader
 from logger import get_logger
 from pathlib import Path
+import pandas as pd
 
 log = get_logger(to_console=False,log_file="lap_telemetry_log.log")
 
@@ -31,10 +32,16 @@ if __name__ == "__main__":
     u_c_df = lap_compare_u.load_corners()
     r_c_df = lap_compare.load_corners()
     print("========= USER ========")
-    print(u_c_df)
+    print(u_c_df.info())
     print("========= REC ========")
     print(r_c_df)
 
+    diff_df = lap_compare.calc_corner_differences(u_c_df, r_c_df)
+    with pd.ExcelWriter("diff_excel.xlsx", engine="openpyxl") as writer:
+        u_c_df.to_excel(writer, sheet_name="sheet_user", index=False)
+        r_c_df.to_excel(writer, sheet_name="sheet_record", index=False)
+        diff_df.to_excel(writer, sheet_name="sheet_01", index=False)
+    print(diff_df["exit_throttle_init_m"])
 
     #print(record_df.info())
     #lap_record = LapTelemetry(record_df)

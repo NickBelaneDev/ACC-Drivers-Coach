@@ -18,7 +18,7 @@ log = get_logger(to_console=False)
 class LapCompare:
 
     def __init__(self, lap_df: pd.DataFrame):
-        self.lap_df = LapAnalyzer.calc_g_force_vector(lap_df)
+        self.lap_df: pd.DataFrame = LapAnalyzer.calc_g_force_vector(lap_df)
         self.analyze = LapAnalyzer(self.lap_df)
 
 
@@ -66,6 +66,14 @@ class LapCompare:
         _final_df = pd.concat(corners, ignore_index=True)
 
         return _final_df.fillna(0)
+
+    def calc_corner_differences(self, df_1: pd.DataFrame, df_2: pd.DataFrame):
+        exclude_cols = ["id", "name", "start_m", "apex_m", "end_m"]
+
+        corner_differences_df = df_1.drop(columns=exclude_cols) - df_2.drop(columns=exclude_cols)
+        corner_differences_df = pd.DataFrame.round(corner_differences_df, 2)
+        calculated_deltas = pd.concat([df_1[exclude_cols], corner_differences_df], axis=1)
+        return calculated_deltas
 
     def get_comparison_df(self, df):
         pass

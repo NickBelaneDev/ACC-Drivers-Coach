@@ -1,0 +1,86 @@
+1. Federweg (SUS_TRAVEL_LF, _RF, _LR, _RR)
+Was es ist: Dies ist die absolute Bewegung jedes einzelnen Stoßdämpfers an jedem Rad. Es zeigt uns, wie das Chassis auf Lastwechsel reagiert.
+
+Was es uns verrät:
+
+Kontrolliert: Bei einem stabilen, gut eingestellten Auto komprimiert sich das Fahrwerk in einer Kurve gleichmäßig und sanft. Die SUS_TRAVEL-Kurven sind glatt.
+
+Nervös: Wenn das Auto instabil ist oder der Fahrer ruckartige Lenkbewegungen macht, sehen wir schnelle Schwingungen (Oszillationen) im Federweg. Das bedeutet, das Auto "pumpt" oder ist unruhig. Ein nervöser Fahrer könnte auf dieses Pumpen reagieren, was die Situation oft verschlimmert. Wir können eine direkte Korrelation zwischen zackigen Lenkbewegungen und unruhigen Federwegen herstellen.
+
+2. Gierrate (ROTY - Rotational Velocity Y)
+Was es ist: Dies ist die Rotationsgeschwindigkeit des Autos um seine Hochachse. Einfach gesagt: Wie schnell sich das Auto dreht.
+
+Was es uns verrät: Dies ist der direkteste Indikator für Über- oder Untersteuern.
+
+Kontrolliert: Eine saubere Kurvenfahrt zeigt einen sanften Anstieg und Abfall der Gierrate.
+
+Nervös: Ein plötzliches Ausbrechen des Hecks (Übersteuern) zeigt sich als scharfe Spitze in der ROTY-Kurve. Fast jede schnelle Lenkkorrektur, die wir als "nervös" einstufen, ist eine Reaktion des Fahrers auf eine solche Spitze in der Gierrate. Wenn wir eine STEERANGLE-Spitze genau mit einer ROTY-Spitze abgleichen können, wissen wir: Der Fahrer hat das Heck "eingefangen".
+
+3. Anschlaggummis (BUMPSTOP_*)
+Was es ist: Diese Daten zeigen an, wann und wie stark die Federung an ihren maximalen Anschlag kommt (entweder beim Einfedern oder Ausfedern).
+
+Was es uns verrät: Das Erreichen der Anschlaggummis ist ein extremes Ereignis. Es bedeutet, dass das Fahrwerk am Ende seines Arbeitsbereichs ist.
+
+Kontrolliert: Im Idealfall werden die BUMPSTOP-Werte in einer normalen Kurve nie erreicht.
+
+Nervös: Wenn das Auto auf die Anschlaggummis aufschlägt (z.B. durch zu starkes Überfahren eines Kerbs oder eine zu weiche Abstimmung), ändert sich das Fahrverhalten schlagartig. Der Grip reißt ab, die Balance ist gestört. Dies zwingt den Fahrer zu abrupten, "nervösen" Reaktionen. Es ist ein klares Zeichen dafür, dass das Auto den Fahrer in eine Zwangslage gebracht hat.
+
+Fazit
+Mit diesen Daten können wir den Kreis schließen. Wir können von "Der Fahrer war nervös" zu einer viel tieferen Analyse übergehen:
+
+"Der Fahrer machte eine schnelle Lenkkorrektur (Steering Nervousness), weil das Auto eine plötzliche Drehung begann (Spitze in der Gierrate), was wiederum durch eine Instabilität des Fahrwerks verursacht wurde (Oszillationen im Federweg)."
+
+Das ermöglicht ein Coaching, das nicht nur den Fahrer, sondern auch das Fahrzeug-Setup mit einbezieht.
+
+
+Absolut. Hier sind die mathematischen Gleichungen, um die Fahrwerksdynamik zu quantifizieren und den "Nervositätsgrad" aus einer tieferen, fahrzeugbasierten Perspektive zu analysieren.
+
+---
+### 1. Fahrwerks-Instabilität ($S_{instability}$)
+
+**Ziel:** Die Unruhe und das "Pumpen" des Fahrwerks zu messen. Ein hoher Wert deutet auf eine instabile Plattform hin, auf die der Fahrer wahrscheinlich reagiert.
+
+**Gleichung:**
+$$S_{instability} = \text{StdDev} \left( \frac{\Delta S}{\Delta d} \right) \times C$$
+
+**Variablen:**
+* $S_{instability}$: Der berechnete Score für die Fahrwerks-Instabilität (für jede der vier Ecken `LF, RF, LR, RR`).
+* $\Delta S$: Die Veränderung des Federwegs (`SUS_TRAVEL`) zwischen zwei aufeinanderfolgenden Messpunkten.
+* $\Delta d$: Die Veränderung der Distanz zwischen denselben zwei Messpunkten.
+* $\frac{\Delta S}{\Delta d}$: Die Änderungsrate des Federwegs. Sie gibt an, wie schnell die Federung arbeitet.
+* $\text{StdDev}(\dots)$: Die Standardabweichung dieser Änderungsraten über die gesamte Kurve. Sie misst die "Zittrigkeit" der Federungsbewegung.
+* $C$: Eine Skalierungskonstante (z.B. 1000), um den Wert besser lesbar zu machen.
+
+**Interpretation:** Ein **höherer Wert** bedeutet eine unruhigere Federung und somit mehr Instabilität.
+
+---
+### 2. Gierraten-Spitze ($Y_{spike}$)
+
+**Ziel:** Plötzliche, unerwartete Drehungen des Fahrzeugs zu erkennen (z.B. ein ausbrechendes Heck / Snap-Oversteer), die eine schnelle Korrektur vom Fahrer erfordern.
+
+**Gleichung:**
+$$Y_{spike} = \max \left( \left| \frac{\Delta Y}{\Delta t} \right| \right)$$
+
+**Variablen:**
+* $Y_{spike}$: Der Maximalwert der Gier-Beschleunigung in der Kurve.
+* $\Delta Y$: Die Veränderung der Gierrate (`ROTY`) zwischen zwei Messpunkten.
+* $\Delta t$: Die Veränderung der Zeit zwischen denselben zwei Messpunkten.
+* $\frac{\Delta Y}{\Delta t}$: Die Gier-Beschleunigung. Sie gibt an, wie abrupt die Drehung des Fahrzeugs beginnt oder endet.
+* $\max(|\dots|)$: Der Maximalwert der absoluten Gier-Beschleunigung. Wir suchen den heftigsten Ruck.
+
+**Interpretation:** Ein **hoher Wert** deutet auf ein plötzliches, instabiles Verhalten des Fahrzeugs hin, das den Fahrer zu einer "nervösen" Reaktion zwingt.
+
+---
+### 3. Härte der Anschlaggummis ($B_{severity}$)
+
+**Ziel:** Zu messen, wie oft und wie stark das Fahrwerk an seine mechanischen Grenzen stößt.
+
+**Gleichung:**
+$$B_{severity} = \sum_{i=1}^{n} F_{B_i}$$
+
+**Variablen:**
+* $B_{severity}$: Die Summe aller Kräfte, die auf die Anschlaggummis (`BUMPSTOP_FORCE`) wirken.
+* $F_{B_i}$: Die Kraft auf den Anschlaggummi am Messpunkt $i$.
+* $\sum_{i=1}^{n}$: Die Summe dieser Kräfte über alle $n$ Messpunkte in der Kurve.
+
+**Interpretation:** Ein Wert **größer als Null** zeigt an, dass die Grenzen des Fahrwerks erreicht wurden. Ein **höherer Wert** bedeutet härtere und/oder häufigere Einschläge, was zu extrem unvorhersehbarem Fahrverhalten führt und ein klares Anzeichen für ein Problem mit dem Setup oder der Linienwahl ist.
