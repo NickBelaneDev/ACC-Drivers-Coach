@@ -180,6 +180,25 @@ class LapAnalyzer:
 
         return trail_brake_dict
 
+    @staticmethod
+    def calculate_parameter_instability(corner_df: pd.DataFrame,
+                                        parameter_col:str,
+                                        distance_col:str="Distance",
+                                        scale_factor:int=1000 ):
+        df = corner_df.sort_values(by=distance_col)
+
+        if len(corner_df) < 2 or parameter_col not in corner_df.columns:
+            return 0.0
+
+        parameter = df[parameter_col]
+        distance = df[distance_col]
+
+        rate_of_change: pd.Series = parameter.diff() / distance.diff()
+        instability = rate_of_change.std(ddof=0)
+
+        return (instability * scale_factor) if pd.notna(instability) else 0.0
+
+
     def corner(self, corner_df: pd.DataFrame) -> Corner:
         """
         This is the main function to calculate the necessary corner data and

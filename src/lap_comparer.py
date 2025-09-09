@@ -22,7 +22,7 @@ class LapCompare:
         self.analyze = LapAnalyzer(self.lap_df)
 
 
-    def new_lap(self, lap_df):
+    def set_new_lap(self, lap_df):
         self.lap_df = self.analyze.calc_g_force_vector(lap_df)
         return self.lap_df
 
@@ -31,7 +31,7 @@ class LapCompare:
         lap_df = self.lap_df
         if _lap_df is not None:
 
-            lap_df: pd.DataFrame = self.new_lap(_lap_df)
+            lap_df: pd.DataFrame = self.set_new_lap(_lap_df)
             log.debug(f"{lap_df.info()=}")
 
         segments = []
@@ -48,12 +48,12 @@ class LapCompare:
         #print(_final_df)
         return _final_df.fillna(0)
 
-    def load_corners(self, _lap_df:pd.DataFrame=None):
+    def load_corners(self, _lap_df:pd.DataFrame=None) -> pd.DataFrame:
         """Loads and returns a DataFrame consisting of all analyzed corners."""
         lap_df = self.lap_df
         if _lap_df is not None:
 
-            lap_df: pd.DataFrame = self.new_lap(_lap_df)
+            lap_df: pd.DataFrame = self.set_new_lap(_lap_df)
             log.debug(f"{lap_df.info()=}")
         corners: list = []
         for _id in sorted(lap_df["corner_id"].dropna().unique()):
