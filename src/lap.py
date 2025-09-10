@@ -1,10 +1,9 @@
 import pandas as pd
-import numpy as np
+
 
 from src.lap_analyzer import LapAnalyzer
 from src.lap_telemetry import LapTelemetry
-from src.lap_comparer import LapCompare
-from src.telemetry_loader import TelemetryLoader
+
 from logger import get_logger
 from src.telemetry_utils import get_corner_df_from_df, get_segment_df_from_lap_fd, segment_to_df, corner_to_df
 
@@ -12,6 +11,7 @@ log = get_logger("Lap - logger", to_console=False)
 
 class Lap:
     def __init__(self, raw_lap_df: pd.DataFrame, track_name: str):
+        """Initial API Object for working with laps."""
         self._raw_df: pd.DataFrame = LapAnalyzer.calc_g_force_vector(raw_lap_df)
         self._analyze = LapAnalyzer(self._raw_df)
         self._telemetry = LapTelemetry(self._raw_df)
@@ -23,20 +23,27 @@ class Lap:
         self.corners_df = self._load_corners()
         self.segments_df = self._load_segments()
 
+    def __repr__(self):
+        print(f"Track: {self.track_name}\nLap-Time: {self.lap_time_s}")
     def get_corners_df(self) -> pd.DataFrame:
+        """Returns a DataFrame with all corners' calculated and meta-data."""
         return self.corners_df
     def get_segments_df(self) -> pd.DataFrame:
+        """Returns a DataFrame with all segments' calculated and meta-data."""
         return self.segments_df
 
-    def get_corner_by_id(self, id: int) -> pd.DataFrame:
-        _corner = self.corners_df.loc[[id]]
+    def get_corner_by_id(self, _id: int) -> pd.DataFrame:
+        """Returns all calculated and meta corner data in a single row DataFrame."""
+        _corner = self.corners_df.loc[[_id]]
         return _corner
 
-    def get_segment_by_id(self, id: int) -> pd.DataFrame:
-        _segment = self.segments_df.loc[[id]]
+    def get_segment_by_id(self, _id: int) -> pd.DataFrame:
+        """Returns all calculated and meta segment data in a single row DataFrame."""
+        _segment = self.segments_df.loc[[_id]]
         return _segment
 
     def get_raw_df(self, segment_id: int=None, corner_id: int=None, area: tuple[int,int]=None) -> pd.DataFrame:
+        """Get the raw normalized DataFrame for a certain area. You can either choose segment_id, corner_id or area. By default, you get the complete raw_df."""
         def slice_by_distance(start: int, end: int):
             return self._raw_df[(self._raw_df["Distance"] >= start) & (self._raw_df["Distance"] <= end)].copy()
         if segment_id:
@@ -100,4 +107,5 @@ class Lap:
         _final_df = pd.concat(corners, ignore_index=True)
 
         return _final_df.fillna(0)
+
 

@@ -1,7 +1,10 @@
+from statistics import correlation
+
 from lap_dataclasses import Corner, CornerMetrics
 import pandas as pd
 import numpy as np
 from logger import get_logger
+
 from src.lap_dataclasses import Segment, SegmentMetrics
 
 log = get_logger("telemetry_analyzer", to_console=False)
@@ -10,6 +13,7 @@ class LapAnalyzer:
     def __init__(self, df: pd.DataFrame=pd.DataFrame()):
         self.corner_metrics = CornerMetrics
         self.lap_df = df
+
 
     @staticmethod
     def calc_g_force_vector(df: pd.DataFrame):
@@ -22,9 +26,99 @@ class LapAnalyzer:
 
         with_vector_df["gForceVector"] = np.sqrt(term_lat + term_lon)
         return with_vector_df
+
+    @staticmethod
+    def parameter_correlation(raw_df: pd.DataFrame,
+                              col_01: str,
+                              col_02: str,
+                              distance_col: str = 'Distance') -> float:
+        """
+        Calculates the Input-Response Correlation Coefficient (IRK).
+
+        This function correlates the driver's steering velocity with the car's
+        yaw acceleration to determine if the driver is reacting to or causing
+        instability.
+
+        Args:
+            raw_df: A pandas DataFrame with telemetry data for a single corner.
+            col_01: The name of the first column.
+            col_02: The name of the second column.
+            distance_col: The name of the t column.
+
+        Returns:
+            The Pearson correlation coefficient between steering velocity and
+            yaw acceleration as a float. Returns 0.0 if calculation is not possible.
+        """
+
+        #_cols = raw_df.columns()
+        #if col_01 not in _cols or col_02 not in _cols:
+        #    log.warning(f"{col_01=} or {col_02=} not in {_cols=}")
+        #    return 0.0
+
+        # Calculating the diff()
+        raw_corner_df: pd.DataFrame = raw_df.sort_values(by=distance_col).copy()
+        delta_t = raw_corner_df[distance_col].diff()
+
+        col_01_velocity = raw_corner_df[col_01] / delta_t
+        col_02_velocity = raw_corner_df[col_02] / delta_t
+
+        correlation_df = pd.DataFrame({
+            "col_01_velocity": col_01_velocity,
+            "col_02_velocity": col_02_velocity
+        }).dropna()
+
+        if len(correlation_df) < 2:
+            return 0.0
+
+        correlation_score = correlation_df["col_01_velocity"].corr(correlation_df["col_02_velocity"])
+
+        return round(correlation_score, 4) if pd.notna(correlation_score) else 0.0
+
+    @staticmethod
+    def parameter_instability(corner_df: pd.DataFrame,
+                                        parameter_col:str,
+                                        distance_col:str="Distance",
+                                        scale_factor:int=1000 ) -> float:
+
+        _cols = corner_df.columns()
+        if distance_col not in _cols or parameter_col not in _cols:
+            log.warning(f"{distance_col=} or {parameter_col=} not in {_cols=}")
+            return 0.0
+
+        df = corner_df.sort_values(by=distance_col)
+
+        if len(corner_df) < 2 or parameter_col not in corner_df.columns:
+            return 0.0
+
+        parameter = df[parameter_col]
+        distance = df[distance_col]
+
+        rate_of_change: pd.Series = parameter.diff() / distance.diff()
+        instability = rate_of_change.std(ddof=0)
+
+        return (instability * scale_factor) if pd.notna(instability) else 0.0
+
+    @staticmethod
+    def parameter_smoothness(df: pd.DataFrame, col: str, distance_col:str="Distance") -> float:
+        _df = df.sort_values(by=distance_col).copy()
+
+        delta_t = df[distance_col].diff()
+        delta_val = df[col].diff() / delta_t
+
+        smoothness = 1 / (delta_val.std() + 1e-6)
+        return round(smoothness, 4)
+
+    @staticmethod
+    def get_trapez(df: pd.DataFrame, col: str, distance_col:str= "Distance") -> float:
+        _df = df.sort_values(by=distance_col).copy()
+
+        dist_col = _df[distance_col]
+        parameter_col = _df[col]
+
+        trapz = np.trapezoid(parameter_col, dist_col)
+        return round(trapz, 4)
     def set_lap_df(self, df: pd.DataFrame):
         self.lap_df = df
-
     def get_time_delta(self,start_m: int, end_m: int):
         time_start_df =  self.lap_df[self.lap_df["Distance"] == start_m]
         time_start = time_start_df["Time"].iloc[0]
@@ -33,6 +127,7 @@ class LapAnalyzer:
         time_end = time_end_df["Time"].iloc[0]
 
         return time_end - time_start
+
     def _get_df_from_area(self, start_m: int, end_m: int, data: list[str] | str, df: pd.DataFrame=None):
         lap_df = self.lap_df.copy()
 
@@ -60,6 +155,59 @@ class LapAnalyzer:
         ]
 
         return _df[columns] if not _df.empty else pd.DataFrame()
+
+
+    # =========================================================
+    #
+    # Ab hier werden die Corner und Segment Instanzen berechnet und angelegt
+
+
+    # ======== THROTTLE DATA
+    @staticmethod
+    def _get_throttle_data(telemetry_df: pd.DataFrame, threshold=60) -> pd.DataFrame | None:
+#        ttf95_s = telemetry_df[telemetry_df[""]]
+        exit_throttle_init_df = telemetry_df[(telemetry_df["THROTTLE"].shift(1) < threshold) & (telemetry_df["THROTTLE"] >= threshold) & (telemetry_df["BRAKE"] <= 3)]
+        exit_throttle_init_m = exit_throttle_init_df["Distance"].min()
+
+        avg_exit_throttle = telemetry_df[(telemetry_df["cornerApex_m"] <= telemetry_df["Distance"]) & (telemetry_df["Distance"] <= telemetry_df["Distance"].max())]["THROTTLE"].mean()
+        exit_speed_delta_s = 0
+
+        ttf95_s = telemetry_df[telemetry_df["THROTTLE"] >= 95]["Time"].max() - telemetry_df[telemetry_df["THROTTLE"] >= 95]["Time"].min()
+
+        return {
+            "ttf95_s": ttf95_s,
+            "exit_throttle_init_m": exit_throttle_init_m,
+            "avg_exit_throttle": avg_exit_throttle,
+            "exit_speed_delta_s": exit_speed_delta_s
+        }
+    # ======== BRAKE DATA
+
+    def _trail_brake_delta(self, df: pd.DataFrame, threshold: int=15) -> dict:
+        """
+        Indicates an area where the driver is braking less than the threshold parameter while steering in a single direction.
+
+        :param df:
+        :param threshold:
+        :return: trail_brake_delta_s, trail_brake_delta_m
+        """
+        # Brake Input muss niedriger als Schwellwert sein
+        delta_df = df[((df["BRAKE"].shift(1) > 0) & (df["BRAKE"].shift(1) < threshold)) & ((df["BRAKE"].shift(-1) > 0) & (df["BRAKE"].shift(-1) < threshold))]
+
+        delta_df = df[(df["BRAKE"].shift(1) > df["BRAKE"])]
+        trail_brake_start_m = delta_df["Distance"].min()
+        trail_brake_end_m = delta_df["Distance"].max()
+        trail_brake_delta_m = trail_brake_end_m - trail_brake_start_m
+        trail_brake_delta_s = delta_df["Time"].max() - delta_df["Time"].min()
+
+
+        trail_brake_dict = {
+            "trail_brake_start_m": trail_brake_start_m,
+            "trail_brake_end_m": trail_brake_end_m,
+            "trail_brake_delta_m": trail_brake_delta_m,
+            "trail_brake_delta_s": trail_brake_delta_s,
+        }
+
+        return trail_brake_dict
     def _get_brake_points(self, telemetry_df: pd.DataFrame, threshold=2) -> dict | None:
         """
         ACHTUNG! Noch muss geprüft werden, ob es überhaupt einen Bremspunkt gibt!
@@ -83,7 +231,7 @@ class LapAnalyzer:
         if _brake_point_df.empty:
             return {"brake_point_m": 0,"brake_delta_m": 0, "brake_delta_s": 0.0,
                 "brake_release_m": 0,"avg_brake": 0, "max_brake": 0, "trail_brake_delta_m": 0,
-                "trail_brake_delta_s": 0, "trail_brake_start_m": 0, "trail_brake_end_m": 0,  "tbf95": 0}
+                "trail_brake_delta_s": 0, "trail_brake_start_m": 0, "trail_brake_end_m": 0, "overall_brake_force":0,  "tbf95": 0}
 
         # The brake point has been validated
         brake_point_m = _brake_point_df["Distance"].min()            # this is only a row and we need the lowest "Distance"
@@ -103,7 +251,7 @@ class LapAnalyzer:
         if pd.isna(brake_point_m) or pd.isna(brake_release_m):
             return {"brake_point_m": 0,"brake_delta_m": 0, "brake_delta_s": 0.0,
                 "brake_release_m": 0,"avg_brake": 0, "max_brake": 0, "trail_brake_delta_m": 0,
-                "trail_brake_delta_s": 0, "trail_brake_start_m": 0, "trail_brake_end_m": 0,  "tbf95": 0}
+                "trail_brake_delta_s": 0, "trail_brake_start_m": 0, "trail_brake_end_m": 0, "overall_brake_force":0,  "tbf95": 0}
 
         # Set final variables
         brake_delta_m = brake_release_m - brake_point_m
@@ -119,6 +267,8 @@ class LapAnalyzer:
         trail_brake_start_m = _trail_brake_data["trail_brake_start_m"]
         trail_brake_end_m = _trail_brake_data["trail_brake_end_m"]
 
+        overall_brake_force = self.get_trapez(brake_df, "BRAKE")
+
         tbf95_s = brake_df[brake_df["BRAKE"] >= 95]["Time"].max() - brake_df[brake_df["BRAKE"] >= 95]["Time"].min()
 
 
@@ -132,73 +282,12 @@ class LapAnalyzer:
                 "trail_brake_delta_s": trail_brake_delta_s,
                 "trail_brake_start_m": trail_brake_start_m,
                 "trail_brake_end_m": trail_brake_end_m,
+                "overall_brake_force": overall_brake_force,
                 "tbf95": tbf95_s}
 
 
-    @staticmethod
-    def _get_throttle_data(telemetry_df: pd.DataFrame, threshold=60) -> pd.DataFrame | None:
-#        ttf95_s = telemetry_df[telemetry_df[""]]
-        exit_throttle_init_df = telemetry_df[(telemetry_df["THROTTLE"].shift(1) < threshold) & (telemetry_df["THROTTLE"] >= threshold) & (telemetry_df["BRAKE"] <= 3)]
-        exit_throttle_init_m = exit_throttle_init_df["Distance"].min()
-
-        avg_exit_throttle = telemetry_df[(telemetry_df["cornerApex_m"] <= telemetry_df["Distance"]) & (telemetry_df["Distance"] <= telemetry_df["Distance"].max())]["THROTTLE"].mean()
-        exit_speed_delta_s = 0
-
-        ttf95_s = telemetry_df[telemetry_df["THROTTLE"] >= 95]["Time"].max() - telemetry_df[telemetry_df["THROTTLE"] >= 95]["Time"].min()
-
-        return {
-            "ttf95_s": ttf95_s,
-            "exit_throttle_init_m": exit_throttle_init_m,
-            "avg_exit_throttle": avg_exit_throttle,
-            "exit_speed_delta_s": exit_speed_delta_s
-        }
-
-    @staticmethod
-    def _trail_brake_delta(df: pd.DataFrame, threshold: int=15) -> dict:
-        """
-        Indicates an area where the driver is braking less than the threshold parameter while steering in a single direction.
-
-        :param df:
-        :param threshold:
-        :return: trail_brake_delta_s, trail_brake_delta_m
-        """
-        # Brake Input muss niedriger als Schwellwert sein
-        delta_df = df[((df["BRAKE"].shift(1) > 0) & (df["BRAKE"].shift(1) < threshold)) & ((df["BRAKE"].shift(-1) > 0) & (df["BRAKE"].shift(-1) < threshold))]
-
-        delta_df = df[(df["BRAKE"].shift(1) > df["BRAKE"])]
-        trail_brake_start_m = delta_df["Distance"].min()
-        trail_brake_end_m = delta_df["Distance"].max()
-        trail_brake_delta_m = trail_brake_end_m - trail_brake_start_m
-        trail_brake_delta_s = delta_df["Time"].max() - delta_df["Time"].min()
-
-        trail_brake_dict = {
-            "trail_brake_start_m": trail_brake_start_m,
-            "trail_brake_end_m": trail_brake_end_m,
-            "trail_brake_delta_m": trail_brake_delta_m,
-            "trail_brake_delta_s": trail_brake_delta_s
-        }
-
-        return trail_brake_dict
-
-    @staticmethod
-    def calculate_parameter_instability(corner_df: pd.DataFrame,
-                                        parameter_col:str,
-                                        distance_col:str="Distance",
-                                        scale_factor:int=1000 ):
-        df = corner_df.sort_values(by=distance_col)
-
-        if len(corner_df) < 2 or parameter_col not in corner_df.columns:
-            return 0.0
-
-        parameter = df[parameter_col]
-        distance = df[distance_col]
-
-        rate_of_change: pd.Series = parameter.diff() / distance.diff()
-        instability = rate_of_change.std(ddof=0)
-
-        return (instability * scale_factor) if pd.notna(instability) else 0.0
-
-
+    # ============================================================================================================= #
+    # 'corner' and 'segment' processing the corner and segment data into the main Kennzahlen #
     def corner(self, corner_df: pd.DataFrame) -> Corner:
         """
         This is the main function to calculate the necessary corner data and
@@ -243,6 +332,7 @@ class LapAnalyzer:
         trail_brake_delta_s = _advanced_brake_data["trail_brake_delta_s"]
         trail_brake_start_m = _advanced_brake_data["trail_brake_start_m"]
         trail_brake_end_m = _advanced_brake_data["trail_brake_end_m"]
+        overall_brake_force = _advanced_brake_data["overall_brake_force"]
 
         tbf95_s = _advanced_brake_data["tbf95"]
 
@@ -300,6 +390,7 @@ class LapAnalyzer:
             trail_brake_delta_m=trail_brake_delta_m,
             trail_brake_start_m=trail_brake_start_m,
             trail_brake_end_m=trail_brake_end_m,
+            overall_brake_force=overall_brake_force,
             exit_throttle_init_m=exit_throttle_init_m,
             avg_exit_throttle=avg_exit_throttle,
             exit_speed_delta_s=exit_speed_delta_s,
@@ -319,7 +410,6 @@ class LapAnalyzer:
         )
 
         return corner_instance
-
     def segment(self, segment_df: pd.DataFrame) -> tuple[Segment, SegmentMetrics]:
         if segment_df.empty:
             print("segment_df is empty!")
