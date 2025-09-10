@@ -21,8 +21,10 @@ class LapAnalyzer:
         # Calculate the G-Force Index
         g_lat = df["G_LAT"].abs()
         g_lon = df["G_LON"].abs()
-        term_lat = (g_lat / 2) ** 2
-        term_lon = (g_lon / 2) ** 2
+        g_lat_max_ref = 2
+        g_lon_max_ref = 2
+        term_lat = (g_lat / g_lat_max_ref) ** 2
+        term_lon = (g_lon / g_lon_max_ref) ** 2
 
         with_vector_df["gForceVector"] = np.sqrt(term_lat + term_lon)
         return with_vector_df
@@ -59,8 +61,8 @@ class LapAnalyzer:
         raw_corner_df: pd.DataFrame = raw_df.sort_values(by=distance_col).copy()
         delta_t = raw_corner_df[distance_col].diff()
 
-        col_01_velocity = raw_corner_df[col_01] / delta_t
-        col_02_velocity = raw_corner_df[col_02] / delta_t
+        col_01_velocity = raw_corner_df[col_01].diff() / delta_t
+        col_02_velocity = raw_corner_df[col_02].diff() / delta_t
 
         correlation_df = pd.DataFrame({
             "col_01_velocity": col_01_velocity,
@@ -80,7 +82,7 @@ class LapAnalyzer:
                                         distance_col:str="Distance",
                                         scale_factor:int=1000 ) -> float:
 
-        _cols = corner_df.columns()
+        _cols = corner_df.columns
         if distance_col not in _cols or parameter_col not in _cols:
             log.warning(f"{distance_col=} or {parameter_col=} not in {_cols=}")
             return 0.0
@@ -102,8 +104,8 @@ class LapAnalyzer:
     def parameter_smoothness(df: pd.DataFrame, col: str, distance_col:str="Distance") -> float:
         _df = df.sort_values(by=distance_col).copy()
 
-        delta_t = df[distance_col].diff()
-        delta_val = df[col].diff() / delta_t
+        delta_t = _df[distance_col].diff()
+        delta_val = _df[col].diff() / delta_t
 
         smoothness = 1 / (delta_val.std() + 1e-6)
         return round(smoothness, 4)
@@ -169,7 +171,7 @@ class LapAnalyzer:
         exit_throttle_init_df = telemetry_df[(telemetry_df["THROTTLE"].shift(1) < threshold) & (telemetry_df["THROTTLE"] >= threshold) & (telemetry_df["BRAKE"] <= 3)]
         exit_throttle_init_m = exit_throttle_init_df["Distance"].min()
 
-        avg_exit_throttle = telemetry_df[(telemetry_df["cornerApex_m"] <= telemetry_df["Distance"]) & (telemetry_df["Distance"] <= telemetry_df["Distance"].max())]["THROTTLE"].mean()
+        avg_exit_throttle = telemetry_df[(telemetry_df["cornerApex_m"].iloc[0] <= telemetry_df["Distance"]) & (telemetry_df["Distance"] <= telemetry_df["Distance"].max())]["THROTTLE"].mean()
         exit_speed_delta_s = 0
 
         ttf95_s = telemetry_df[telemetry_df["THROTTLE"] >= 95]["Time"].max() - telemetry_df[telemetry_df["THROTTLE"] >= 95]["Time"].min()
@@ -182,16 +184,14 @@ class LapAnalyzer:
         }
     # ======== BRAKE DATA
 
-    def _trail_brake_delta(self, df: pd.DataFrame, threshold: int=15) -> dict:
+    def _trail_brake_delta(self, df: pd.DataFrame) -> dict:
         """
         Indicates an area where the driver is braking less than the threshold parameter while steering in a single direction.
 
         :param df:
-        :param threshold:
+
         :return: trail_brake_delta_s, trail_brake_delta_m
         """
-        # Brake Input muss niedriger als Schwellwert sein
-        delta_df = df[((df["BRAKE"].shift(1) > 0) & (df["BRAKE"].shift(1) < threshold)) & ((df["BRAKE"].shift(-1) > 0) & (df["BRAKE"].shift(-1) < threshold))]
 
         delta_df = df[(df["BRAKE"].shift(1) > df["BRAKE"])]
         trail_brake_start_m = delta_df["Distance"].min()

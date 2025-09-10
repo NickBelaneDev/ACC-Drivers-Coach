@@ -18,7 +18,7 @@ user_lap_file_path = "assets/MoTec/spa/Spa-ferrari_296_gt3-8-hotlap_2-17-860.csv
 if __name__ == "__main__":
 
     # Loads the basic Telemetry File and converts it to a normed DataFrame
-    t_loader = TelemetryLoader(base_dir=PROJECT_ROOT / "src")  # nutzt den absolut gesetzten MOTEC_FOLDER
+    t_loader = TelemetryLoader(base_dir=PROJECT_ROOT / "src")                     # nutzt den absolut gesetzten MOTEC_FOLDER
     record_df = t_loader.telemetry_from_csv(hot_lap_file_path, "spa")
     user_df = t_loader.telemetry_from_csv(user_lap_file_path, "spa")
 
@@ -29,9 +29,9 @@ if __name__ == "__main__":
     r_corners_df = record_lap.get_corners_df()
     print(u_corners_df.info())
     print("======== USER =============================================================")
-    print(u_corners_df[["name","brake_point_m","overall_brake_force"]])
+    print(u_corners_df[["brake_point_m","avg_exit_throttle","overall_brake_force"]])
     print("======== REC ==============================================================")
-    print(r_corners_df[["name","brake_point_m", "overall_brake_force"]])
+    print(r_corners_df[["brake_point_m", "avg_exit_throttle", "overall_brake_force"]])
     raw_df = user_lap.get_raw_df(corner_id=1008)
     print(user_lap._analyze.parameter_correlation(raw_df, "STEERANGLE", "ROTY"))
 
