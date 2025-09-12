@@ -1,6 +1,6 @@
 import json
 
-setup_path = "src/assets/setups/placeholder_setup.json"
+setup_path = "../assets/setups/placeholder_setup.json"
 
 with open(setup_path, "r") as _setup:
     setup = json.load(_setup)

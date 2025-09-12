@@ -1,21 +1,18 @@
 from pathlib import Path
 
-import numpy as np
-import openpyxl
 import pandas as pd
 from logger import get_logger
-from src.lap_dataclasses import CornerMetrics, Corner, Segment
-from src.telemetry_loader import TelemetryLoader
-from src.lap_analyzer import LapAnalyzer
-from src.telemetry_utils import get_corner_df_from_df
-import math
+from src.telemetry.telemetry_calculator import TelemetryCalculator
+from src.telemetry.telemetry_loader import TelemetryLoader
+from src.lap.lap_analyzer import LapAnalyzer
+from src.telemetry.telemetry_utils import get_corner_df_from_df
 
-log = get_logger(to_console=False,log_file="lap_telemetry_log.log")
+log = get_logger(to_console=False, log_file="../lap_telemetry_log.log")
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
-hot_lap_file_path = "assets/MoTec/spa/Spa-ferrari_296_gt3-fastest_lap_glat-float.csv"
-user_lap_file_path = "assets/MoTec/spa/Spa-ferrari_296_gt3-8-hotlap_2-17-880.csv"
+hot_lap_file_path = "../assets/MoTec/spa/Spa-ferrari_296_gt3-fastest_lap_glat-float.csv"
+user_lap_file_path = "../assets/MoTec/spa/Spa-ferrari_296_gt3-8-hotlap_2-17-880.csv"
 
 class LapTelemetry:
     def __init__(self, lap_df: pd.DataFrame):
@@ -24,7 +21,7 @@ class LapTelemetry:
         :param lap_df:
         """
         # Calculate the gForceVector, I know it's ugly yet, will fix it later.
-        self.lap_df = LapAnalyzer.calc_g_force_vector(lap_df)
+        self.lap_df = TelemetryCalculator.calc_g_force_vector(lap_df)
         self.analyze = LapAnalyzer(self.lap_df)
 
 

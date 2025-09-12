@@ -1,10 +1,8 @@
 import dotenv
 import google.generativeai as genai
-import os
 import json
-from pydantic_core.core_schema import JsonType
 
-from setup_parser import ACCSetup
+from src.setup.setup_parser import ACCSetup
 
 
 API_KEY = dotenv.get_key("../.env", "GEMINI_API_KEY")

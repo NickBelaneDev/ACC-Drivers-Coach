@@ -1,6 +1,5 @@
 import pandas as pd
 from logger import get_logger
-from src.lap_dataclasses import Corner, CornerMetrics
 from dataclasses import asdict, dataclass
 
 log = get_logger(to_console=False)

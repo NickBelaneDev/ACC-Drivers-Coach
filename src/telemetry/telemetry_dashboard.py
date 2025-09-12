@@ -4,8 +4,8 @@ from typing import List
 import streamlit as st
 import pandas as pd
 
-from src.telemetry_loader import TelemetryLoader
-from src.lap_telemetry import LapTelemetry
+from src.telemetry.telemetry_loader import TelemetryLoader
+from src.lap.lap_telemetry import LapTelemetry
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent

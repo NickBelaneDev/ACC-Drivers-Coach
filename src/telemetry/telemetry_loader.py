@@ -5,8 +5,8 @@ import json
 from pathlib import Path
 log = get_logger(to_console=False)
 
-file_path_user = "assets/MoTec/spa/Spa-ferrari_296_gt3-8-hotlap_2-17-880.csv"
-file_path_fastest_lap = "assets/MoTec/spa/Spa-ferrari_296_gt3-fastest_lap.csv"
+file_path_user = "../assets/MoTec/spa/Spa-ferrari_296_gt3-8-hotlap_2-17-880.csv"
+file_path_fastest_lap = "../assets/MoTec/spa/Spa-ferrari_296_gt3-fastest_lap.csv"
 
 
 class TelemetryLoader:

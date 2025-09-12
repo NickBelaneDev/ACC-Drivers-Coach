@@ -1,7 +1,7 @@
 import dotenv
 from google import genai
 from google.genai import types
-from setup_parser import ACCSetup
+from src.setup.setup_parser import ACCSetup
 import json
 
 
@@ -10,7 +10,7 @@ from logger import get_logger
 logger = get_logger(
     "my_app",
     level="DEBUG",          # oder via Umgebungsvariable LOG_LEVEL=DEBUG
-    log_file="logs/app.log",
+    log_file="../../logs/app.log",
     to_console=False,
     json_console=False,     # True = JSON in der Konsole
     json_file=False         # True = JSON in der Datei
@@ -20,7 +20,7 @@ logger.info("App startet…")
 logger.debug("Konfiguration geladen", extra={})
 
 
-api_key = dotenv.get_key(".env", "GEMINI_API_KEY")
+api_key = dotenv.get_key("../../.env", "GEMINI_API_KEY")
 
 client = genai.Client(api_key=api_key)
 

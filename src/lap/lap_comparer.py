@@ -1,11 +1,9 @@
 import pandas as pd
-import numpy as np
-from pandas.io.pytables import dropna_doc
 
-from lap_dataclasses import Corner, CornerMetrics, Segment
-from src.lap_analyzer import LapAnalyzer
+from src.lap.lap_analyzer import LapAnalyzer
+from src.telemetry.telemetry_calculator import TelemetryCalculator
 
-from src.telemetry_utils import get_corner_df_from_df, get_segment_df_from_lap_fd, segment_to_df, corner_to_df
+from src.telemetry.telemetry_utils import get_corner_df_from_df, get_segment_df_from_lap_fd, segment_to_df, corner_to_df
 from logger import get_logger
 
 # LapCompare bekommt zwei DFs der ganzen Lap und vergleicht die Analysedaten der Kurven und Segmente.
@@ -18,12 +16,12 @@ log = get_logger(to_console=False)
 class LapCompare:
 
     def __init__(self, lap_df: pd.DataFrame):
-        self.lap_df: pd.DataFrame = LapAnalyzer.calc_g_force_vector(lap_df)
+        self.lap_df: pd.DataFrame = TelemetryCalculator.calc_g_force_vector(lap_df)
         self.analyze = LapAnalyzer(self.lap_df)
 
 
     def set_new_lap(self, lap_df):
-        self.lap_df = self.analyze.calc_g_force_vector(lap_df)
+        self.lap_df = TelemetryCalculator.calc_g_force_vector(lap_df)
         return self.lap_df
 
     def load_segments_df(self, _lap_df:pd.DataFrame=None) -> pd.DataFrame:

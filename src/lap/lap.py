@@ -1,18 +1,19 @@
 import pandas as pd
 
 
-from src.lap_analyzer import LapAnalyzer
-from src.lap_telemetry import LapTelemetry
+from src.lap.lap_analyzer import LapAnalyzer
+from src.lap.lap_telemetry import LapTelemetry
 
 from logger import get_logger
-from src.telemetry_utils import get_corner_df_from_df, get_segment_df_from_lap_fd, segment_to_df, corner_to_df
+from src.telemetry.telemetry_calculator import TelemetryCalculator
+from src.telemetry.telemetry_utils import get_corner_df_from_df, get_segment_df_from_lap_fd, segment_to_df, corner_to_df
 
 log = get_logger("Lap - logger", to_console=False)
 
 class Lap:
     def __init__(self, raw_lap_df: pd.DataFrame, track_name: str, driver: str = "User"):
         """Initial API Object for working with laps."""
-        self._raw_df: pd.DataFrame = LapAnalyzer.calc_g_force_vector(raw_lap_df)
+        self._raw_df: pd.DataFrame = TelemetryCalculator.calc_g_force_vector(raw_lap_df)
         self._analyze = LapAnalyzer(self._raw_df)
         self._telemetry = LapTelemetry(self._raw_df)
 

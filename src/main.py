@@ -1,10 +1,10 @@
-from src.lap_telemetry import LapTelemetry
-from src.lap_comparer import LapCompare
-from src.telemetry_loader import TelemetryLoader
+from src.lap.lap_comparer import LapCompare
+from src.telemetry.telemetry_calculator import TelemetryCalculator
+from src.telemetry.telemetry_loader import TelemetryLoader
 from logger import get_logger
 from pathlib import Path
 import pandas as pd
-from src.lap import Lap
+from src.lap.lap import Lap
 
 
 log = get_logger(to_console=False,log_file="lap_telemetry_log.log")
@@ -36,8 +36,8 @@ if __name__ == "__main__":
     print(r_corners_df.info())
 
     raw_df = user_lap.get_raw_df(corner_id=1006)
-    print(f"correlation: {user_lap._analyze.parameter_correlation(raw_df, "G_LAT", "TYRE_TAIR_LF")}")
-    print(f"smoothness: {user_lap._analyze.parameter_smoothness(raw_df, "STEERANGLE")}")
+    print(f"correlation: {TelemetryCalculator.parameter_correlation(raw_df, "TYRE_TAIR_LF", "G_LAT")}")
+    print(f"smoothness: {TelemetryCalculator.parameter_smoothness(raw_df, "STEERANGLE")}")
     lap_compare = LapCompare(user_df)
     def excel_writer(u_df:pd.DataFrame, r_df: pd.DataFrame, file_name):
 
