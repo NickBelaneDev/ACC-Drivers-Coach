@@ -10,35 +10,57 @@ from src.telemetry_utils import get_corner_df_from_df, get_segment_df_from_lap_f
 log = get_logger("Lap - logger", to_console=False)
 
 class Lap:
-    def __init__(self, raw_lap_df: pd.DataFrame, track_name: str):
+    def __init__(self, raw_lap_df: pd.DataFrame, track_name: str, driver: str = "User"):
         """Initial API Object for working with laps."""
         self._raw_df: pd.DataFrame = LapAnalyzer.calc_g_force_vector(raw_lap_df)
         self._analyze = LapAnalyzer(self._raw_df)
         self._telemetry = LapTelemetry(self._raw_df)
 
-        # --- Öffentliche Eigenschaften (sofort berechnet) ---
+        # --- public settings ---
         self.track_name: str = track_name
         self.lap_time_s: float = self._raw_df["Time"].iloc[-1] - self._raw_df["Time"].iloc[0]
 
         self.corners_df = self._load_corners()
         self.segments_df = self._load_segments()
+        self.driver = driver
+        self.corner_ids = self._raw_df["corner_id"].dropna().unique().tolist()
+        self.segment_ids = self._raw_df["segment_id_x"].dropna().unique().tolist()
 
     def __repr__(self):
         print(f"Track: {self.track_name}\nLap-Time: {self.lap_time_s}")
-    def get_corners_df(self) -> pd.DataFrame:
-        """Returns a DataFrame with all corners' calculated and meta-data."""
-        return self.corners_df
-    def get_segments_df(self) -> pd.DataFrame:
-        """Returns a DataFrame with all segments' calculated and meta-data."""
-        return self.segments_df
+    def __str__(self):
+        return f"Track: {self.track_name}\nLap-Time: {self.lap_time_s}"
+    def get_corners_df(self, frmt:str="DataFrame") -> pd.DataFrame | dict:
+        """
+        Returns a DataFrame with all corners' calculated and meta-data.
+        :param frmt: ["DataFrame", "dict"]
+        """
+        if frmt == "DataFrame":
+            return self.corners_df
+        elif frmt == "dict":
+            return self.corners_df.to_dict(orient="index")
 
-    def get_corner_by_id(self, _id: int) -> pd.DataFrame:
+    def get_segments_df(self, frmt:str="DataFrame") -> pd.DataFrame | dict:
+        """
+          Returns a DataFrame with all segments' calculated and meta-data.
+          :param frmt: ["DataFrame", "dict"]
+          """
+        if frmt == "DataFrame":
+            return self.segments_df
+        elif frmt == "dict":
+            return self.segments_df.to_dict(orient="index")
+
+    def get_corner_df_by_id(self, _id: int) -> pd.DataFrame:
         """Returns all calculated and meta corner data in a single row DataFrame."""
+        if _id not in self.corner_ids:
+            raise ValueError(f"{id=}, not in self.corner_ids!")
+
         _corner = self.corners_df.loc[[_id]]
         return _corner
-
-    def get_segment_by_id(self, _id: int) -> pd.DataFrame:
+    def get_segment_df_by_id(self, _id: int) -> pd.DataFrame:
         """Returns all calculated and meta segment data in a single row DataFrame."""
+        if _id not in self.segment_ids:
+            raise ValueError(f"{id=}, not in self.segment_ids!")
         _segment = self.segments_df.loc[[_id]]
         return _segment
 
@@ -46,19 +68,18 @@ class Lap:
         """Get the raw normalized DataFrame for a certain area. You can either choose segment_id, corner_id or area. By default, you get the complete raw_df."""
         def slice_by_distance(start: int, end: int):
             return self._raw_df[(self._raw_df["Distance"] >= start) & (self._raw_df["Distance"] <= end)].copy()
-        if segment_id:
+        if segment_id and segment_id in self.segment_ids:
             mask = self._raw_df["segment_id_x"] == segment_id
             _start = self._raw_df[mask]["Distance"].min()
             _end = self._raw_df[mask]["Distance"].max()
 
             return slice_by_distance(_start, _end)
 
-        if corner_id:
-            if corner_id:
-                _start = self._raw_df[self._raw_df["corner_id"] == corner_id]["Distance"].iloc[0]
-                _end = self._raw_df[self._raw_df["corner_id"] == corner_id]["Distance"].iloc[-1]
+        if corner_id and corner_id in self.corner_ids:
+            _start = self._raw_df[self._raw_df["corner_id"] == corner_id]["Distance"].iloc[0]
+            _end = self._raw_df[self._raw_df["corner_id"] == corner_id]["Distance"].iloc[-1]
 
-                return slice_by_distance(_start, _end)
+            return slice_by_distance(_start, _end)
 
         if area:
             _start, _end = area
@@ -69,7 +90,6 @@ class Lap:
             return slice_by_distance(_start, _end)
 
         return self._raw_df
-
 
 
     def _load_segments(self, _lap_df:pd.DataFrame=None) -> pd.DataFrame:

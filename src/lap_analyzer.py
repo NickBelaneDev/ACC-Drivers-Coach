@@ -1,11 +1,11 @@
 from statistics import correlation
 
-from lap_dataclasses import Corner, CornerMetrics
+
 import pandas as pd
 import numpy as np
 from logger import get_logger
 
-from src.lap_dataclasses import Segment, SegmentMetrics
+from src.lap_dataclasses import Segment, SegmentMetrics, Corner, CornerMetrics
 
 log = get_logger("telemetry_analyzer", to_console=False)
 
@@ -30,10 +30,21 @@ class LapAnalyzer:
         return with_vector_df
 
     @staticmethod
-    def parameter_correlation(raw_df: pd.DataFrame,
-                              col_01: str,
-                              col_02: str,
-                              distance_col: str = 'Distance') -> float:
+    def parameter_smoothness(df: pd.DataFrame, col: str, amplitude_mode: bool=False, distance_col:str= "Distance") -> float:
+        """Standardabweichung der Parameter auf dt"""
+        _df = df.sort_values(by=distance_col).copy()
+
+        delta_t = _df[distance_col].diff()
+        delta_val = _df[col].diff() / delta_t
+
+        if amplitude_mode:
+            delta_val = delta_val.abs()
+
+        smoothness = 1 / (delta_val.std() + 1e-6)
+        return round(smoothness, 4)
+
+    @staticmethod
+    def parameter_correlation(raw_df: pd.DataFrame, col_01: str, col_02: str, distance_col: str = 'Distance') -> float:
         """
         Calculates the Input-Response Correlation Coefficient (IRK).
 
@@ -52,10 +63,10 @@ class LapAnalyzer:
             yaw acceleration as a float. Returns 0.0 if calculation is not possible.
         """
 
-        #_cols = raw_df.columns()
-        #if col_01 not in _cols or col_02 not in _cols:
-        #    log.warning(f"{col_01=} or {col_02=} not in {_cols=}")
-        #    return 0.0
+        _cols = raw_df.columns
+        if col_01 not in _cols or col_02 not in _cols:
+            log.warning(f"{col_01=} or {col_02=} not in {_cols=}")
+            return 0.0
 
         # Calculating the diff()
         raw_corner_df: pd.DataFrame = raw_df.sort_values(by=distance_col).copy()
@@ -73,45 +84,10 @@ class LapAnalyzer:
             return 0.0
 
         correlation_score = correlation_df["col_01_velocity"].corr(correlation_df["col_02_velocity"])
-
         return round(correlation_score, 4) if pd.notna(correlation_score) else 0.0
 
     @staticmethod
-    def parameter_instability(corner_df: pd.DataFrame,
-                                        parameter_col:str,
-                                        distance_col:str="Distance",
-                                        scale_factor:int=1000 ) -> float:
-
-        _cols = corner_df.columns
-        if distance_col not in _cols or parameter_col not in _cols:
-            log.warning(f"{distance_col=} or {parameter_col=} not in {_cols=}")
-            return 0.0
-
-        df = corner_df.sort_values(by=distance_col)
-
-        if len(corner_df) < 2 or parameter_col not in corner_df.columns:
-            return 0.0
-
-        parameter = df[parameter_col]
-        distance = df[distance_col]
-
-        rate_of_change: pd.Series = parameter.diff() / distance.diff()
-        instability = rate_of_change.std(ddof=0)
-
-        return (instability * scale_factor) if pd.notna(instability) else 0.0
-
-    @staticmethod
-    def parameter_smoothness(df: pd.DataFrame, col: str, distance_col:str="Distance") -> float:
-        _df = df.sort_values(by=distance_col).copy()
-
-        delta_t = _df[distance_col].diff()
-        delta_val = _df[col].diff() / delta_t
-
-        smoothness = 1 / (delta_val.std() + 1e-6)
-        return round(smoothness, 4)
-
-    @staticmethod
-    def get_trapez(df: pd.DataFrame, col: str, distance_col:str= "Distance") -> float:
+    def get_integral(df: pd.DataFrame, col: str, distance_col:str= "Distance") -> float:
         _df = df.sort_values(by=distance_col).copy()
 
         dist_col = _df[distance_col]
@@ -119,6 +95,7 @@ class LapAnalyzer:
 
         trapz = np.trapezoid(parameter_col, dist_col)
         return round(trapz, 4)
+
     def set_lap_df(self, df: pd.DataFrame):
         self.lap_df = df
     def get_time_delta(self,start_m: int, end_m: int):
@@ -157,7 +134,6 @@ class LapAnalyzer:
         ]
 
         return _df[columns] if not _df.empty else pd.DataFrame()
-
 
     # =========================================================
     #
@@ -267,7 +243,7 @@ class LapAnalyzer:
         trail_brake_start_m = _trail_brake_data["trail_brake_start_m"]
         trail_brake_end_m = _trail_brake_data["trail_brake_end_m"]
 
-        overall_brake_force = self.get_trapez(brake_df, "BRAKE")
+        overall_brake_force = self.get_integral(brake_df, "BRAKE")
 
         tbf95_s = brake_df[brake_df["BRAKE"] >= 95]["Time"].max() - brake_df[brake_df["BRAKE"] >= 95]["Time"].min()
 
@@ -349,7 +325,6 @@ class LapAnalyzer:
         rolling_delta_m = is_rolling["Distance"].max() - is_rolling["Distance"].min()
         rolling_delta_s = is_rolling["Time"].max() - is_rolling["Time"].min()
 
-
         _apex = corner_df["cornerApex_m"].iloc[0]
 
         cpi_area_df = self._get_df_from_area(_apex - 50, _apex + 50, "gForceVector")
@@ -357,6 +332,10 @@ class LapAnalyzer:
         distance = cpi_area_df["Distance"]
 
         cpi_factor = np.trapezoid(g_force_vector, distance)
+        f = 0.4
+        smoothness_factor = (f - 1) * self.parameter_smoothness(corner_df, "STEERANGLE") + f * self.parameter_smoothness(corner_df, "ROTY")# + 0.2 * self.parameter_smoothness(corner_df, "THROTTLE")
+        smoothness_factor = round(smoothness_factor, 4)
+        #print(f"{smoothness_factor=}")
 
         # Jetzt die CornerMetrics-Instanz erstellen
         corner_metrics = CornerMetrics(

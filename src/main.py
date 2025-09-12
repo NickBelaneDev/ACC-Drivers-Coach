@@ -21,20 +21,23 @@ if __name__ == "__main__":
     t_loader = TelemetryLoader(base_dir=PROJECT_ROOT / "src")                     # nutzt den absolut gesetzten MOTEC_FOLDER
     record_df = t_loader.telemetry_from_csv(hot_lap_file_path, "spa")
     user_df = t_loader.telemetry_from_csv(user_lap_file_path, "spa")
-
     # Create instances of Lap and compare them.
     user_lap = Lap(user_df, "Spa")
     record_lap = Lap(record_df, "Spa")
-    u_corners_df = user_lap.get_corners_df()
-    r_corners_df = record_lap.get_corners_df()
-    print(u_corners_df.info())
-    print("======== USER =============================================================")
-    print(u_corners_df[["brake_point_m","avg_exit_throttle","overall_brake_force"]])
-    print("======== REC ==============================================================")
-    print(r_corners_df[["brake_point_m", "avg_exit_throttle", "overall_brake_force"]])
-    raw_df = user_lap.get_raw_df(corner_id=1008)
-    print(user_lap._analyze.parameter_correlation(raw_df, "STEERANGLE", "ROTY"))
 
+    print(user_lap.corner_ids)
+
+    u_corners_df = user_lap.get_corners_df(frmt="dict")
+    r_corners_df = record_lap.get_corners_df()
+
+    print("======== USER =============================================================")
+    print(u_corners_df)
+    print("======== REC ==============================================================")
+    print(r_corners_df.info())
+
+    raw_df = user_lap.get_raw_df(corner_id=1006)
+    print(f"correlation: {user_lap._analyze.parameter_correlation(raw_df, "G_LAT", "TYRE_TAIR_LF")}")
+    print(f"smoothness: {user_lap._analyze.parameter_smoothness(raw_df, "STEERANGLE")}")
     lap_compare = LapCompare(user_df)
     def excel_writer(u_df:pd.DataFrame, r_df: pd.DataFrame, file_name):
 
