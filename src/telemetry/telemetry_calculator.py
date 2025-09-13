@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from logger import get_logger
+from src.logger import get_logger
 
 log = get_logger("telemetry_calculator_log", to_console=False)
 class TelemetryCalculator:
@@ -87,3 +87,5 @@ class TelemetryCalculator:
 
         trapz = np.trapezoid(parameter_col, dist_col)
         return round(trapz, 4)
+
+

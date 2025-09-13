@@ -1,6 +1,6 @@
 import pandas as pd, numpy as np
 from pandas import DataFrame
-from logger import get_logger
+from src.logger import get_logger
 import json
 from pathlib import Path
 log = get_logger(to_console=False)

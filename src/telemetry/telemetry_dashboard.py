@@ -4,7 +4,7 @@ from typing import List
 import streamlit as st
 import pandas as pd
 
-from src.telemetry.telemetry_loader import TelemetryLoader
+from telemetry_loader import TelemetryLoader
 from src.lap.lap_telemetry import LapTelemetry
 
 

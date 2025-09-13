@@ -1,7 +1,8 @@
 from src.lap.lap_comparer import LapCompare
 from src.telemetry.telemetry_calculator import TelemetryCalculator
 from src.telemetry.telemetry_loader import TelemetryLoader
-from logger import get_logger
+from src.logger import get_logger
+import matplotlib.pyplot as plt
 from pathlib import Path
 import pandas as pd
 from src.lap.lap import Lap
@@ -27,8 +28,28 @@ if __name__ == "__main__":
 
     print(user_lap.corner_ids)
 
-    u_corners_df = user_lap.get_corners_df(frmt="dict")
+    u_corners_df = user_lap.get_corners_df()
     r_corners_df = record_lap.get_corners_df()
+
+    u_raw_df = user_lap.get_raw_df()
+    distance = u_raw_df["Distance"]
+    _u_speed = u_raw_df["SPEED"]
+
+    r_raw_df = record_lap.get_raw_df()
+    _r_speed = r_raw_df["SPEED"]
+    _r_speed = _r_speed.drop(_r_speed.index[-1])
+    # ===== ======= ===================================================================
+    # ===== ======= ===================================================================
+    # ===== MATPLOT ===================================================================
+    fig, ax = plt.subplots(figsize=(8,5))
+    ax.plot(distance, _u_speed, color='red')
+    ax.plot(distance, _r_speed, color='blue', linestyle="--")
+    ax.set_title("ACC Driver Coach")
+    ax.set_xlabel("Distance/m")
+    ax.set_ylabel("Speed/kmh")
+    ax.legend()
+    ax.grid(True)
+    plt.show()
 
     print("======== USER =============================================================")
     print(u_corners_df)
@@ -39,7 +60,8 @@ if __name__ == "__main__":
     print(f"correlation: {TelemetryCalculator.parameter_correlation(raw_df, "TYRE_TAIR_LF", "G_LAT")}")
     print(f"smoothness: {TelemetryCalculator.parameter_smoothness(raw_df, "STEERANGLE")}")
     lap_compare = LapCompare(user_df)
-    def excel_writer(u_df:pd.DataFrame, r_df: pd.DataFrame, file_name):
+
+    def excel_writer(u_df:pd.DataFrame, r_df: pd.DataFrame):
 
         _diff_df = lap_compare.calc_corner_differences(u_df, r_df)
         with pd.ExcelWriter("diff_excel.xlsx", engine="openpyxl") as writer:

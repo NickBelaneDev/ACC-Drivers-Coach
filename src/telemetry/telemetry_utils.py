@@ -1,5 +1,6 @@
 import pandas as pd
-from logger import get_logger
+import numpy as np
+from src.logger import get_logger
 from dataclasses import asdict, dataclass
 
 log = get_logger(to_console=False)
@@ -44,3 +45,8 @@ def segment_to_df(segment: dataclass, segment_metrics: dataclass) -> pd.DataFram
     _segment_dict = asdict(segment)
     _segment_dict |= asdict(segment_metrics)
     return pd.DataFrame([_segment_dict])
+
+# ==== Calc
+
+def sigmoid(x):
+    return 1/(1 + np.exp(-x))

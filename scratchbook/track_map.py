@@ -1,5 +1,5 @@
 import json
-from logger import get_logger
+from src.logger import get_logger
 
 log = get_logger()
 

@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from logger import get_logger
+from src.logger import get_logger
 
 from src.lap.lap_dataclasses import Segment, SegmentMetrics, Corner, CornerMetrics
 from src.telemetry.telemetry_calculator import TelemetryCalculator

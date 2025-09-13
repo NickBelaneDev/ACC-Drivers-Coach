@@ -107,7 +107,7 @@ def get_logger(
 
 
 if __name__ == "__main__":
-    log = get_logger("demo", log_file="logs/app.log")
+    log = get_logger("demo", log_file="../logs/app.log")
     log.debug("Debug an")
     log.info("Hallo Logger 👋")
     log.warning("Achtung, etwas ist ungewöhnlich.")

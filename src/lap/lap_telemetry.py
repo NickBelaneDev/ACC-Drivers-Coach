@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import pandas as pd
-from logger import get_logger
+from src.logger import get_logger
 from src.telemetry.telemetry_calculator import TelemetryCalculator
 from src.telemetry.telemetry_loader import TelemetryLoader
 from src.lap.lap_analyzer import LapAnalyzer

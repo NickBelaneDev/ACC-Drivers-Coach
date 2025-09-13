@@ -5,7 +5,7 @@ from src.setup.setup_parser import ACCSetup
 import json
 
 
-from logger import get_logger
+from src.logger import get_logger
 
 logger = get_logger(
     "my_app",
