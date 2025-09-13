@@ -1,13 +1,11 @@
 from pathlib import Path
 from typing import List
-
-import streamlit as st
 import pandas as pd
 
-from telemetry_loader import TelemetryLoader
+from src.telemetry.telemetry_loader import TelemetryLoader
 from src.lap.lap_telemetry import LapTelemetry
 
-
+import streamlit as st
 PROJECT_ROOT = Path(__file__).resolve().parent
 
 

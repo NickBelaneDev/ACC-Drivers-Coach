@@ -7,7 +7,8 @@
 # - Rotation durch das Lösen der Bremse in Kombination mit steigendem Lenkwinkel -> Der gForceVector sollte ab Beginn des Lenkeinschlags möglichst konstant sein (keine große Standardabweichung)
 #       - Korrelation zwischen Bremse und Rotation ist interessant zur Auswertung des Trailbrakings
 #
-
+from src.logger import get_logger
+from src.telemetry.telemetry_utils import sigmoid
 
 
 import pandas as pd
@@ -23,12 +24,12 @@ class BrakeScore:
 
 
     def calculate(self):
-        brake_force = TelemetryCalculator.get_integral(self.df, "BRAKE")
+        brake_force = sigmoid(TelemetryCalculator.get_integral(self.df, "BRAKE"))
 
-        brake_smoothness = TelemetryCalculator.parameter_smoothness(self.df, "BRAKE")
-        steer_smoothness = TelemetryCalculator.parameter_smoothness(self.df, "STEER")
-        roty_smoothness = TelemetryCalculator.parameter_smoothness(self.df, "ROTY")
-        g_force_v_smoothness = TelemetryCalculator.parameter_smoothness(self.df, "gForceVector")
+        brake_smoothness = sigmoid(TelemetryCalculator.parameter_smoothness(self.df, "BRAKE"))
+        steer_smoothness = sigmoid(TelemetryCalculator.parameter_smoothness(self.df, "STEER"))
+        roty_smoothness = sigmoid(TelemetryCalculator.parameter_smoothness(self.df, "ROTY"))
+        g_force_v_smoothness = sigmoid(TelemetryCalculator.parameter_smoothness(self.df, "gForceVector"))
 
-        brake_roty_corr = TelemetryCalculator.parameter_correlation(self.df, "ROTY", "BRAKE")
+        brake_roty_corr = sigmoid(TelemetryCalculator.parameter_correlation(self.df, "ROTY", "BRAKE"))
 
