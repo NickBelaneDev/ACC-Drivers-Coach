@@ -1,12 +1,16 @@
 from pathlib import Path
 from typing import List
-import pandas as pd
-
-from src.telemetry.telemetry_loader import TelemetryLoader
-from src.lap.lap_telemetry import LapTelemetry
+import sys
 
 import streamlit as st
-PROJECT_ROOT = Path(__file__).resolve().parent
+import pandas as pd
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT.parent) not in sys.path:
+    sys.path.append(str(PROJECT_ROOT.parent))
+
+from telemetry_loader import TelemetryLoader
+from src.lap.lap_telemetry import LapTelemetry
 
 
 def _get_tracks() -> List[str]:
