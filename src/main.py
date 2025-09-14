@@ -27,10 +27,10 @@ if __name__ == "__main__":
     record_lap = Lap(record_df, "Spa")
 
     corner_ids = user_lap.corner_ids
-    u_corner_13 = user_lap.get_corner_df_by_id(1013)
 
-    print(f"BrakePoint: {u_corner_13["brake_point_m"]}")
+#    print(f"BrakePoint: {u_corner_13["brake_point_m"]}")
     for _id in corner_ids:
+
         bs = BrakeScore(user_lap.get_raw_df(corner_id=_id))
         u_brake_score = bs.calculate()
         bs = BrakeScore(record_lap.get_raw_df(corner_id=_id))
@@ -67,14 +67,11 @@ if __name__ == "__main__":
         ax.grid(True)
         plt.show()
 
-    print("======== USER =============================================================")
-    print(u_corners_df)
+    #print("======== USER =============================================================")
+    #print(u_corners_df)
     print("======== REC ==============================================================")
     print(r_corners_df.info())
 
-    raw_df = user_lap.get_raw_df(corner_id=1006)
-    print(f"correlation: {TelemetryCalculator.parameter_correlation(raw_df, "TYRE_TAIR_LF", "G_LAT")}")
-    print(f"smoothness: {TelemetryCalculator.parameter_smoothness(raw_df, "STEERANGLE")}")
     lap_compare = LapCompare(user_df)
 
     def excel_writer(u_df:pd.DataFrame, r_df: pd.DataFrame):

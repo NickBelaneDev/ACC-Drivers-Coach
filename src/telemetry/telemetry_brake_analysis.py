@@ -1,9 +1,9 @@
 # Analyzer for the complete Brake Data
 import pandas as pd
 import numpy as np
-from src.telemetry.telemetry_calculator import TelemetryCalculator
-from src.telemetry.telemetry_utils import get_df_from_area
-from src.telemetry.telemetry_dataclasses import BrakeMetrics
+from .telemetry_calculator import TelemetryCalculator
+from .telemetry_utils import get_df_from_area
+from src.lap.lap_dataclasses import BrakeMetrics
 
 
 class BrakeAnalysis:
@@ -43,13 +43,14 @@ class BrakeAnalysis:
         :return:
         """
 
-        brake_area_start_m = telemetry_df["brakeArea_m"].iloc[0]
+        #print(telemetry_df.info())
+        brake_area_start_m = telemetry_df["brakeArea_m"].min()
         brake_area_end_m = telemetry_df["cornerApex_m"].iloc[0]
 
         # "Distance" is always added in get_data_from_area!!
         cols = ["SPEED", "BRAKE", "G_LAT", "G_LON", "STEERANGLE", "Time"]
 
-        brake_df = get_df_from_area(brake_area_start_m, brake_area_end_m, cols)
+        brake_df = get_df_from_area(brake_area_start_m, brake_area_end_m, cols, telemetry_df)
 
         was_not_braking = brake_df["BRAKE"].shift(1).fillna(0) < threshold
         is_braking = brake_df["BRAKE"] >= threshold
@@ -110,24 +111,40 @@ class BrakeAnalysis:
 
         tbf95_s = brake_df[brake_df["BRAKE"] >= 95]["Time"].max() - brake_df[brake_df["BRAKE"] >= 95]["Time"].min()
 
-        return BrakeMetrics(
-            brake_point_m=brake_point_m,
+        if as_dict:
+            return {"brake_point_m": brake_point_m,
+                    "brake_point_speed": brake_point_speed,
+                    "brake_delta_m": brake_delta_m,
+                    "brake_release_m": brake_release_m,
+                    "brake_release_speed": brake_release_speed,
+                    "brake_delta_s": brake_delta_s,
+                    "max_brake": max_brake,
+                    "avg_brake": avg_brake,
+                    "trail_brake_delta_m": trail_brake_delta_m,
+                    "trail_brake_delta_s": trail_brake_delta_s,
+                    "trail_brake_start_m": trail_brake_start_m,
+                    "trail_brake_end_m": trail_brake_end_m,
+                    "overall_brake_force": overall_brake_force,
+                    "brake_force_per_meter": brake_force_per_meter,
+                    "brake_force_per_second": brake_force_per_second,
+                    "tbf95": tbf95_s}
 
-        )
-
-        return {"brake_point_m": brake_point_m,
-                "brake_point_speed": brake_point_speed,
-                "brake_delta_m": brake_delta_m,
-                "brake_release_m": brake_release_m,
-                "brake_release_speed": brake_release_speed,
-                "brake_delta_s": brake_delta_s,
-                "max_brake": max_brake,
-                "avg_brake": avg_brake,
-                "trail_brake_delta_m": trail_brake_delta_m,
-                "trail_brake_delta_s": trail_brake_delta_s,
-                "trail_brake_start_m": trail_brake_start_m,
-                "trail_brake_end_m": trail_brake_end_m,
-                "overall_brake_force": overall_brake_force,
-                "brake_force_per_meter": brake_force_per_meter,
-                "brake_force_per_second": brake_force_per_second,
-                "tbf95": tbf95_s}
+        else:
+            return BrakeMetrics(
+                brake_point_m=brake_point_m,
+                brake_point_speed=brake_point_speed,
+                brake_delta_m=brake_delta_m,
+                brake_release_m=brake_release_m,
+                brake_release_speed=brake_release_speed,
+                brake_delta_s=brake_delta_s,
+                max_brake=max_brake,
+                avg_brake=avg_brake,
+                trail_brake_delta_m=trail_brake_delta_m,
+                trail_brake_delta_s=trail_brake_delta_s,
+                trail_brake_start_m=trail_brake_start_m,
+                trail_brake_end_m=trail_brake_end_m,
+                overall_brake_force=overall_brake_force,
+                brake_force_per_meter=brake_force_per_meter,
+                brake_force_per_second=brake_force_per_second,
+                tbf95_s=tbf95_s
+            )

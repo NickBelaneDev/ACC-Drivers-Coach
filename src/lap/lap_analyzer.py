@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from src.logger import get_logger
 
-from src.lap.lap_dataclasses import Segment, SegmentMetrics, Corner, CornerMetrics
+from .lap_dataclasses import Segment, SegmentMetrics, Corner, CornerMetrics
 from src.telemetry.telemetry_calculator import TelemetryCalculator
 
 log = get_logger("telemetry_analyzer", to_console=False)
@@ -74,8 +74,8 @@ class LapAnalyzer:
             "exit_speed_delta_s": exit_speed_delta_s
         }
     # ======== BRAKE DATA
-
-    def _trail_brake_delta(self, df: pd.DataFrame) -> dict:
+    @staticmethod
+    def _trail_brake_delta(df: pd.DataFrame) -> dict:
         """
         Indicates an area where the driver is braking less than the threshold parameter while steering in a single direction.
 

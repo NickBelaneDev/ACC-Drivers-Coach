@@ -66,10 +66,9 @@ class TelemetryLoader:
             left=telemetry_with_segments_df,
             right=corners_df,
             left_on="Distance",
-            right_on="cornerStart_m",
+            right_on="brakeArea_m",
             direction="backward"
         )
-
 
         full_telemetry_df["corner_id"] = full_telemetry_df["corner_id"].dropna().astype(int)
 

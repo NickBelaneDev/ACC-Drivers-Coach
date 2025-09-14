@@ -1,8 +1,8 @@
 import pandas as pd
 
 
-from src.lap.lap_analyzer import LapAnalyzer
-from src.lap.lap_telemetry import LapTelemetry
+from .lap_analyzer import LapAnalyzer
+#from .lap_telemetry import LapTelemetry
 
 from src.logger import get_logger
 from src.telemetry.telemetry_calculator import TelemetryCalculator
@@ -10,12 +10,13 @@ from src.telemetry.telemetry_utils import get_corner_df_from_df, get_segment_df_
 
 log = get_logger("Lap - logger", to_console=False)
 
+# Die Lap-Klasse bekommt einen DataFrame, der
 class Lap:
     def __init__(self, raw_lap_df: pd.DataFrame, track_name: str, driver: str = "User"):
         """Initial API Object for working with laps."""
         self._raw_df: pd.DataFrame = TelemetryCalculator.calc_g_force_vector(raw_lap_df)
         self._analyze = LapAnalyzer(self._raw_df)
-        self._telemetry = LapTelemetry(self._raw_df)
+        #self._telemetry = LapTelemetry(self._raw_df)
 
         # --- public settings ---
         self.track_name: str = track_name
@@ -40,6 +41,13 @@ class Lap:
             return self.corners_df
         elif frmt == "dict":
             return self.corners_df.to_dict(orient="index")
+    def get_corner_df_by_id(self, _id: int) -> pd.DataFrame:
+        """Returns all calculated and meta corner data in a single row DataFrame."""
+        if _id not in self.corner_ids:
+            raise ValueError(f"{id=}, not in self.corner_ids!")
+
+        _corner = self.corners_df[self.corners_df["id"] == _id].copy()
+        return _corner
 
     def get_segments_df(self, frmt:str="DataFrame") -> pd.DataFrame | dict:
         """
@@ -50,15 +58,6 @@ class Lap:
             return self.segments_df
         elif frmt == "dict":
             return self.segments_df.to_dict(orient="index")
-
-    def get_corner_df_by_id(self, _id: int) -> pd.DataFrame:
-        """Returns all calculated and meta corner data in a single row DataFrame."""
-        if _id not in self.corner_ids:
-            raise ValueError(f"{id=}, not in self.corner_ids!")
-
-        _corner = self.corners_df[self.corners_df["id"] == _id].copy()
-        return _corner
-
     def get_segment_df_by_id(self, _id: int) -> pd.DataFrame:
         """Returns all calculated and meta segment data in a single row DataFrame."""
         if _id not in self.segment_ids:
@@ -93,7 +92,7 @@ class Lap:
 
         return self._raw_df
 
-
+    # Private Methods
     def _load_segments(self, _lap_df:pd.DataFrame=None) -> pd.DataFrame:
         """Loads and returns a DataFrame consisting of all analyzed segments."""
         lap_df = self._raw_df

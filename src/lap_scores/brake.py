@@ -20,7 +20,7 @@ log = get_logger("BrakeScore", to_console=False)
 class BrakeScore:
     def __init__(self, df: pd.DataFrame):
         """df is a DataFrame where the car is under braking"""
-        self.df: pd.DataFrame = df[["Distance", "BRAKE", "STEERANGLE", "G_LAT", "gForceVector", "ROTY", "SPEED"]].sort_values("Distance").copy()
+        self.df: pd.DataFrame = df #df[["Distance", "BRAKE", "STEERANGLE", "G_LAT", "gForceVector", "ROTY", "SPEED"]].sort_values("Distance").copy()
         self._analysis = BrakeAnalysis(df)
 
 
@@ -29,10 +29,10 @@ class BrakeScore:
         if not braking_mask.any():
             return 0.0
 
-        brake_data = self._analysis.get_brake_data(self.df)
+        brake_data = self._analysis.get_brake_data(self.df, as_dict=False)
 
-        delta_v = max(brake_data["brake_point_speed"] - apex_speed, 0.0)
-        brake_efficiency = delta_v / max(brake_force, 1e-6)
+        delta_v = max(brake_data.brake_point_speed - brake_data.brake_release_speed, 0.0)
+        brake_efficiency = delta_v / max(brake_data.overall_brake_force, 1e-6)
 
         def safe_smooth(col):
             val = TelemetryCalculator.parameter_smoothness(self.df, col)
@@ -55,14 +55,14 @@ class BrakeScore:
         })
 
         base_quality = (
-            0.1 * g_force_v_smoothness +
-            0.25 * steer_smoothness +
+            0.3 * g_force_v_smoothness +
+            0.1 * steer_smoothness +
             0.1 * roty_smoothness +
             0.15 * max(brake_roty_corr, 0.0) +
-            0.3 * brake_efficiency +
-            0.3 * brake_smoothness
+            0.5 * brake_efficiency +
+            0.2 * brake_smoothness
         )
-        score = base_quality * np.sqrt(max(brake_force_per_meter, 0.0))
+        score = base_quality * np.sqrt(max(brake_data.brake_force_per_meter, 0.0))
 
         if pd.isna(score) or np.isinf(score):
             return 0.0
