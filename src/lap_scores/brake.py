@@ -8,8 +8,7 @@
 #       - Korrelation zwischen Bremse und Rotation ist interessant zur Auswertung des Trailbrakings
 #
 from src.logger import get_logger
-from src.telemetry.telemetry_utils import sigmoid
-from src.telemetry.telemetry_brake_analysis import BrakeAnalysis
+from src.lap.analyzer.brake_analysis import BrakeAnalysis
 
 import pandas as pd
 import numpy as np

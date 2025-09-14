@@ -1,8 +1,8 @@
 # Analyzer for the complete Brake Data
 import pandas as pd
 import numpy as np
-from .telemetry_calculator import TelemetryCalculator
-from .telemetry_utils import get_df_from_area
+from src.telemetry.telemetry_calculator import TelemetryCalculator
+from src.telemetry.telemetry_utils import get_df_from_area
 from src.lap.lap_dataclasses import BrakeMetrics
 
 

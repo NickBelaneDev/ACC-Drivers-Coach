@@ -1,7 +1,7 @@
 import pandas as pd
 
 
-from .lap_analyzer import LapAnalyzer
+from src.lap.analyzer.lap_analyzer import LapAnalyzer
 #from .lap_telemetry import LapTelemetry
 
 from src.logger import get_logger

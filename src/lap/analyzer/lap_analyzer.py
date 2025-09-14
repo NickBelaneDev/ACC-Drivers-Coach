@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from src.logger import get_logger
 
-from .lap_dataclasses import Segment, SegmentMetrics, Corner, CornerMetrics
+from src.lap.lap_dataclasses import Segment, SegmentMetrics, Corner, CornerMetrics
 from src.telemetry.telemetry_calculator import TelemetryCalculator
 
 log = get_logger("telemetry_analyzer", to_console=False)

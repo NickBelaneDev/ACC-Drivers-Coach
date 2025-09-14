@@ -4,7 +4,7 @@ import pandas as pd
 from src.logger import get_logger
 from src.telemetry.telemetry_calculator import TelemetryCalculator
 from src.telemetry.telemetry_loader import TelemetryLoader
-from src.lap.lap_analyzer import LapAnalyzer
+from src.lap.analyzer.lap_analyzer import LapAnalyzer
 from src.telemetry.telemetry_utils import get_corner_df_from_df
 
 log = get_logger(to_console=False, log_file="../lap_telemetry_log.log")
