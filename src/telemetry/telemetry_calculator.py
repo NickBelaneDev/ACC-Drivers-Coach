@@ -27,12 +27,15 @@ class TelemetryCalculator:
         _df = df.sort_values(by=distance_col).copy()
 
         delta_t = _df[distance_col].diff()
-        delta_val = _df[col].diff() / delta_t
-
+        delta_t.replace(0, np.nan, inplace=True)
+        delta_val = _df[col].diff().div(delta_t)
+        delta_val.replace([np.inf, -np.inf], np.nan).dropna()
         if amplitude_mode:
             delta_val = delta_val.abs()
 
-        smoothness = 1 / (delta_val.std() + 1e-6)
+        if delta_val.empty:
+            return 0.0
+        smoothness = float(1 / (delta_val.std() + 1e-6))
         return round(smoothness, 4)
 
     @staticmethod
@@ -63,19 +66,19 @@ class TelemetryCalculator:
         # Calculating the diff()
         raw_corner_df: pd.DataFrame = raw_df.sort_values(by=distance_col).copy()
         delta_t = raw_corner_df[distance_col].diff()
-
+        delta_t.replace(0, np.nan, inplace=True)
         col_01_velocity = raw_corner_df[col_01].diff() / delta_t
         col_02_velocity = raw_corner_df[col_02].diff() / delta_t
 
         correlation_df = pd.DataFrame({
             "col_01_velocity": col_01_velocity,
             "col_02_velocity": col_02_velocity
-        }).dropna()
+        }).replace([np.inf, -np.inf], np.nan).dropna()
 
-        if len(correlation_df) < 2:
+        if len(correlation_df) < 3 or correlation_df["col_01_velocity"].std() == 0 or correlation_df["col_02_velocity"].std() == 0 :
             return 0.0
 
-        correlation_score = correlation_df["col_01_velocity"].corr(correlation_df["col_02_velocity"])
+        correlation_score = float(correlation_df["col_01_velocity"].corr(correlation_df["col_02_velocity"]))
         return round(correlation_score, 4) if pd.notna(correlation_score) else 0.0
 
     @staticmethod

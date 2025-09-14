@@ -1,9 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from pyasn1_modules.rfc5914 import TrustAnchorInfo
-
-
 @dataclass(frozen=True)
 class Segment:
     id: int

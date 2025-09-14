@@ -10,7 +10,7 @@ if str(PROJECT_ROOT.parent) not in sys.path:
     sys.path.append(str(PROJECT_ROOT.parent))
 
 from telemetry_loader import TelemetryLoader
-from src.lap.lap_telemetry import LapTelemetry
+from src.lap.lap import Lap
 
 
 def _get_tracks() -> List[str]:
@@ -30,8 +30,8 @@ def load_lap(track: str, csv_file: str) -> pd.DataFrame:
     """Load telemetry for track and csv file and return processed dataframe."""
     loader = TelemetryLoader(base_dir=PROJECT_ROOT)
     df = loader.telemetry_from_csv(f"assets/MoTec/{track}/{csv_file}", track)
-    lap = LapTelemetry(df)
-    return lap.lap_df
+    lap = Lap(df, track)
+    return lap.get_raw_df()
 
 
 def main() -> None:
@@ -54,7 +54,7 @@ def main() -> None:
     data_df = seg_df if corner_option == "All" else seg_df[seg_df["corner_id"] == corner_option]
 
     st.subheader("Telemetry")
-    st.line_chart(data_df.set_index("Distance")[["SPEED", "THROTTLE", "BRAKE", "gForceVector"]])
+    st.line_chart(data_df.set_index("Distance")[["gForceVector"]])
 
 
 if __name__ == "__main__":

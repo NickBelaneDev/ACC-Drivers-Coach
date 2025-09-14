@@ -9,27 +9,72 @@
 #
 from src.logger import get_logger
 from src.telemetry.telemetry_utils import sigmoid
-
+from src.telemetry.telemetry_brake_analysis import BrakeAnalysis
 
 import pandas as pd
 import numpy as np
 
 from src.telemetry.telemetry_calculator import TelemetryCalculator
-
+log = get_logger("BrakeScore", to_console=False)
 
 class BrakeScore:
     def __init__(self, df: pd.DataFrame):
-        self.df = df[["Distance", "BRAKE", "STEER", "G_LAT", "gForceVector", "ROTY"]]
-        self.brake_score = self.calculate()
+        """df is a DataFrame where the car is under braking"""
+        self.df: pd.DataFrame = df[["Distance", "BRAKE", "STEERANGLE", "G_LAT", "gForceVector", "ROTY", "SPEED"]].sort_values("Distance").copy()
+        self._analysis = BrakeAnalysis(df)
 
 
     def calculate(self):
-        brake_force = sigmoid(TelemetryCalculator.get_integral(self.df, "BRAKE"))
+        braking_mask = self.df["BRAKE"].fillna(0) > 2
+        if not braking_mask.any():
+            return 0.0
 
-        brake_smoothness = sigmoid(TelemetryCalculator.parameter_smoothness(self.df, "BRAKE"))
-        steer_smoothness = sigmoid(TelemetryCalculator.parameter_smoothness(self.df, "STEER"))
-        roty_smoothness = sigmoid(TelemetryCalculator.parameter_smoothness(self.df, "ROTY"))
-        g_force_v_smoothness = sigmoid(TelemetryCalculator.parameter_smoothness(self.df, "gForceVector"))
+        brake_data = self._analysis.get_brake_data(self.df)
 
-        brake_roty_corr = sigmoid(TelemetryCalculator.parameter_correlation(self.df, "ROTY", "BRAKE"))
+        delta_v = max(brake_data["brake_point_speed"] - apex_speed, 0.0)
+        brake_efficiency = delta_v / max(brake_force, 1e-6)
 
+        def safe_smooth(col):
+            val = TelemetryCalculator.parameter_smoothness(self.df, col)
+            return 0.0 if pd.isna(val) else float(val)
+
+        brake_smoothness = safe_smooth("BRAKE")
+        steer_smoothness = safe_smooth("STEERANGLE")
+        roty_smoothness = safe_smooth("ROTY")
+        g_force_v_smoothness = safe_smooth("gForceVector")
+
+        brake_roty_corr = TelemetryCalculator.parameter_correlation(self.df, "ROTY", "BRAKE")
+
+        log.debug({
+            "brake_smoothness": brake_smoothness,
+            "steer_smoothness": steer_smoothness,
+            "roty_smoothness": roty_smoothness,
+            "g_force_v_smoothness": g_force_v_smoothness,
+            "brake_roty_corr": brake_roty_corr,
+            "brake_efficiency": brake_efficiency
+        })
+
+        base_quality = (
+            0.1 * g_force_v_smoothness +
+            0.25 * steer_smoothness +
+            0.1 * roty_smoothness +
+            0.15 * max(brake_roty_corr, 0.0) +
+            0.3 * brake_efficiency +
+            0.3 * brake_smoothness
+        )
+        score = base_quality * np.sqrt(max(brake_force_per_meter, 0.0))
+
+        if pd.isna(score) or np.isinf(score):
+            return 0.0
+        return round(score, 4)
+
+"""
+is_braking = self.df[self.df["BRAKE"] > 2]
+
+brake_distance = float(is_braking["Distance"].max() - is_braking["Distance"].min())
+print(f"Brake_distance: {is_braking}")
+entry_speed = float(self.df["SPEED"].iloc[0]) if "SPEED" in self.df else 0.0
+apex_speed = float(self.df.loc[self.df["SPEED"].idxmin(), "SPEED" ]) if "SPEED" in self.df else entry_speed
+
+brake_force = TelemetryCalculator.get_integral(is_braking, "BRAKE")
+brake_force_per_meter = brake_force / max(brake_distance, 1e-6)"""

@@ -6,6 +6,30 @@ from dataclasses import asdict, dataclass
 log = get_logger(to_console=False)
 
 
+def get_df_from_area(start_m: int, end_m: int, data: list[str] | str, df: pd.DataFrame):
+    lap_df = df
+
+    if isinstance(data, str):
+        if "Distance" in data:
+            columns = [data]
+        else:
+            columns = ["Distance", data]
+
+    elif isinstance(data, list):
+        if "Distance" in data:
+            columns = data
+        else:
+            columns = ["Distance"] + data
+    else:
+        return pd.DataFrame()
+
+    _df = lap_df[
+        (lap_df["Distance"] >= start_m) &
+        (lap_df["Distance"] <= end_m)
+        ]
+
+    return _df[columns] if not _df.empty else pd.DataFrame()
+
 def get_corner_df_from_df(corner_id: int, df: pd.DataFrame) -> pd.DataFrame:
     """
     corner_id must be in df!

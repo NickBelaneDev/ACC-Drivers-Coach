@@ -56,8 +56,9 @@ class Lap:
         if _id not in self.corner_ids:
             raise ValueError(f"{id=}, not in self.corner_ids!")
 
-        _corner = self.corners_df.loc[[_id]]
+        _corner = self.corners_df[self.corners_df["id"] == _id].copy()
         return _corner
+
     def get_segment_df_by_id(self, _id: int) -> pd.DataFrame:
         """Returns all calculated and meta segment data in a single row DataFrame."""
         if _id not in self.segment_ids:

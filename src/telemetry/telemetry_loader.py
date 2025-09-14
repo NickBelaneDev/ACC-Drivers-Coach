@@ -49,7 +49,7 @@ class TelemetryLoader:
         # Red the telemetry.csv
         orig_hotlap_path = self.base_dir / hotlap_path
 
-        _telemetry_df = pd.read_csv(orig_hotlap_path, skiprows=14).drop(0)
+        _telemetry_df = pd.read_csv(orig_hotlap_path, skiprows=14, low_memory=False).drop(0)
         telemetry_df = self._resample_df(_telemetry_df)
 
         telemetry_df_sorted = telemetry_df.sort_values("Distance")
@@ -69,6 +69,9 @@ class TelemetryLoader:
             right_on="cornerStart_m",
             direction="backward"
         )
+
+
+        full_telemetry_df["corner_id"] = full_telemetry_df["corner_id"].dropna().astype(int)
 
         mask = full_telemetry_df["Distance"] > full_telemetry_df["cornerEnd_m"]
         corner_cols = corners_df.columns
