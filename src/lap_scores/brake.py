@@ -23,12 +23,12 @@ class BrakeScore:
         self._analysis = BrakeAnalysis(df)
 
 
-    def calculate(self):
+    def calculate(self) -> float:
         braking_mask = self.df["BRAKE"].fillna(0) > 2
         if not braking_mask.any():
             return 0.0
 
-        brake_data = self._analysis.get_brake_data(self.df, as_dict=False)
+        brake_data = self._analysis.get_brake_data(self.df)
 
         delta_v = max(brake_data.brake_point_speed - brake_data.brake_release_speed, 0.0)
         brake_efficiency = delta_v / max(brake_data.overall_brake_force, 1e-6)
@@ -42,7 +42,7 @@ class BrakeScore:
         roty_smoothness = safe_smooth("ROTY")
         g_force_v_smoothness = safe_smooth("gForceVector")
 
-        brake_roty_corr = TelemetryCalculator.parameter_correlation(self.df, "ROTY", "BRAKE")
+        brake_roty_corr = brake_data.trail_brake.corr_brake_roty   # TelemetryCalculator.parameter_correlation(self.df, "ROTY", "BRAKE")
 
         log.debug({
             "brake_smoothness": brake_smoothness,
