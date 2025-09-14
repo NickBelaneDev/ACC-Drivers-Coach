@@ -14,7 +14,7 @@ import pandas as pd
 import numpy as np
 
 from src.telemetry.telemetry_calculator import TelemetryCalculator
-log = get_logger("BrakeScore", to_console=False)
+log = get_logger(to_console=False, log_file="brake_score_log.log")
 
 class BrakeScore:
     def __init__(self, df: pd.DataFrame):
@@ -61,11 +61,14 @@ class BrakeScore:
             0.5 * brake_efficiency +
             0.2 * brake_smoothness
         )
+        log.debug(f"{base_quality=}")
         score = base_quality * np.sqrt(max(brake_data.brake_force_per_meter, 0.0))
 
         if pd.isna(score) or np.isinf(score):
             return 0.0
         return round(score, 4)
+
+
 
 """
 is_braking = self.df[self.df["BRAKE"] > 2]

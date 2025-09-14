@@ -3,27 +3,49 @@ import pandas as pd
 import numpy as np
 from src.telemetry.telemetry_calculator import TelemetryCalculator
 from src.telemetry.telemetry_utils import get_df_from_area
-from src.lap.lap_dataclasses import BrakeMetrics
+from src.lap.lap_dataclasses import BrakeMetrics, TrailBrakeMetrics
 
 
 class BrakeAnalysis:
     def __init__(self, df: pd.DataFrame):
         self.lap_df = df
     @staticmethod
-    def _trail_brake_delta(df: pd.DataFrame) -> dict:
+    def _trail_brake_delta(df: pd.DataFrame) -> dict | TrailBrakeMetrics:
         """
         Indicates an area where the driver is braking less than the threshold parameter while steering in a single direction.
 
         :param df:
 
-        :return: trail_brake_delta_s, trail_brake_delta_m
+        :return: trail_brake_dict
         """
 
-        delta_df = df[(df["BRAKE"].shift(1) > df["BRAKE"])]
-        trail_brake_start_m = delta_df["Distance"].min()
-        trail_brake_end_m = delta_df["Distance"].max()
-        trail_brake_delta_m = trail_brake_end_m - trail_brake_start_m
-        trail_brake_delta_s = delta_df["Time"].max() - delta_df["Time"].min()
+        delta_df = df[(df["BRAKE"].shift(1) > df["BRAKE"])][["Distance", "BRAKE", "Time", "ROTY", "gForceVector"]] # This is the DataFrame where the driver is trail braking (releasing the brakes slowly while steering into the corner).
+        trail_brake_start_m: int = delta_df["Distance"].min()
+        trail_brake_start_speed: float = delta_df["SPEED"].iloc[0] if not delta_df.empty else 0.0
+        trail_brake_end_m: int = delta_df["Distance"].max()
+        trail_brake_delta_m: int = trail_brake_end_m - trail_brake_start_m
+        trail_brake_delta_s: float = delta_df["Time"].max() - delta_df["Time"].min()
+
+        trail_brake_integral: float = TelemetryCalculator.get_integral(delta_df, "BRAKE")
+        trail_brake_corr_brake_roty: float = TelemetryCalculator.parameter_correlation(delta_df, "BRAKE", "ROTY")
+        trail_brake_release_per_m: float = trail_brake_integral / trail_brake_delta_m
+        trail_brake_release_per_s: float = trail_brake_integral / trail_brake_delta_s
+        trail_brake_smoothness: float = TelemetryCalculator.parameter_smoothness(delta_df, "BRAKE") * 0.5 + TelemetryCalculator.parameter_smoothness(delta_df, "gForceVector")
+
+
+        return TrailBrakeMetrics(
+            start_m=trail_brake_start_m,
+            end_m=trail_brake_end_m,
+            start_speed_kmh=trail_brake_start_speed,
+            delta_m=trail_brake_delta_m,
+            delta_s=trail_brake_delta_s,
+            integral=trail_brake_integral,
+            corr_brake_roty=trail_brake_corr_brake_roty,
+            release_per_m=trail_brake_release_per_m,
+            release_per_s=trail_brake_release_per_s,
+            smoothness=trail_brake_smoothness
+        )
+
 
         trail_brake_dict = {
             "trail_brake_start_m": trail_brake_start_m,
@@ -99,15 +121,21 @@ class BrakeAnalysis:
         # Trail Brake Data collect
         _trail_brake_data = self._trail_brake_delta(brake_df)
 
-        trail_brake_delta_s = _trail_brake_data["trail_brake_delta_s"]
-        trail_brake_delta_m = _trail_brake_data["trail_brake_delta_m"]
-        trail_brake_start_m = _trail_brake_data["trail_brake_start_m"]
-        trail_brake_end_m = _trail_brake_data["trail_brake_end_m"]
+        trail_brake_delta_s = _trail_brake_data.delta_s
+        trail_brake_delta_m = _trail_brake_data.delta_m
+        trail_brake_start_m = _trail_brake_data.start_m
+        trail_brake_end_m = _trail_brake_data.end_m
+
+
+        trail_brake_corr_brake_roty = ""
+
 
         # Advanced Brake Data
         overall_brake_force = TelemetryCalculator.get_integral(brake_df, "BRAKE")
         brake_force_per_meter = overall_brake_force / brake_delta_m
         brake_force_per_second = overall_brake_force / brake_delta_s
+
+        brake_smoothness = TelemetryCalculator.parameter_smoothness(brake_df)
 
         tbf95_s = brake_df[brake_df["BRAKE"] >= 95]["Time"].max() - brake_df[brake_df["BRAKE"] >= 95]["Time"].min()
 
