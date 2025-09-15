@@ -91,4 +91,16 @@ class TelemetryCalculator:
         trapz = np.trapezoid(parameter_col, dist_col)
         return round(trapz, 4)
 
+    @staticmethod
+    def quantile(df: pd.DataFrame, col: str, quantile:int=0.95, distance_col:str = "Distance") -> float:
+        _quantile = quantile
+        if quantile > 1:
+            _quantile = 1
+        if quantile < 0:
+            _quantile = 0
 
+        _df:pd.DataFrame = df.sort_values(by=distance_col).copy()
+
+        if not _df.empty:
+            return _df[col].quantile(q=_quantile)
+        return 0.0
