@@ -13,8 +13,8 @@ log = get_logger(to_console=False,log_file="lap_telemetry_log.log")
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 hot_lap_file_path = "assets/MoTec/spa/Spa-ferrari_296_gt3-fastest_lap_glat-float.csv"
-user_lap_file_path = "assets/MoTec/spa/Spa-ferrari_296_gt3-2-21-304.csv"
-
+#user_lap_file_path = "assets/MoTec/spa/Spa-ferrari_296_gt3-2-21-304.csv"
+user_lap_file_path = "assets/MoTec/spa/Spa-ferrari_296_gt3-8-hotlap_2-17-880.csv"
 
 if __name__ == "__main__":
 
@@ -27,7 +27,8 @@ if __name__ == "__main__":
     record_lap = Lap(record_df, "Spa")
 
     corner_ids = user_lap.corner_ids
-
+    u_corners_df = user_lap.get_corners_df()
+    r_corners_df = record_lap.get_corners_df()
 #    print(f"BrakePoint: {u_corner_13["brake_point_m"]}")
     for _id in corner_ids:
 
@@ -41,8 +42,7 @@ if __name__ == "__main__":
         print(f"User: {u_brake_score=}")
         print(f"Record: {r_brake_score=}")
 
-        u_corners_df = user_lap.get_corners_df()
-        r_corners_df = record_lap.get_corners_df()
+
 
 
 

@@ -29,9 +29,9 @@ class BrakeScore:
             return 0.0
 
         raw_brake_df = self.df[braking_mask]
-        print(f"{raw_brake_df["BRAKE"]}")
+        #print(f"{raw_brake_df["BRAKE"]}")
         brake_data = self._analysis.get_brake_data(self.df)
-
+        """
         delta_v = max(brake_data.brake_point_speed - brake_data.brake_release_speed, 0.0)
         brake_efficiency = delta_v / max(brake_data.overall_brake_force, 1e-6)
 
@@ -49,7 +49,7 @@ class BrakeScore:
         brake_point_speed_kmh = brake_data.brake_point_speed
         brake_release_speed_kmh = brake_data.brake_release_speed
 
-        g_force_q95 = TelemetryCalculator.quantile()
+        g_force_q95 = TelemetryCalculator.quantile(raw_brake_df, "gForceVector")
 
         log.debug({
             "brake_smoothness": brake_smoothness,
@@ -69,10 +69,11 @@ class BrakeScore:
             0.4 * brake_smoothness +
             0.01 * g_force_v_smoothness
         )
-        print(brake_data.overall_brake_force)
-        print(f"{base_quality=}")
-        score = brake_point_speed_kmh*(base_quality/100) * np.sqrt(max(brake_data.brake_force_per_meter, 0.0))
-
+        print(f"{brake_data.overall_brake_force=}")
+        #print(f"{base_quality=}")
+        score = brake_point_speed_kmh*(base_quality/100) * np.sqrt(max(brake_data.brake_force_per_second, 0.0))
+        """
+        score = np.sqrt(brake_data.brake_force_per_meter + brake_data.brake_force_per_second)
         if pd.isna(score) or np.isinf(score):
             return 0.0
         return round(score, 4)

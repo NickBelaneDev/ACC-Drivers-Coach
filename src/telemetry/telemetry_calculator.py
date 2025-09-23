@@ -104,3 +104,4 @@ class TelemetryCalculator:
         if not _df.empty:
             return _df[col].quantile(q=_quantile)
         return 0.0
+
