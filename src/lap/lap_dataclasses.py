@@ -28,6 +28,22 @@ class SegmentMetrics:
     time_delta_s: Optional[float] = 0.0
     total_cpi_score: Optional[float] = 0.0
 
+@dataclass(frozen=True)
+class SpeedMeasurements:
+    # Speed Measurements
+    entry_speed_kmh: float
+    apex_speed_kmh: float
+    exit_speed_kmh: float
+    avg_speed_kmh: float
+    max_speed_kmh: float
+    min_speed_kmh: float
+    min_speed_m: float
+
+@dataclass(frozen=True)
+class DriverInputMetrics:
+    avg_steerangle: float
+    max_steerangle: float
+    max_steerangle_m: float
 
 @dataclass(frozen=True)
 class ThrottleMetrics:
@@ -129,6 +145,7 @@ class CornerMetrics:
     max_steerangle: float
     max_steerangle_m: float
 
+    # Darf raus!
     avg_brake: float
     max_brake: float
 
@@ -138,6 +155,8 @@ class CornerMetrics:
     ttf95_s: Optional[float] = 0.0      # ttf95_s = 'Time where Throttle-Input >= 95% in seconds'
 
     # Abstract Metrics
+    # Replace with brake_metrics:
+    ####
     brake_point_m: Optional[int] = 0
     brake_release_m: Optional[int] = 0#
     brake_delta_m: Optional[int] = 0      #
@@ -147,6 +166,11 @@ class CornerMetrics:
     trail_brake_start_m: Optional[float] = 0
     trail_brake_end_m: Optional[float] = 0
     overall_brake_force: Optional[float] = 0.0
+    ###
+    brake_metrics: Optional[BrakeMetrics] = None
+
+    throttle_metrics: Optional[ThrottleMetrics] = None
+
 
     exit_throttle_init_m: Optional[float] = 0 # Measurement from where the driver is on the gas again on corner_exit.
     avg_exit_throttle: Optional[float] = 0.0      # avg. throttle input from apex_m to exit_m + 100
@@ -156,7 +180,15 @@ class CornerMetrics:
     rolling_delta_m: Optional[float] = 0
 
     cpi_factor: Optional[float] = 0.0
-    brake_metrics: Optional[BrakeMetrics] = None
+
+@dataclass(frozen=True)
+class CornerMetricsNew:
+    time_delta_s: float
+    speed_and_g_force: Optional[SpeedMeasurments] = None
+    driver_input: Optional[DriverInputMetrics] = None
+    brake_metrics: Optional[BrakeMetrics] = None# -> Also includes the TrailBrakeMetrics as a separate DataClass
+    throttle_metrics: Optional[ThrottleMetrics] = None
+    scores: Optional[Scores] = None
 
 @dataclass(frozen=True)
 class Corner:

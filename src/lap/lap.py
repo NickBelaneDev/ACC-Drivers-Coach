@@ -1,8 +1,6 @@
 import pandas as pd
-
-
+from typing import Literal
 from src.lap.analyzer.lap_analyzer import LapAnalyzer
-#from .lap_telemetry import LapTelemetry
 
 from src.logger import get_logger
 from src.telemetry.telemetry_calculator import TelemetryCalculator
@@ -11,12 +9,12 @@ from src.telemetry.telemetry_utils import get_corner_df_from_df, get_segment_df_
 log = get_logger("Lap - logger", to_console=False)
 
 # Die Lap-Klasse bekommt einen DataFrame, der
+# Momentan können wir aus der Lap Klasse nur DataFrames ausspucken. Zur weiterverarbeitung, sind die Corner-Objekte aber besser.
 class Lap:
     def __init__(self, raw_lap_df: pd.DataFrame, track_name: str, driver: str = "User"):
         """Initial API Object for working with laps."""
         self._raw_df: pd.DataFrame = TelemetryCalculator.calc_g_force_vector(raw_lap_df)
         self._analyze = LapAnalyzer(self._raw_df)
-        #self._telemetry = LapTelemetry(self._raw_df)
 
         # --- public settings ---
         self.track_name: str = track_name
@@ -32,7 +30,9 @@ class Lap:
         print(f"Track: {self.track_name}\nLap-Time: {self.lap_time_s}")
     def __str__(self):
         return f"Track: {self.track_name}\nLap-Time: {self.lap_time_s}"
-    def get_corners_df(self, frmt:str="DataFrame") -> pd.DataFrame | dict:
+
+    FRMT = Literal["DataFrame", "dict"]
+    def get_corners_df(self, frmt:FRMT="DataFrame") -> pd.DataFrame | dict:
         """
         Returns a DataFrame with all corners' calculated and meta-data.
         :param frmt: ["DataFrame", "dict"]
@@ -49,7 +49,7 @@ class Lap:
         _corner = self.corners_df[self.corners_df["id"] == _id].copy()
         return _corner
 
-    def get_segments_df(self, frmt:str="DataFrame") -> pd.DataFrame | dict:
+    def get_segments_df(self, frmt:FRMT="DataFrame") -> pd.DataFrame | dict:
         """
           Returns a DataFrame with all segments' calculated and meta-data.
           :param frmt: ["DataFrame", "dict"]

@@ -8,7 +8,7 @@ from src.lap.lap_dataclasses import BrakeMetrics, TrailBrakeMetrics
 
 
 class BrakeAnalysis:
-    def __init__(self, df: pd.DataFrame):
+    def __init__(self, df: pd.DataFrame=pd.DataFrame()):
         self.lap_df = df
     @staticmethod
     def _trail_brake_delta(df: pd.DataFrame) -> dict | TrailBrakeMetrics:
@@ -32,7 +32,7 @@ class BrakeAnalysis:
         trail_brake_corr_brake_roty: float = TelemetryCalculator.parameter_correlation(delta_df, "BRAKE", "ROTY")
         trail_brake_release_per_m: float = trail_brake_integral / trail_brake_delta_m
         trail_brake_release_per_s: float = trail_brake_integral / trail_brake_delta_s
-        trail_brake_smoothness: float = TelemetryCalculator.parameter_smoothness(delta_df, "BRAKE") * 0.5 + TelemetryCalculator.parameter_smoothness(delta_df, "gForceVector")
+        trail_brake_smoothness: float = TelemetryCalculator.parameter_smoothness(delta_df, "BRAKE") + TelemetryCalculator.parameter_smoothness(delta_df, "gForceVector")
 
 
         return TrailBrakeMetrics(

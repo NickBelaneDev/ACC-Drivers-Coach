@@ -62,6 +62,9 @@ def corner_to_df(corner: dataclass, corner_metrics: dataclass) -> pd.DataFrame:
     _corner_dict = asdict(corner)
     _corner_dict.pop("metrics", None)
     _corner_dict |= asdict(corner_metrics)
+
+    # Watch out! We need to clarify how to handle the brake_metrics
+    _corner_dict |= asdict(corner_metrics.brake_metrics)
     return pd.DataFrame([_corner_dict])
 
 

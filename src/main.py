@@ -22,13 +22,19 @@ if __name__ == "__main__":
     t_loader = TelemetryLoader(base_dir=PROJECT_ROOT / "src")                     # nutzt den absolut gesetzten MOTEC_FOLDER
     record_df = t_loader.telemetry_from_csv(hot_lap_file_path, "spa")
     user_df = t_loader.telemetry_from_csv(user_lap_file_path, "spa")
+
     # Create instances of Lap and compare them.
     user_lap = Lap(user_df, "Spa")
     record_lap = Lap(record_df, "Spa")
 
+
     corner_ids = user_lap.corner_ids
-    u_corners_df = user_lap.get_corners_df()
+    # These are the corner metrics as a df
+    u_corners_df:pd.DataFrame = user_lap.get_corner_df_by_id(1001)
     r_corners_df = record_lap.get_corners_df()
+
+
+    print(u_corners_df)
 #    print(f"BrakePoint: {u_corner_13["brake_point_m"]}")
     for _id in corner_ids:
 
@@ -41,10 +47,6 @@ if __name__ == "__main__":
         print(f"Corner_id: {_id}")
         print(f"User: {u_brake_score=}")
         print(f"Record: {r_brake_score=}")
-
-
-
-
 
     def plotten():
         u_raw_df = user_lap.get_raw_df()
@@ -69,8 +71,8 @@ if __name__ == "__main__":
 
     #print("======== USER =============================================================")
     #print(u_corners_df)
-    print("======== REC ==============================================================")
-    print(r_corners_df.info())
+    #print("======== REC ==============================================================")
+    #print(r_corners_df.info())
 
     lap_compare = LapCompare(user_df)
 

@@ -1,0 +1,20 @@
+from src.lap.lap import Lap
+
+from src.lap.lap_dataclasses import Corner, CornerMetrics, SegmentMetrics, Segment
+from pathlib import Path
+import os
+import pandas as pd
+import pprint
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+from src.telemetry.telemetry_loader import TelemetryLoader
+def load_all_files(base_dir:Path=PROJECT_ROOT, track:str="spa"):
+    p = base_dir / "assets" / "MoTeC" / track.lower()
+    csv_files: list[Path] = list(p.glob("**\*.csv"))
+
+    all_files_df: pd.DataFrame = pd.DataFrame()
+
+    for f in csv_files:
+        raw_lap_df = TelemetryLoader(base_dir)
+
+load_all_files()
+
