@@ -101,8 +101,8 @@ class LapAnalyzer:
 
         cpi_factor = np.trapezoid(g_force_vector, distance)
         f = 0.4
-        smoothness_factor = (f - 1) * TelemetryCalculator.parameter_smoothness(corner_df,
-                                                                               "STEERANGLE") + f * TelemetryCalculator.parameter_smoothness(
+        smoothness_factor = (f - 1) * TelemetryCalculator.parameter_stability(corner_df,
+                                                                               "STEERANGLE") + f * TelemetryCalculator.parameter_stability(
             corner_df, "ROTY")  # + 0.2 * self.parameter_smoothness(corner_df, "THROTTLE")
         smoothness_factor = round(smoothness_factor, 4)
         # print(f"{smoothness_factor=}")

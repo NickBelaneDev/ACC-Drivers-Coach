@@ -1,11 +1,18 @@
 import pandas as pd
 import numpy as np
+import math
 from src.logger import get_logger
 
 log = get_logger("telemetry_calculator_log", to_console=False)
+
+
+# The TelemetryCalculator needs some nice error handling, logging and DataFrame validation to it
+# Tasks:
+#   1.) Add a private DataFrame Validation Method to ensure all requested data is inside the df. The method shall either return the full df or just the asked cols.
 class TelemetryCalculator:
-    def __init__(self, df: pd.DataFrame):
-        self.df = df
+    def __init__(self):
+        pass
+        #self.df = df
 
     @staticmethod
     def calc_g_force_vector(df: pd.DataFrame):
@@ -22,9 +29,25 @@ class TelemetryCalculator:
         return with_vector_df
 
     @staticmethod
-    def parameter_smoothness(df: pd.DataFrame, col: str, amplitude_mode: bool=False, distance_col:str= "Distance") -> float:
+    def average_change_rate(df: pd.DataFrame, col:str, distance_col:str="Distance") -> float:
+
+        _s = df.sort_values(by=distance_col)[col].reset_index(drop=True).copy()
+
+        avg_c_r = _s.diff().mean()
+        return avg_c_r if avg_c_r else math.nan
+
+    @staticmethod
+    def change_rate_var(df: pd.DataFrame, col: str, distance_col: str = "Distance") -> float:
+
+        _s: pd.DataFrame = df.sort_values(by=distance_col)[col].reset_index(drop=True).copy()
+
+        avg_c_r = _s.diff().var()
+        return avg_c_r if avg_c_r else math.nan
+
+    @staticmethod
+    def parameter_stability(df: pd.DataFrame, col: str, amplitude_mode: bool=False, distance_col:str= "Distance") -> float:
         """Standardabweichung der Parameter auf dt"""
-        _df = df.sort_values(by=distance_col).copy()
+        _df = df.sort_values(by=distance_col).reset_index(drop=True).copy()
 
         delta_t = _df[distance_col].diff()
         delta_t.replace(0, np.nan, inplace=True)
@@ -35,8 +58,8 @@ class TelemetryCalculator:
 
         if delta_val.empty:
             return 0.0
-        smoothness = float(1 / (delta_val.std() + 1e-6))
-        return round(smoothness, 4)
+        stability = min((delta_val.std(), 1e-6))
+        return round(stability, 4) if stability > 1e-6 else 1e-6
 
     @staticmethod
     def parameter_correlation(raw_df: pd.DataFrame, col_01: str, col_02: str, distance_col: str = 'Distance') -> float:

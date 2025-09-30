@@ -7,6 +7,7 @@ from pathlib import Path
 import pandas as pd
 from src.lap.lap import Lap
 from src.lap_scores.brake import BrakeScore
+from src.lap.analyzer.throttle_analysis import ThrottleAnalysis
 
 log = get_logger(to_console=False,log_file="lap_telemetry_log.log")
 
@@ -22,10 +23,17 @@ if __name__ == "__main__":
     t_loader = TelemetryLoader(base_dir=PROJECT_ROOT / "src")                     # nutzt den absolut gesetzten MOTEC_FOLDER
     record_df = t_loader.telemetry_from_csv(hot_lap_file_path, "spa")
     user_df = t_loader.telemetry_from_csv(user_lap_file_path, "spa")
+    corner_1001_df = user_df[user_df["Distance"] < 1000]
+    throttle_analysis = ThrottleAnalysis.get_throttle_data(corner_1001_df)
 
+    print(throttle_analysis)
     # Create instances of Lap and compare them.
     user_lap = Lap(user_df, "Spa")
     record_lap = Lap(record_df, "Spa")
+
+    # PLAY AREA
+    #corner_1001_df = user_lap.get_corner_df_by_id(1001)
+
 
 
     corner_ids = user_lap.corner_ids

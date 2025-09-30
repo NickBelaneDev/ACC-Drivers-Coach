@@ -9,7 +9,8 @@ from src.lap.lap_dataclasses import BrakeMetrics, TrailBrakeMetrics
 
 class BrakeAnalysis:
     def __init__(self, df: pd.DataFrame=pd.DataFrame()):
-        self.lap_df = df
+        #self.lap_df = df
+        pass
     @staticmethod
     def _trail_brake_delta(df: pd.DataFrame) -> dict | TrailBrakeMetrics:
         """
@@ -25,14 +26,12 @@ class BrakeAnalysis:
         trail_brake_start_speed: float = delta_df["SPEED"].iloc[0] if not delta_df.empty else 0.0
         trail_brake_end_speed_kmh: float = delta_df["SPEED"].iloc[-1] if not delta_df.empty else 0.0
         trail_brake_end_m: int = delta_df["Distance"].max()
-        trail_brake_delta_m: int = trail_brake_end_m - trail_brake_start_m
         trail_brake_delta_s: float = delta_df["Time"].max() - delta_df["Time"].min()
 
         trail_brake_integral: float = TelemetryCalculator.get_integral(delta_df, "BRAKE")
         trail_brake_corr_brake_roty: float = TelemetryCalculator.parameter_correlation(delta_df, "BRAKE", "ROTY")
-        trail_brake_release_per_m: float = trail_brake_integral / trail_brake_delta_m
-        trail_brake_release_per_s: float = trail_brake_integral / trail_brake_delta_s
-        trail_brake_smoothness: float = TelemetryCalculator.parameter_smoothness(delta_df, "BRAKE") + TelemetryCalculator.parameter_smoothness(delta_df, "gForceVector")
+        trail_brake_release_rate: float = TelemetryCalculator.average_change_rate(delta_df, "BRAKE")
+        trail_brake_stability: float = TelemetryCalculator.parameter_stability(delta_df, "BRAKE") # + TelemetryCalculator.parameter_smoothness(delta_df, "gForceVector")
 
 
         return TrailBrakeMetrics(
@@ -40,14 +39,11 @@ class BrakeAnalysis:
             end_m=trail_brake_end_m,
             start_speed_kmh=trail_brake_start_speed,
             end_speed_kmh=trail_brake_end_speed_kmh,
-            delta_m=trail_brake_delta_m,
             delta_s=trail_brake_delta_s,
             integral=trail_brake_integral,
             corr_brake_roty=trail_brake_corr_brake_roty,
-            release_per_m=trail_brake_release_per_m,
-            release_per_s=trail_brake_release_per_s,
-            smoothness=trail_brake_smoothness
-
+            release_rate=trail_brake_release_rate,
+            stability=trail_brake_stability
         )
 
     def get_brake_data(self, telemetry_df: pd.DataFrame, threshold:int=2) -> BrakeMetrics | None:
@@ -55,8 +51,7 @@ class BrakeAnalysis:
         ACHTUNG! Noch muss geprüft werden, ob es überhaupt einen Bremspunkt gibt!
         :param telemetry_df:
         :param threshold:
-        :param as_dict:
-        :return:
+        :return: dataclass object of the BrakeMetrics
         """
 
         #print(telemetry_df.info())
@@ -96,7 +91,6 @@ class BrakeAnalysis:
 
         # The _brake_delta_df is validated!
         # Set final variables
-        brake_delta_m = brake_release_m - brake_point_m
         brake_delta_s = brake_release_s - brake_point_s
 
         brake_point_speed = _brake_delta_df["SPEED"].iloc[0]
@@ -111,26 +105,21 @@ class BrakeAnalysis:
 
         # Advanced Brake Data
         overall_brake_force = TelemetryCalculator.get_integral(brake_df, "BRAKE")
-        brake_force_per_meter = overall_brake_force / brake_delta_m
-        brake_force_per_second = overall_brake_force / brake_delta_s
 
-        brake_smoothness = TelemetryCalculator.parameter_smoothness(brake_df, "BRAKE")
+        #rake_smoothness = TelemetryCalculator.parameter_smoothness(brake_df, "BRAKE")
 
         tbf95_s = brake_df[brake_df["BRAKE"] >= 95]["Time"].max() - brake_df[brake_df["BRAKE"] >= 95]["Time"].min()
 
         return BrakeMetrics(
             brake_point_m=brake_point_m,
             brake_point_speed=brake_point_speed,
-            brake_delta_m=brake_delta_m,
             brake_release_m=brake_release_m,
             brake_release_speed=brake_release_speed,
             brake_delta_s=brake_delta_s,
             max_brake=max_brake,
             avg_brake=avg_brake,
             overall_brake_force=overall_brake_force,
-            brake_force_per_meter=brake_force_per_meter,
-            brake_force_per_second=brake_force_per_second,
-            brake_smoothness=brake_smoothness,
             tbf95_s=tbf95_s,
-            trail_brake=_trail_brake_data
+            trail_brake=_trail_brake_data,
         )
+

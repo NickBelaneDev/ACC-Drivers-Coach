@@ -1,0 +1,10 @@
+
+# Diese Methode verhindert, dass immer das exakt gleiche Objekt als Default erstellt wird. Instanziiere ich ein neues Corner-Objekt, bekomme ich so immer ein
+# komplett neues CornerMetrics Objekt
+from dataclasses import field
+
+metrics: Optional[CornerMetrics] = field(
+    default_factory=lambda: CornerMetrics.empty(
+        reason="optional-default-corner-metrics-in-corner-dataclass"
+    )
+)
