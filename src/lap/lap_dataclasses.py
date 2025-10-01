@@ -7,9 +7,7 @@ from enum import Enum
 
 from streamlit.web.server.server import start_listening_unix_socket
 
-##############################################
-# TO BE REMOVED!!
-##############################################
+
 Status = Literal["ok", "empty", "invalid"]
 
 @dataclass(frozen=True)
@@ -23,7 +21,7 @@ class Segment:
 
 class SegmentMetrics:
     id: int
-    start_speed_kmh: Optional[float] = 0.0
+    start_speed_kmh: Optional[float]
     end_speed_kmh: Optional[float] = 0.0
 
     avg_speed_kmh: Optional[float] = 0.0
@@ -36,6 +34,9 @@ class SegmentMetrics:
     time_delta_s: Optional[float] = 0.0
     total_cpi_score: Optional[float] = 0.0
 
+##############################################
+# TO BE REMOVED!!
+##############################################
 @dataclass(frozen=True)
 class SpeedMeasurements:
     # Speed Measurements
@@ -47,11 +48,6 @@ class SpeedMeasurements:
     min_speed_kmh: float
     min_speed_m: float
 
-@dataclass(frozen=True)
-class DriverInputMetrics:
-    avg_steerangle: float
-    max_steerangle: float
-    max_steerangle_m: float
 
 @dataclass(frozen=True)
 class ThrottleMetrics:
@@ -189,14 +185,6 @@ class CornerMetrics:
 
     cpi_factor: Optional[float] = 0.0
 
-@dataclass(frozen=True)
-class Corner:
-    id: int
-    name: str
-    start_m: float
-    apex_m: float
-    end_m: float
-    metrics: CornerMetrics
 
 #    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 ###################################
@@ -205,11 +193,11 @@ class Corner:
 
 
 # ====================================================
-# version 1.01. date: 09.30.2025, © written by Robert Millotat
+# version 1.01, date: 09.30.2025, © written by Robert Millotat
 #
-# To grant structural corner information we work with dataclasses.
-# This is from where we define, what information we want to have. From here on we work our way down
-# the ladder to the DataFrame.
+# To grant good structured corner information we are working with Dataclasses.
+# The Dataclass is from where we define, what information we want to have. From here on we work our way up
+# to the raw DataFrame, which comes from the telemetry.csv files delivered by the TelemetryLoader-class.
 #
 # The dataclass objects are the data-type we use to communicate between classes and send calculated
 # telemetry numbers to other classes.

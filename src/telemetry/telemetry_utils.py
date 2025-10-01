@@ -1,10 +1,16 @@
 import pandas as pd
-import numpy as np
 from src.logger import get_logger
 from dataclasses import asdict, dataclass
 
 log = get_logger(to_console=False)
 
+# ====================================================
+# version 1.01. date: 09.30.2025, © written by Robert Millotat
+#
+# Utility functions for working with our data that are too general to fit into one class.
+
+# TODO: 1) The dataclasses have been changed! We need to overwork the dataclass_to_df() functions!
+#       2) Add logging for every function.
 
 def get_df_from_area(start_m: int, end_m: int, data: list[str] | str, df: pd.DataFrame):
     lap_df = df
@@ -63,7 +69,7 @@ def corner_to_df(corner: dataclass, corner_metrics: dataclass) -> pd.DataFrame:
     _corner_dict.pop("metrics", None)
     _corner_dict |= asdict(corner_metrics)
 
-    # Watch out! We need to clarify how to handle the brake_metrics
+# INFO: ! We need to clarify how to handle the brake_metrics
     _corner_dict |= asdict(corner_metrics.brake_metrics)
     return pd.DataFrame([_corner_dict])
 
@@ -73,7 +79,3 @@ def segment_to_df(segment: dataclass, segment_metrics: dataclass) -> pd.DataFram
     _segment_dict |= asdict(segment_metrics)
     return pd.DataFrame([_segment_dict])
 
-# ==== Calc
-
-def sigmoid(x):
-    return 1/(1 + np.exp(-x))
