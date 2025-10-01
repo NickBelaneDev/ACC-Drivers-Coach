@@ -8,3 +8,39 @@ metrics: Optional[CornerMetrics] = field(
         reason="optional-default-corner-metrics-in-corner-dataclass"
     )
 )
+
+
+getattr():
+Wenn ich von einem Objekt, z.B. class Person: self.name = "Peter"
+ein Attribut bekommen möchte, kann ich mit getattr(Person, name) das Attribut kriegen.
+Mit getattr(Person, name, "unbekannt") würde immer unbekannt kommen, falls es das Attribut nicht gibt.
+
+Cheat Sheet:
+# 1) Standardzugriff
+val = getattr(obj, "name")
+
+# 2) Mit Fallback
+val = getattr(obj, "name", "default")
+
+# 3) Methode dynamisch aufrufen (wenn vorhanden)
+method = getattr(obj, "run", None)
+if callable(method):
+    method()
+
+# 4) Nested helper
+from functools import reduce
+nested = reduce(getattr, ["a", "b", "c"], obj)  # obj.a.b.c
+
+# 5) Robust gegen "nicht vorhanden"
+_MISSING = object()
+val = getattr(obj, "maybe", _MISSING)
+if val is _MISSING:
+    ...
+
+
+__dataclass_fields__
+Beispielcode:
+    steer_metrics: SteerMetrics = SteerMetrics(avg_steerangle=1.3, max_steerangle=4,max_steerangle_m=300, steering_smoothness=1)
+    print([field for field in steer_metrics.__dataclass_fields__])
+
+Die Dundermethod gibt informationen über alle Felder einer Dataclass.

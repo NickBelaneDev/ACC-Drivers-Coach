@@ -1,10 +1,11 @@
-from dataclasses import dataclass, field
+import pandas as pd
+from dataclasses import dataclass, field, is_dataclass
 from typing import Optional, Literal
 import numpy as np
 import math
 from abc import ABC, abstractmethod
 from enum import Enum
-
+import json
 from streamlit.web.server.server import start_listening_unix_socket
 
 
@@ -37,17 +38,6 @@ class SegmentMetrics:
 ##############################################
 # TO BE REMOVED!!
 ##############################################
-@dataclass(frozen=True)
-class SpeedMeasurements:
-    # Speed Measurements
-    entry_speed_kmh: float
-    apex_speed_kmh: float
-    exit_speed_kmh: float
-    avg_speed_kmh: float
-    max_speed_kmh: float
-    min_speed_kmh: float
-    min_speed_m: float
-
 
 @dataclass(frozen=True)
 class ThrottleMetrics:
@@ -232,6 +222,9 @@ class Emptyable:
 
 @dataclass(frozen=True)
 class SpeedMetrics(Emptyable):
+    """
+
+    """
     # ... entry_speed_kmh, apex_speed_kmh, etc.
     entry_speed_kmh: float
     apex_speed_kmh: float
@@ -539,14 +532,6 @@ class Corner(Emptyable):
             id=0, name="", start_m=math.nan, apex_m=math.nan, end_m=math.nan,
             status=StatusEnum.empty, reason=reason
         )
-
-
-
-
-
-
-
-
 
 
 
