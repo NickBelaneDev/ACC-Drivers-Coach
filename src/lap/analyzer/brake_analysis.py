@@ -12,7 +12,7 @@ class BrakeAnalysis:
         #self.lap_df = df
         pass
     @staticmethod
-    def _trail_brake_delta(df: pd.DataFrame) -> dict | TrailBrakeMetrics:
+    def _trail_brake_zone(df: pd.DataFrame) -> dict | TrailBrakeMetrics:
         """
         Indicates an area where the driver is braking less than the threshold parameter while steering in a single direction.
 
@@ -54,37 +54,46 @@ class BrakeAnalysis:
         :return: dataclass object of the BrakeMetrics
         """
 
-        #print(telemetry_df.info())
         brake_area_start_m = telemetry_df["brakeArea_m"].min()
         brake_area_end_m = telemetry_df["cornerApex_m"].iloc[0]
 
-        # "Distance" is always added in get_data_from_area!!
-        cols = ["SPEED", "BRAKE", "G_LAT", "G_LON", "STEERANGLE", "Time", "gForceVector", "ROTY"]
+        cols = ["SPEED", "BRAKE", "G_LAT", "G_LON", "STEERANGLE", "Time", "gForceVector", "ROTY"] # 'Distance' is by default in the get_df_from_area() function
 
         brake_df = get_df_from_area(brake_area_start_m, brake_area_end_m, cols, telemetry_df)
 
-        was_not_braking = brake_df["BRAKE"].shift(1).fillna(0) < threshold
-        is_braking = brake_df["BRAKE"] >= threshold
-
-        # This DataFrame is
-        _brake_delta_df = brake_df[is_braking & was_not_braking] # This is the area where the car is under braking
-        if _brake_delta_df.empty:
+        def _find_braking_window() -> pd.DataFrame:
+            # TODO: Write a safe version of the function!
+            # FIXME: Currently the braking window is only the braking point... You get the point...
+            was_not_braking = brake_df["BRAKE"].shift(1).fillna(0) < threshold
+            is_braking = brake_df["BRAKE"] >= threshold
+            _braking_zone_df = brake_df[is_braking & was_not_braking] # This is the area where the car is under braking
+            return _braking_zone_df if not braking_zone_df.empty else pd.DataFrame
+        braking_zone_df = _find_braking_window()
+        if braking_zone_df.empty:
             return BrakeMetrics.empty("no-brake-point-detected")
-        # The brake point has been validated
-        brake_point_m = _brake_delta_df["Distance"].min()  # this is only a row and we need the lowest "Distance"
-        brake_point_s = _brake_delta_df.loc[_brake_delta_df["Distance"].idxmin(), "Time"]
 
-        # Calculate the brake release
-        release_mask = (brake_df["BRAKE"].shift(1).fillna(0) >= 1) & (brake_df["BRAKE"] == 0)
-        release_rows = brake_df[release_mask]
+        brake_point_m = braking_zone_df["Distance"].min()  # this is only a row and we need the lowest "Distance"
+        brake_point_s = braking_zone_df.loc[braking_zone_df["Distance"].idxmin(), "Time"]
 
-        # -> Validation of the _brake_delta_df
-        if release_rows.empty:
-            brake_release_m = brake_df["Distance"].max()
-            brake_release_s = brake_df.loc[brake_df["Distance"].idxmax(), "Time"]
-        else:
-            brake_release_m = release_rows["Distance"].max()
-            brake_release_s = release_rows.loc[release_rows["Distance"].idxmax(), "Time"]
+        def _calc_brake_release_point() -> tuple:
+            """
+            This is the point, where the brake is fully released and standing. mask(n=0 while n-1>=1)
+            :return:
+            """
+            # Calculate the brake release
+            _brake_release_mask = (brake_df["BRAKE"].shift(1).fillna(0) >= 1) & (brake_df["BRAKE"] == 0)
+            _release_rows = brake_df[_brake_release_mask]
+
+            # -> Validation of the _brake_delta_df
+            if _release_rows.empty:
+                _brake_release_m = brake_df["Distance"].max()
+                _brake_release_s = brake_df.loc[brake_df["Distance"].idxmax(), "Time"]
+            else:
+                _brake_release_m = _release_rows["Distance"].max()
+                _brake_release_s = _release_rows.loc[_release_rows["Distance"].idxmax(), "Time"]
+
+            return _brake_release_m, _brake_release_s
+        brake_release_m, brake_release_s = _calc_brake_release_point()
 
         if pd.isna(brake_point_m) or pd.isna(brake_release_m):
             return BrakeMetrics.empty("invalid-brake-interval")
@@ -93,21 +102,18 @@ class BrakeAnalysis:
         # Set final variables
         brake_delta_s = brake_release_s - brake_point_s
 
-        brake_point_speed = _brake_delta_df["SPEED"].iloc[0]
-        brake_release_speed = _brake_delta_df["SPEED"].iloc[-1]
+        brake_point_speed = braking_zone_df["SPEED"].iloc[0]
+        brake_release_speed = braking_zone_df["SPEED"].iloc[-1]
 
         max_brake = brake_df["BRAKE"].max()
         avg_brake = brake_df[(brake_df["Distance"] >= brake_point_m) & (brake_df["Distance"] <= brake_release_m)][
             "BRAKE"].mean()  # soll vom Bremspunkt des Fahrers bis zum kompletten Release gehen.
 
         # Trail Brake Data collect
-        _trail_brake_data = self._trail_brake_delta(brake_df)
+        trail_brake_zone = self._trail_brake_zone(brake_df)
 
         # Advanced Brake Data
         overall_brake_force = TelemetryCalculator.get_integral(brake_df, "BRAKE")
-
-        #rake_smoothness = TelemetryCalculator.parameter_smoothness(brake_df, "BRAKE")
-
         tbf95_s = brake_df[brake_df["BRAKE"] >= 95]["Time"].max() - brake_df[brake_df["BRAKE"] >= 95]["Time"].min()
 
         return BrakeMetrics(
@@ -120,6 +126,6 @@ class BrakeAnalysis:
             avg_brake=avg_brake,
             overall_brake_force=overall_brake_force,
             tbf95_s=tbf95_s,
-            trail_brake=_trail_brake_data,
+            trail_brake=trail_brake_zone,
         )
 

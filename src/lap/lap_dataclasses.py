@@ -416,8 +416,16 @@ class SteerMetrics(Emptyable):
     avg_steerangle: float
     max_steerangle: float
     max_steerangle_m: float
-    steering_smoothness: float # df[STEERANGLE].diff().std()
+    steering_integral: float
+    steering_smoothness: float  # df[STEERANGLE].diff().std()
 
+    rotation_integral: float
+    rotation_smoothness: float
+    # oversteer_rate: float
+    # understeer_rate: float
+
+
+    steering_throttle_correlation: float = None
     status: StatusEnum = StatusEnum.ok
     reason: str = None
 

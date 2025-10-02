@@ -73,7 +73,6 @@ def corner_to_df(corner: dataclass, corner_metrics: dataclass) -> pd.DataFrame:
     _corner_dict |= asdict(corner_metrics.brake_metrics)
     return pd.DataFrame([_corner_dict])
 
-
 def segment_to_df(segment: dataclass, segment_metrics: dataclass) -> pd.DataFrame:
     _segment_dict = asdict(segment)
     _segment_dict |= asdict(segment_metrics)

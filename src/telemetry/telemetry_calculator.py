@@ -105,11 +105,14 @@ class TelemetryCalculator:
         return round(correlation_score, 4) if pd.notna(correlation_score) else 0.0
 
     @staticmethod
-    def get_integral(df: pd.DataFrame, col: str, distance_col:str= "Distance") -> float:
-        _df = df.sort_values(by=distance_col).copy()
+    def get_integral(df: pd.DataFrame, col: str, amplitude_mode=False, distance_col:str= "Distance") -> float:
 
+        _df = df.sort_values(by=distance_col).copy()
         dist_col = _df[distance_col]
-        parameter_col = _df[col]
+        if amplitude_mode:
+            parameter_col = _df[col].abs()
+        else:
+            parameter_col = _df[col]
 
         trapz = np.trapezoid(parameter_col, dist_col)
         return round(trapz, 4)
