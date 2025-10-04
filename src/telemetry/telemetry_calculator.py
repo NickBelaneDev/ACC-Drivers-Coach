@@ -15,7 +15,11 @@ class TelemetryCalculator:
         #self.df = df
 
     @staticmethod
-    def calc_g_force_vector(df: pd.DataFrame):
+    def calc_g_force_vector(df: pd.DataFrame) -> pd.DataFrame:
+        """Calculates the gForceVector and adds it to the dataframe.
+        :param df: pd.DataFrame
+        :return complete DataFrame with the gForceVector
+        """
         with_vector_df = df.copy()
         # Calculate the G-Force Index
         g_lat = df["G_LAT"].abs()

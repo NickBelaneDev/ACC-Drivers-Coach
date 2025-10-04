@@ -3,6 +3,8 @@ from pandas import DataFrame
 from src.logger import get_logger
 import json
 from pathlib import Path
+
+from .telemetry_calculator import TelemetryCalculator
 log = get_logger(to_console=False)
 
 file_path_user = "../assets/MoTec/spa/Spa-ferrari_296_gt3-8-hotlap_2-17-880.csv"
@@ -75,8 +77,11 @@ class TelemetryLoader:
         mask = full_telemetry_df["Distance"] > full_telemetry_df["cornerEnd_m"]
         corner_cols = corners_df.columns
         full_telemetry_df.loc[mask, corner_cols] = np.nan
+
         self.telemetry_lap_df = full_telemetry_df
 
+        # TODO: The calculation of the gForceVector and more need their own class!
+        full_telemetry_df = TelemetryCalculator.calc_g_force_vector(full_telemetry_df)
         return full_telemetry_df
 
     @staticmethod

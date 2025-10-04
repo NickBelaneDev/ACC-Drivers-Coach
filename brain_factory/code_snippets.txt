@@ -44,3 +44,13 @@ Beispielcode:
     print([field for field in steer_metrics.__dataclass_fields__])
 
 Die Dundermethod gibt informationen über alle Felder einer Dataclass.
+
+
+
+
+Pandas
+💡 Noch ein kleiner Bonus-Trick:
+Wenn du entry_point, apex_point, end_point schon hast, kannst du die Werte auch gleich in einem Rutsch holen:
+
+points = [entry_point, apex_point, end_point]
+speeds = speed_df.loc[points, "SPEED"].to_dict()

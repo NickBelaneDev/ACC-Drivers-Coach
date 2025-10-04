@@ -7,7 +7,7 @@ from src.telemetry.telemetry_utils import get_df_from_area
 from src.lap.lap_dataclasses import BrakeMetrics, TrailBrakeMetrics
 
 
-class BrakeAnalysis:
+class BrakeAnalyzer:
     def __init__(self, df: pd.DataFrame=pd.DataFrame()):
         #self.lap_df = df
         pass

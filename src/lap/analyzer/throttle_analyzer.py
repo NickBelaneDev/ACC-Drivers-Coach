@@ -8,7 +8,7 @@ from src.logger import get_logger
 
 log = get_logger("ThrottleAnalysis", level="DEBUG", to_console=True)
 
-class ThrottleAnalysis:
+class ThrottleAnalyzer:
     def __init__(self):
         pass
 

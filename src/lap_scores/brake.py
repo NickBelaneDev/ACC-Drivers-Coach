@@ -8,7 +8,7 @@
 #       - Korrelation zwischen Bremse und Rotation ist interessant zur Auswertung des Trailbrakings
 #
 from src.logger import get_logger
-from src.lap.analyzer.brake_analysis import BrakeAnalysis
+from src.lap.analyzer.brake_analyzer import BrakeAnalyzer
 
 import pandas as pd
 import numpy as np
@@ -20,7 +20,7 @@ class BrakeScore:
     def __init__(self, df: pd.DataFrame):
         """df is a DataFrame where the car is under braking"""
         self.df: pd.DataFrame = df #df[["Distance", "BRAKE", "STEERANGLE", "G_LAT", "gForceVector", "ROTY", "SPEED"]].sort_values("Distance").copy()
-        self._analysis = BrakeAnalysis(df)
+        self._analysis = BrakeAnalyzer(df)
 
 
     def calculate(self) -> float:

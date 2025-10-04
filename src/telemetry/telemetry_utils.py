@@ -38,9 +38,12 @@ def get_df_from_area(start_m: int, end_m: int, data: list[str] | str, df: pd.Dat
 
 def get_corner_df_from_df(corner_id: int, df: pd.DataFrame) -> pd.DataFrame:
     """
-    corner_id must be in df!
-    :return: DataFrame of the corner
+    To get the corner specific area from the main raw DataFrame, you can use this function.
+    :param corner_id: The id of the corner you want to get. The id must be in 'df'.
+    :param df: Raw DataFrame with all the telemetry data and corner meta data loaded.
+    :return: The area of the corner from the DataFrame.
     """
+
     # load all relevant raw corner_data
 
     _corner_df = df[df["corner_id"] == corner_id]

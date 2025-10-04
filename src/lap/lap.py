@@ -117,6 +117,7 @@ class Lap:
         lap_df = self._raw_df
         if _lap_df is not None:
             log.debug(f"{lap_df.info()=}")
+
         corners: list = []
         for _id in sorted(lap_df["corner_id"].dropna().unique()):
             _corner_df = get_corner_df_from_df(_id, lap_df)

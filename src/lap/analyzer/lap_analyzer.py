@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-from src.lap.analyzer.brake_analysis import BrakeAnalysis
+from src.lap.analyzer.brake_analyzer import BrakeAnalyzer
 from src.logger import get_logger
 
 from src.lap.lap_dataclasses import Segment, SegmentMetrics, Corner, CornerMetrics
@@ -74,7 +74,7 @@ class LapAnalyzer:
 
         tbf95_s = _advanced_brake_data["tbf95"]
 
-        brake_analysis = BrakeAnalysis()
+        brake_analysis = BrakeAnalyzer()
         brake_data = brake_analysis.get_brake_data(corner_df)
         trail_brake_data = brake_data.trail_brake
         avg_brake = brake_data.avg_brake
@@ -161,7 +161,6 @@ class LapAnalyzer:
         )
 
         return corner_instance
-
     def segment(self, segment_df: pd.DataFrame) -> tuple[Segment, SegmentMetrics]:
         if segment_df.empty:
             print("segment_df is empty!")
