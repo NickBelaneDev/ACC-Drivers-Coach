@@ -1,16 +1,11 @@
 # Analyzer for the complete Brake Data
 import pandas as pd
-import numpy as np
-from dataclasses import asdict
 from src.telemetry.telemetry_calculator import TelemetryCalculator
 from src.telemetry.telemetry_utils import get_df_from_area
 from src.lap.lap_dataclasses import BrakeMetrics, TrailBrakeMetrics
 
 
 class BrakeAnalyzer:
-    def __init__(self, df: pd.DataFrame=pd.DataFrame()):
-        #self.lap_df = df
-        pass
     @staticmethod
     def _trail_brake_zone(df: pd.DataFrame) -> dict | TrailBrakeMetrics:
         """
@@ -46,14 +41,7 @@ class BrakeAnalyzer:
             stability=trail_brake_stability
         )
 
-    def get_brake_data(self, telemetry_df: pd.DataFrame, threshold:int=2) -> BrakeMetrics | None:
-        """
-        ACHTUNG! Noch muss geprüft werden, ob es überhaupt einen Bremspunkt gibt!
-        :param telemetry_df:
-        :param threshold:
-        :return: dataclass object of the BrakeMetrics
-        """
-
+    def analyze(self, telemetry_df: pd.DataFrame, threshold:int=2) -> BrakeMetrics:
         brake_area_start_m = telemetry_df["brakeArea_m"].min()
         brake_area_end_m = telemetry_df["cornerApex_m"].iloc[0]
 
@@ -67,7 +55,7 @@ class BrakeAnalyzer:
             was_not_braking = brake_df["BRAKE"].shift(1).fillna(0) < threshold
             is_braking = brake_df["BRAKE"] >= threshold
             _braking_zone_df = brake_df[is_braking & was_not_braking] # This is the area where the car is under braking
-            return _braking_zone_df if not braking_zone_df.empty else pd.DataFrame
+            return _braking_zone_df if not _braking_zone_df.empty else pd.DataFrame
         braking_zone_df = _find_braking_window()
         if braking_zone_df.empty:
             return BrakeMetrics.empty("no-brake-point-detected")

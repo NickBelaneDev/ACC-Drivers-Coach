@@ -1,7 +1,7 @@
 import pandas as pd
 import math
 
-from src.lap.dataframe_validation import DataFrameValidator, DataFrameColumnError, EmptyDataFrameError
+from src.lap.dataframe_validation import DataFrameValidator, MissingColumnError, EmptyDataFrameError
 from ..lap_dataclasses import SpeedMetrics
 from ...telemetry.telemetry_calculator import TelemetryCalculator
 
@@ -18,14 +18,14 @@ class SpeedAnalyzer:
         cols = ["SPEED", "Distance", "cornerStart_m", "cornerApex_m", "cornerEnd_m"]
         try:
             DataFrameValidator.validate_df(df, cols)
-        except DataFrameColumnError as d_c_e:
+        except MissingColumnError as d_c_e:
             return SpeedMetrics.empty(reason=str(d_c_e))
         except EmptyDataFrameError as e_d_e:
             return SpeedMetrics.empty(reason=str(e_d_e))
 
         # Refactor the DataFrame end exclude unnecessary meta-data.
-        speed_df:pd.DataFrame = df[cols].drop(["cornerStart_m", "cornerApex_m", "cornerEnd_m"]).sort_values().copy()
-        speed_df = speed_df.set_index("Distance", drop=False) # For safety reasons we don't drop the 'Distance' col
+        speed_df:pd.DataFrame = df[cols].sort_values(by="Distance").copy()
+        #speed_df = speed_df.set_index("Distance", drop=False) # For safety reasons we don't drop the 'Distance' col
 
         speed_s: pd.Series = speed_df["SPEED"].copy()
         entry_point: float = df["cornerStart_m"].min()
@@ -33,9 +33,9 @@ class SpeedAnalyzer:
         end_point: float = df["cornerEnd_m"].min()
 
         # Calculate and get the appropriate data from the DataFrame
-        entry_speed_kmh: float = speed_df.at[entry_point, "SPEED"]
-        apex_speed_kmh: float = speed_df.at[apex_point, "SPEED"]
-        exit_speed_kmh: float = speed_df.at[end_point, "SPEED"]
+        entry_speed_kmh: float = speed_df.loc[speed_df["Distance"] == entry_point, "SPEED"].iloc[0]
+        apex_speed_kmh: float = speed_df.loc[speed_df["Distance"] == apex_point, "SPEED"].iloc[0]
+        exit_speed_kmh: float = speed_df.loc[speed_df["Distance"] == end_point, "SPEED"].iloc[0]
         avg_speed_kmh: float = speed_s.mean()
         max_speed_kmh: float = speed_s.max()
         min_speed_kmh: float = speed_s.min()

@@ -1,7 +1,7 @@
 import pandas as pd
 from src.telemetry.telemetry_calculator import TelemetryCalculator
 from ..lap_dataclasses import SteerMetrics
-from src.lap.dataframe_validation import DataFrameValidator, DataFrameColumnError
+from src.lap.dataframe_validation import DataFrameValidator, MissingColumnError
 
 
 class SteerAnalyzer:
@@ -15,7 +15,7 @@ class SteerAnalyzer:
         cols = ["STEERANGLE", "BRAKE", "THROTTLE", "ROTY", "Distance"]
         try:
             DataFrameValidator.validate_df(df, cols) # Returns True or raises DataFrameColumnError
-        except DataFrameColumnError as er:
+        except MissingColumnError as er:
             return SteerMetrics.empty(reason=str(er))
 
         steer_s: pd.Series = df["STEERANGLE"]

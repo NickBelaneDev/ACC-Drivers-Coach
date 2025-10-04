@@ -66,7 +66,8 @@ class Emptyable:
         return getattr(self, "status", None) == StatusEnum.empty
     def is_invalid(self) -> bool:
         return getattr(self, "status", None) == StatusEnum.invalid
-
+    def get_reason(self) -> str:
+        return getattr(self, "reason", None)
 # --- Stufe 1: Atomare Metriken ---
 
 @dataclass(frozen=True)
@@ -134,8 +135,6 @@ class ThrottleMetrics(Emptyable):
     avg_throttle: float
     min_throttle: float
     max_throttle: float
-    min_throttle_m: float
-    max_throttle_m: float
 
     integral: float
     acceleration_delta_m: float
@@ -153,7 +152,6 @@ class ThrottleMetrics(Emptyable):
     def empty(cls, reason: str = "no-gForce-measurements-detected"):
         return cls(
             avg_throttle=math.nan, min_throttle=math.nan, max_throttle=math.nan,
-            min_throttle_m=math.nan, max_throttle_m=math.nan,
             integral=math.nan, acceleration_delta_m=math.nan, acceleration_rate=math.nan,
             acceleration_delta_s=math.nan, ttf95=math.nan, throttle_smoothness=math.nan,
             exit_throttle_init_m=math.nan, status=StatusEnum.empty, reason=reason
@@ -308,6 +306,7 @@ class CarDynamics(Emptyable):
             status=StatusEnum.empty, reason=reason
         )
 
+
 @dataclass(frozen=True)
 class DriverPerformance(Emptyable):
     """Fasst alle Aktionen des Fahrers zusammen."""
@@ -353,7 +352,7 @@ class CornerMetrics(Emptyable):
     time_delta_s: float
     dynamics: Optional[CarDynamics] = None
     driver: Optional[DriverPerformance] = None
-    scores: Optional[PerformanceScores] = None
+    #scores: Optional[PerformanceScores] = None // We will add this later on!
 
     status: StatusEnum = StatusEnum.ok
     reason: str = None
@@ -361,8 +360,11 @@ class CornerMetrics(Emptyable):
     @classmethod
     def empty(cls, reason="missing-information"):
         return cls(
-            time_delta_s=math.nan, dynamics=CarDynamics.empty(reason=reason), driver=DriverPerformance.empty(reason=reason),
-            scores=PerformanceScores.empty(reason=reason), status=StatusEnum.empty, reason=reason
+            time_delta_s=math.nan,
+            dynamics=CarDynamics.empty(reason=reason),
+            driver=DriverPerformance.empty(reason=reason),
+            # scores=PerformanceScores.empty(reason=reason),
+            status=StatusEnum.empty, reason=reason
         )
 
 @dataclass(frozen=True)

@@ -1,6 +1,9 @@
 import pandas as pd
-import numpy as np
+import math
 from dataclasses import asdict
+
+from src.lap.dataframe_validation import DataFrameValidator, MissingColumnError, MissingColumnError, \
+    EmptyDataFrameError
 from src.telemetry.telemetry_calculator import TelemetryCalculator
 from src.telemetry.telemetry_utils import get_df_from_area
 from src.lap.lap_dataclasses import ThrottleMetrics
@@ -13,7 +16,7 @@ class ThrottleAnalyzer:
         pass
 
     @staticmethod
-    def get_throttle_data(df:pd.DataFrame, threshold:int=0) -> ThrottleMetrics:
+    def analyze(df:pd.DataFrame, threshold:int=0) -> ThrottleMetrics:
         """
         :param df: pd.DataFrame of the area you want to analyze. Typically, it is the corner area defined in the corresponding [map]corner.json file.
         :param threshold: threshold for throttle detection.
@@ -44,10 +47,12 @@ class ThrottleAnalyzer:
         _cols = ["THROTTLE", "Distance", "Time"]
 
         try:
-            throttle_df = _validate_df(df, _cols)
-        except ValueError as v:
+            # throttle_df = _validate_df(df, _cols) OLD VERSION
+            DataFrameValidator.validate_df(df, _cols)
+        except (MissingColumnError, EmptyDataFrameError) as v:
             return ThrottleMetrics.empty(reason=str(v))
 
+        throttle_df: pd.DataFrame = df[_cols].copy()
 
         # Determine the acceleration window of the DataFrame
         # This is the part, where the driver is accelerating out of the corner.
@@ -62,8 +67,9 @@ class ThrottleAnalyzer:
         avg_throttle: float = round(throttle_df[throttle_df["THROTTLE"] > 0]["THROTTLE"].mean(), 4)
         min_throttle: float = round(throttle_df["THROTTLE"].min(), 4)
         max_throttle: float = round(throttle_df["THROTTLE"].max(), 4)
-        min_throttle_m: float = throttle_df.loc[min_throttle]["Distance"]
-        max_throttle_m: float = throttle_df.loc[max_throttle]["Distance"]
+
+        #min_throttle_m: float = throttle_df.loc[min_throttle]["Distance"]
+        #max_throttle_m: float = throttle_df.loc[max_throttle]["Distance"]
 
         # Detailed Exit-Throttle Analysis
         integral: float = round(TelemetryCalculator.get_integral(acceleration_window_df, "THROTTLE", "Distance"), 4)
@@ -74,7 +80,14 @@ class ThrottleAnalyzer:
 
 
         return ThrottleMetrics(
-            avg_throttle=avg_throttle, min_throttle_m=min_throttle_m, min_throttle=min_throttle, max_throttle_m=max_throttle_m,
-            max_throttle=max_throttle, integral=integral, exit_throttle_init_m=exit_throttle_init_m, ttf95=ttf95, throttle_smoothness=throttle_smoothness,
-            acceleration_delta_m=acceleration_delta_m, acceleration_delta_s=acceleration_delta_s, acceleration_rate=acceleration_rate
+            avg_throttle=avg_throttle,
+            min_throttle=min_throttle,
+            max_throttle=max_throttle,
+            integral=integral,
+            exit_throttle_init_m=exit_throttle_init_m,
+            ttf95=ttf95,
+            throttle_smoothness=throttle_smoothness,
+            acceleration_delta_m=acceleration_delta_m,
+            acceleration_delta_s=acceleration_delta_s,
+            acceleration_rate=acceleration_rate
         )

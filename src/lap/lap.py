@@ -1,7 +1,10 @@
 import pandas as pd
 from typing import Literal
-from src.lap.analyzer.lap_analyzer import LapAnalyzer
 
+from .adapter import DataAdapter
+from .analyzer.corner_analyzer import CornerAnalyzer
+from .analyzer.lap_analyzer import LapAnalyzer
+from .lap_dataclasses import Corner, CornerMetrics
 from src.logger import get_logger
 from src.telemetry.telemetry_calculator import TelemetryCalculator
 from src.telemetry.telemetry_utils import get_corner_df_from_df, get_segment_df_from_lap_fd, segment_to_df, corner_to_df
@@ -121,10 +124,10 @@ class Lap:
         corners: list = []
         for _id in sorted(lap_df["corner_id"].dropna().unique()):
             _corner_df = get_corner_df_from_df(_id, lap_df)
-            _corner = self._analyze.corner(_corner_df)
-            _corner_metrics = _corner.metrics
-            corner_df = corner_to_df(_corner, _corner_metrics)
-            corners.append(corner_df)
+            _analyzed_corner = CornerAnalyzer(_corner_df).analyze()
+
+            analyzed_corner_df = DataAdapter.to_dataframe(_analyzed_corner)
+            corners.append(analyzed_corner_df)
 
         _final_df = pd.concat(corners, ignore_index=True)
 

@@ -75,7 +75,7 @@ class LapAnalyzer:
         tbf95_s = _advanced_brake_data["tbf95"]
 
         brake_analysis = BrakeAnalyzer()
-        brake_data = brake_analysis.get_brake_data(corner_df)
+        brake_data = brake_analysis.analyze(corner_df)
         trail_brake_data = brake_data.trail_brake
         avg_brake = brake_data.avg_brake
         max_brake = brake_data.max_brake

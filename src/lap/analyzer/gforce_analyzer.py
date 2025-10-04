@@ -2,7 +2,7 @@ from src.lap.lap_dataclasses import GForceMetrics
 from src.telemetry.telemetry_calculator import TelemetryCalculator
 import pandas as pd
 
-from src.lap.dataframe_validation import DataFrameValidator, DataFrameColumnError
+from src.lap.dataframe_validation import DataFrameValidator, MissingColumnError
 
 
 class GForceAnalyzer:
@@ -11,7 +11,7 @@ class GForceAnalyzer:
         cols = ["G_LAT", "G_LON", "gForceVector", "Distance"]
         try:
             DataFrameValidator.validate_df(df, cols)
-        except DataFrameColumnError as e:
+        except MissingColumnError as e:
             return GForceMetrics.empty(reason=str(e))
 
         g_force_df: pd.DataFrame = df[cols].copy()

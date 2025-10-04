@@ -30,7 +30,7 @@ class BrakeScore:
 
         raw_brake_df = self.df[braking_mask]
         #print(f"{raw_brake_df["BRAKE"]}")
-        brake_data = self._analysis.get_brake_data(self.df)
+        brake_data = self._analysis.analyze(self.df)
         """
         delta_v = max(brake_data.brake_point_speed - brake_data.brake_release_speed, 0.0)
         brake_efficiency = delta_v / max(brake_data.overall_brake_force, 1e-6)
