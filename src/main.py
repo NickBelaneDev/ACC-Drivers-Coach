@@ -32,9 +32,9 @@ if __name__ == "__main__":
     user_corners_df = user_lap.get_all_analyzed_corners_as_df()
     record_corners_df = record_lap.get_all_analyzed_corners_as_df()
 
-    corner_02_model = user_lap.get_corner_model(2)
+    corner_02_model = user_lap.get_corner_model(4)
 
-    print(corner_02_model.get_corner_meta_data(mode=ReturnFormat.DICT))
+    print(corner_02_model.get_driver_performance(mode=ReturnFormat.DICT))
     print(user_corners_df[[me.LapMeta.NAME.value, me.DriverBrake.BRAKE_RELEASE_M.value, me.DriverSteer.INTEGRAL.value]],
           record_corners_df[[me.LapMeta.NAME.value, me.DriverBrake.BRAKE_RELEASE_M.value, me.DriverSteer.INTEGRAL.value]])
 

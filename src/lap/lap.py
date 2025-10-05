@@ -13,21 +13,20 @@ from src.telemetry.telemetry_utils import get_raw_corner_df_from_df, get_segment
 from .corner.corner_model import CornerModel
 log = get_logger("Lap - logger", to_console=False)
 
-# Die Lap-Klasse bekommt einen DataFrame, der
-# Momentan können wir aus der Lap Klasse nur DataFrames ausspucken. Zur weiterverarbeitung, sind die Corner-Objekte aber besser.
 class Lap:
     def __init__(self, raw_lap_df: pd.DataFrame, track_name: str, driver: str = "User"):
         """Initial API Object for working with laps."""
         self._raw_df: pd.DataFrame = TelemetryCalculator.calc_g_force_vector(raw_lap_df)
         self._analyze = LapAnalyzer(self._raw_df)
         self._corner_builder = CornerBuilder()
+
         # --- public settings ---
         self.track_name: str = track_name
         self.lap_time_s: float = self._raw_df["Time"].iloc[-1] - self._raw_df["Time"].iloc[0]
         self.corner_ids = self._raw_df["corner_id"].dropna().unique().tolist()
         self.segment_ids = self._raw_df["segment_id_x"].dropna().unique().tolist()
         self.corners = self._load_corner_models() # ACHGTUNG DEBUG HIER!
-        self.corners_df = self._load_corner_models()
+
         self.segments_df = self._load_segments()
         self.driver = driver
 
