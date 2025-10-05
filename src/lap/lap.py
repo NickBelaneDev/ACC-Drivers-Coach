@@ -4,6 +4,7 @@ from typing import Literal
 from .adapter import DataAdapter
 from .analyzer.corner_analyzer import CornerAnalyzer, CornerBuilder
 from .analyzer.lap_analyzer import LapAnalyzer
+from .corner.corner_enums import ReturnFormat
 from .dataframe_validation import EmptyDataFrameError
 from .lap_dataclasses import Corner, CornerMetrics
 from src.logger import get_logger
@@ -25,8 +26,8 @@ class Lap:
         self.lap_time_s: float = self._raw_df["Time"].iloc[-1] - self._raw_df["Time"].iloc[0]
         self.corner_ids = self._raw_df["corner_id"].dropna().unique().tolist()
         self.segment_ids = self._raw_df["segment_id_x"].dropna().unique().tolist()
-        self.corners = self._load_corners() # ACHGTUNG DEBUG HIER!
-        self.corners_df = self._load_corners()
+        self.corners = self._load_corner_models() # ACHGTUNG DEBUG HIER!
+        self.corners_df = self._load_corner_models()
         self.segments_df = self._load_segments()
         self.driver = driver
 
@@ -72,7 +73,7 @@ class Lap:
 
         #print(_final_df)
         return _final_df.fillna(0)
-    def _load_corners(self, raw_lap_df:pd.DataFrame=None) -> dict[int, Corner]:
+    def _load_corner_models(self, raw_lap_df:pd.DataFrame=None) -> dict[int, CornerModel]:
         """Loads and returns a Dictionary with all analyzed corners as dataclasses.
         :param raw_lap_df is not implemented yet!
         """
@@ -80,62 +81,41 @@ class Lap:
         if raw_lap_df is not None:
             raise NotImplementedError
 
-        # We fill a dict with all corner objects and return it
-        #
         corners_dict: dict = {}
         for _id in self.corner_ids:
             raw_corner_df = get_raw_corner_df_from_df(_id, raw_df)
-            #corner = self._corner_builder.build_corner(raw_corner_df)
+
             corner_model = CornerModel(raw_corner_df)
-            corner: Corner = corner_model.get_corner()
-            corners_dict[_id] = corner
+            corners_dict[_id] = corner_model
 
         return corners_dict
 
     FRMT = Literal["DataFrame", "dict"]
-    def get_corners_df(self, frmt:FRMT="DataFrame") -> pd.DataFrame | dict:
-        """
-        Returns a DataFrame with all corners' calculated and meta-data.
-        :param frmt: ["DataFrame", "dict"]
-        """
-        raise NotImplementedError
-        if frmt == "DataFrame":
-            return self.corners_df
-        elif frmt == "dict":
-            return self.corners_df.to_dict(orient="index")
+    def get_corner_model(self, corner_id: int) -> CornerModel:
 
-    def get_corner_df_by_id(self, corner_id: int) -> pd.DataFrame:
-        """Returns all calculated and meta corner data in a single row DataFrame."""
-
-        self._dirty_corner_validation(corner_id)
-        _corner = self.get_corner_by_id(corner_id)
-        corner_df = DataAdapter.to_dataframe(_corner)
-        return corner_df
-
-    def get_corner_by_id(self, corner_id: int) -> Corner:
         self._dirty_corner_validation(corner_id)
         return self.corners[corner_id]
 
-    def get_segments_df(self, frmt:FRMT="DataFrame") -> pd.DataFrame | dict:
-        """
-          Returns a DataFrame with all segments' calculated and meta-data.
-          :param frmt: ["DataFrame", "dict"]
-          """
-        if frmt == "DataFrame":
-            return self.segments_df
-        elif frmt == "dict":
-            return self.segments_df.to_dict(orient="index")
-    def get_segment_df_by_id(self, _id: int) -> pd.DataFrame:
-        """Returns all calculated and meta segment data in a single row DataFrame."""
-        if _id not in self.segment_ids:
-            raise ValueError(f"{id=}, not in self.segment_ids!")
-        _segment = self.segments_df.loc[[_id]]
-        return _segment
+    def get_analyzed_corner_df(self, corner_id: int) -> pd.DataFrame:
+        """Returns all calculated and meta corner data in a single row DataFrame."""
 
-    def get_raw_df(self, segment_id: int=None, corner_id: int=None, area: tuple[int,int]=None) -> pd.DataFrame:
+        self._dirty_corner_validation(corner_id)
+        corner_model = self.get_corner_model(corner_id)
+
+        return corner_model.get_corner(mode=ReturnFormat.DATAFRAME)
+
+    def get_all_analyzed_corners_as_df(self) -> pd.DataFrame:
+        corners_list = [c.get_corner(mode=ReturnFormat.DATAFRAME) for _, c in self.corners.items()]
+        corners_df = pd.concat(corners_list)
+        if corners_df.empty:
+            raise EmptyDataFrameError()
+        return corners_df
+
+    def get_raw_lap_df(self, segment_id: int=None, corner_id: int=None, area: tuple[int,int]=None) -> pd.DataFrame:
         """Get the raw normalized DataFrame for a certain area. You can either choose segment_id, corner_id or area. By default, you get the complete raw_df."""
         def slice_by_distance(start: int, end: int):
             return self._raw_df[(self._raw_df["Distance"] >= start) & (self._raw_df["Distance"] <= end)].copy()
+
         if segment_id and segment_id in self.segment_ids:
             mask = self._raw_df["segment_id_x"] == segment_id
             _start = self._raw_df[mask]["Distance"].min()
@@ -159,9 +139,21 @@ class Lap:
 
         return self._raw_df
 
-    def get_all_analyzed_corners_as_df(self) -> pd.DataFrame:
-        corners_list = [DataAdapter.to_dataframe(c) for _, c in self.corners.items()]
-        corners_df = pd.concat(corners_list)
-        if corners_df.empty:
-            raise EmptyDataFrameError()
-        return corners_df
+    def get_segments_df(self, frmt:FRMT="DataFrame") -> pd.DataFrame | dict:
+        """
+          Returns a DataFrame with all segments' calculated and meta-data.
+          :param frmt: ["DataFrame", "dict"]
+          """
+        if frmt == "DataFrame":
+            return self.segments_df
+        elif frmt == "dict":
+            return self.segments_df.to_dict(orient="index")
+    def get_segment_df_by_id(self, _id: int) -> pd.DataFrame:
+        """Returns all calculated and meta segment data in a single row DataFrame."""
+        if _id not in self.segment_ids:
+            raise ValueError(f"{id=}, not in self.segment_ids!")
+        _segment = self.segments_df.loc[[_id]]
+        return _segment
+
+
+

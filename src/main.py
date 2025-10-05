@@ -1,4 +1,5 @@
 from src.lap.adapter import DataAdapter
+from src.lap.corner.corner_enums import ReturnFormat
 from src.lap.lap_comparer import LapCompare
 from src.telemetry.telemetry_loader import TelemetryLoader
 from src.logger import get_logger
@@ -25,22 +26,15 @@ if __name__ == "__main__":
     raw_record_df = t_loader.telemetry_from_csv(hot_lap_file_path, "spa")
     raw_user_df = t_loader.telemetry_from_csv(user_lap_file_path, "spa")
 
-    #print(user_df.info())
-    """
-    corner_df = get_raw_corner_df_from_df(4, user_df)
-    corner = CornerBuilder.build_corner(corner_df)
-    corner_dict = DataAdapter.to_dict(corner)
-    """
-
     user_lap = Lap(raw_user_df, "Spa", "Stuntman Mike")
     record_lap = Lap(raw_record_df, "Spa", "Record Man")
-    #print(test_lap.corners[13])
+
     user_corners_df = user_lap.get_all_analyzed_corners_as_df()
     record_corners_df = record_lap.get_all_analyzed_corners_as_df()
 
-    for e in me.DriverSteer:
-        print(e.value())
+    corner_02_model = user_lap.get_corner_model(2)
 
+    print(corner_02_model.get_corner_meta_data(mode=ReturnFormat.DICT))
     print(user_corners_df[[me.LapMeta.NAME.value, me.DriverBrake.BRAKE_RELEASE_M.value, me.DriverSteer.INTEGRAL.value]],
           record_corners_df[[me.LapMeta.NAME.value, me.DriverBrake.BRAKE_RELEASE_M.value, me.DriverSteer.INTEGRAL.value]])
 
@@ -52,44 +46,3 @@ if __name__ == "__main__":
         _df = DataAdapter.to_dataframe(test_lap)
         _df.to_excel(writer, sheet_name="user_lap-01", index=False)
     """
-
-    def plotten():
-        user_lap = Lap(user_df, "Spa")
-        record_lap = Lap(raw_record_df, "Spa")
-
-        corner_ids = user_lap.corner_ids
-
-        # These are the corner metrics as a df
-        u_corners_df: pd.DataFrame = user_lap.get_corner_df_by_id(1)
-        r_corners_df = record_lap.get_corners_df()
-
-        u_raw_df = user_lap.get_raw_df()
-        distance = u_raw_df["Distance"]
-        _u_speed = u_raw_df["SPEED"]
-
-        r_raw_df = record_lap.get_raw_df()
-        _r_speed = r_raw_df["SPEED"]
-        _r_speed = _r_speed.drop(_r_speed.index[-1])
-        # ===== ======= ===================================================================
-        # ===== ======= ===================================================================
-        # ===== MATPLOT ===================================================================
-        fig, ax = plt.subplots(figsize=(8,5))
-        ax.plot(distance, _u_speed, color='red')
-        ax.plot(distance, _r_speed, color='blue', linestyle="--")
-        ax.set_title("ACC Driver Coach")
-        ax.set_xlabel("Distance/m")
-        ax.set_ylabel("Speed/kmh")
-        ax.legend()
-        ax.grid(True)
-        plt.show()
-
-
-
-
-    def excel_writer(u_df:pd.DataFrame, r_df: pd.DataFrame):
-        lap_compare = LapCompare(u_df)
-        _diff_df = lap_compare.calc_corner_differences(u_df, r_df)
-        with pd.ExcelWriter("diff_excel.xlsx", engine="openpyxl") as writer:
-            u_df.to_excel(writer, sheet_name="sheet_user", index=False)
-            r_df.to_excel(writer, sheet_name="sheet_record", index=False)
-            _diff_df.to_excel(writer, sheet_name="sheet_diff", index=False)

@@ -31,7 +31,7 @@ def load_lap(track: str, csv_file: str) -> pd.DataFrame:
     loader = TelemetryLoader(base_dir=PROJECT_ROOT)
     df = loader.telemetry_from_csv(f"assets/MoTec/{track}/{csv_file}", track)
     lap = Lap(df, track)
-    return lap.get_raw_df()
+    return lap.get_raw_lap_df()
 
 
 def main() -> None:

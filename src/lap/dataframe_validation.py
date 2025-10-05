@@ -17,8 +17,9 @@ class EmptyDataFrameError(Exception):
 
 class DataFrameValidator:
     @staticmethod
-    def validate_df(df: pd.DataFrame, cols: list[str]=None) -> bool:
+    def validate_df(df: pd.DataFrame, cols: list[str] | str =None) -> bool:
         """Check if the DataFrame is not empty and has all cols. Raises a DataFrameColumnError if not."""
+        # TODO: Add the possibility to insert strings on top of lists.
         if df.empty:
             raise EmptyDataFrameError(f"Empty DataFrame!")
         to_check_cols = ["Distance", "Time"]
