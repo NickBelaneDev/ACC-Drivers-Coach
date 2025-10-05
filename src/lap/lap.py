@@ -2,13 +2,14 @@ import pandas as pd
 from typing import Literal
 
 from .adapter import DataAdapter
-from .analyzer.corner_analyzer import CornerAnalyzer
+from .analyzer.corner_analyzer import CornerAnalyzer, CornerBuilder
 from .analyzer.lap_analyzer import LapAnalyzer
+from .dataframe_validation import EmptyDataFrameError
 from .lap_dataclasses import Corner, CornerMetrics
 from src.logger import get_logger
 from src.telemetry.telemetry_calculator import TelemetryCalculator
-from src.telemetry.telemetry_utils import get_corner_df_from_df, get_segment_df_from_lap_fd, segment_to_df, corner_to_df
-
+from src.telemetry.telemetry_utils import get_raw_corner_df_from_df, get_segment_df_from_lap_fd, segment_to_df, corner_to_df
+from .corner.corner_model import CornerModel
 log = get_logger("Lap - logger", to_console=False)
 
 # Die Lap-Klasse bekommt einen DataFrame, der
@@ -18,21 +19,78 @@ class Lap:
         """Initial API Object for working with laps."""
         self._raw_df: pd.DataFrame = TelemetryCalculator.calc_g_force_vector(raw_lap_df)
         self._analyze = LapAnalyzer(self._raw_df)
-
+        self._corner_builder = CornerBuilder()
         # --- public settings ---
         self.track_name: str = track_name
         self.lap_time_s: float = self._raw_df["Time"].iloc[-1] - self._raw_df["Time"].iloc[0]
-
+        self.corner_ids = self._raw_df["corner_id"].dropna().unique().tolist()
+        self.segment_ids = self._raw_df["segment_id_x"].dropna().unique().tolist()
+        self.corners = self._load_corners() # ACHGTUNG DEBUG HIER!
         self.corners_df = self._load_corners()
         self.segments_df = self._load_segments()
         self.driver = driver
-        self.corner_ids = self._raw_df["corner_id"].dropna().unique().tolist()
-        self.segment_ids = self._raw_df["segment_id_x"].dropna().unique().tolist()
+
 
     def __repr__(self):
         print(f"Track: {self.track_name}\nLap-Time: {self.lap_time_s}")
     def __str__(self):
         return f"Track: {self.track_name}\nLap-Time: {self.lap_time_s}"
+
+    # Private Methods
+    def _dirty_corner_validation(self, corner_id) -> bool:
+        """
+        Raises a ValueError if something is wrong with the corner_id.
+        :param corner_id:
+        :return: True if the corner is okay, else a ValueError will raise.
+        """
+        if corner_id not in self.corner_ids:
+            raise ValueError(f"{id=}, not in self.corner_ids!")
+
+        _corner = self.corners[corner_id]
+
+        if _corner.is_empty():
+            raise ValueError("Empty Corner!")
+
+        return True
+
+    def _load_segments(self, raw_lap_df:pd.DataFrame=None) -> pd.DataFrame:
+        """Loads and returns a DataFrame consisting of all analyzed segments."""
+        lap_df = self._raw_df
+        if raw_lap_df is not None:
+            log.debug(f"{lap_df.info()=}")
+
+        segments = []
+        # Filling all the rows
+        for _id in sorted(lap_df["segment_id_x"].dropna().unique()):
+            _segment_df = get_segment_df_from_lap_fd(_id, lap_df)
+            _segment, _segment_metrics = self._analyze.segment(_segment_df)
+            #print(f"{_segment=}")
+            segment_df = segment_to_df(_segment, _segment_metrics)
+
+            segments.append(segment_df)
+        _final_df = pd.concat(segments, ignore_index=True)
+
+        #print(_final_df)
+        return _final_df.fillna(0)
+    def _load_corners(self, raw_lap_df:pd.DataFrame=None) -> dict[int, Corner]:
+        """Loads and returns a Dictionary with all analyzed corners as dataclasses.
+        :param raw_lap_df is not implemented yet!
+        """
+        raw_df = self._raw_df
+        if raw_lap_df is not None:
+            raise NotImplementedError
+
+        # We fill a dict with all corner objects and return it
+        #
+        corners_dict: dict = {}
+        for _id in self.corner_ids:
+            raw_corner_df = get_raw_corner_df_from_df(_id, raw_df)
+            #corner = self._corner_builder.build_corner(raw_corner_df)
+            corner_model = CornerModel(raw_corner_df)
+            corner: Corner = corner_model.get_corner()
+            corners_dict[_id] = corner
+
+        return corners_dict
 
     FRMT = Literal["DataFrame", "dict"]
     def get_corners_df(self, frmt:FRMT="DataFrame") -> pd.DataFrame | dict:
@@ -40,17 +98,23 @@ class Lap:
         Returns a DataFrame with all corners' calculated and meta-data.
         :param frmt: ["DataFrame", "dict"]
         """
+        raise NotImplementedError
         if frmt == "DataFrame":
             return self.corners_df
         elif frmt == "dict":
             return self.corners_df.to_dict(orient="index")
-    def get_corner_df_by_id(self, _id: int) -> pd.DataFrame:
-        """Returns all calculated and meta corner data in a single row DataFrame."""
-        if _id not in self.corner_ids:
-            raise ValueError(f"{id=}, not in self.corner_ids!")
 
-        _corner = self.corners_df[self.corners_df["id"] == _id].copy()
-        return _corner
+    def get_corner_df_by_id(self, corner_id: int) -> pd.DataFrame:
+        """Returns all calculated and meta corner data in a single row DataFrame."""
+
+        self._dirty_corner_validation(corner_id)
+        _corner = self.get_corner_by_id(corner_id)
+        corner_df = DataAdapter.to_dataframe(_corner)
+        return corner_df
+
+    def get_corner_by_id(self, corner_id: int) -> Corner:
+        self._dirty_corner_validation(corner_id)
+        return self.corners[corner_id]
 
     def get_segments_df(self, frmt:FRMT="DataFrame") -> pd.DataFrame | dict:
         """
@@ -95,42 +159,9 @@ class Lap:
 
         return self._raw_df
 
-    # Private Methods
-    def _load_segments(self, _lap_df:pd.DataFrame=None) -> pd.DataFrame:
-        """Loads and returns a DataFrame consisting of all analyzed segments."""
-        lap_df = self._raw_df
-        if _lap_df is not None:
-            log.debug(f"{lap_df.info()=}")
-
-        segments = []
-        # Filling all the rows
-        for _id in sorted(lap_df["segment_id_x"].dropna().unique()):
-            _segment_df = get_segment_df_from_lap_fd(_id, lap_df)
-            _segment, _segment_metrics = self._analyze.segment(_segment_df)
-            #print(f"{_segment=}")
-            segment_df = segment_to_df(_segment, _segment_metrics)
-
-            segments.append(segment_df)
-        _final_df = pd.concat(segments, ignore_index=True)
-
-        #print(_final_df)
-        return _final_df.fillna(0)
-    def _load_corners(self, _lap_df:pd.DataFrame=None) -> pd.DataFrame:
-        """Loads and returns a DataFrame consisting of all analyzed corners."""
-        lap_df = self._raw_df
-        if _lap_df is not None:
-            log.debug(f"{lap_df.info()=}")
-
-        corners: list = []
-        for _id in sorted(lap_df["corner_id"].dropna().unique()):
-            _corner_df = get_corner_df_from_df(_id, lap_df)
-            _analyzed_corner = CornerAnalyzer(_corner_df).analyze()
-
-            analyzed_corner_df = DataAdapter.to_dataframe(_analyzed_corner)
-            corners.append(analyzed_corner_df)
-
-        _final_df = pd.concat(corners, ignore_index=True)
-
-        return _final_df.fillna(0)
-
-
+    def get_all_analyzed_corners_as_df(self) -> pd.DataFrame:
+        corners_list = [DataAdapter.to_dataframe(c) for _, c in self.corners.items()]
+        corners_df = pd.concat(corners_list)
+        if corners_df.empty:
+            raise EmptyDataFrameError()
+        return corners_df

@@ -36,7 +36,7 @@ def get_df_from_area(start_m: int, end_m: int, data: list[str] | str, df: pd.Dat
 
     return _df[columns] if not _df.empty else pd.DataFrame()
 
-def get_corner_df_from_df(corner_id: int, df: pd.DataFrame) -> pd.DataFrame:
+def get_raw_corner_df_from_df(corner_id: int, df: pd.DataFrame) -> pd.DataFrame:
     """
     To get the corner specific area from the main raw DataFrame, you can use this function.
     :param corner_id: The id of the corner you want to get. The id must be in 'df'.

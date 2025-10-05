@@ -1,6 +1,7 @@
 import pandas as pd
+from pydantic import BaseModel
+
 from .brake_analyzer import BrakeAnalyzer
-from .gforce_analyzer import GForceAnalyzer
 from .speed_analyzer import SpeedAnalyzer
 from .throttle_analyzer import ThrottleAnalyzer
 from .steer_analyzer import SteerAnalyzer
@@ -53,21 +54,8 @@ class CornerAnalyzer:
             throttle=throttle_metrics,
             brake=brake_metrics
         )
-    def _get_corner_meta_data(self):
-        corner_id: int = self.df["corner_id"].min()
-        name: str = self.df["cornerName"].iloc[0] if not None else self.df["corner_name"].iloc[-1]
-        start_m: int = self.df["cornerStart_m"].min()
-        apex_m: int = self.df["cornerApex_m"].min()
-        end_m: int = self.df["cornerEnd_m"].min()
 
-
-        return {"id": corner_id,
-        "name":  name,
-        "start_m": start_m,
-        "apex_m": apex_m,
-        "end_m": end_m}
-
-    def analyze(self) -> Corner:
+    def analyze(self) -> CornerMetrics:
         car_dynamics: CarDynamics = self._analyze_car_dynamics()
         driver_performance: DriverPerformance = self._analyze_driver_performance()
 
@@ -76,21 +64,51 @@ class CornerAnalyzer:
 
         time_delta_s = self._get_time_delta()
 
-        corner_metrics = CornerMetrics(
+        return CornerMetrics(
             time_delta_s=time_delta_s,
             dynamics=car_dynamics,
             driver=driver_performance
         )
 
-        corner_meta_data = self._get_corner_meta_data()
+class CornerMetadata(BaseModel):
+    id: int
+    name: str
+    start_m: int
+    apex_m: int
+    end_m: int
+
+class CornerBuilder:
+    @staticmethod
+    def build_corner(df: pd.DataFrame) -> Corner:
+        """
+
+        :param df: A DataFrame consisting only of the associated area of the corner.
+        :return: Corner Dataclass with all corner information
+        """
+
+        def _get_corner_meta_data(df: pd.DataFrame) -> CornerMetadata:
+            corner_id: int = df["corner_id"].min()
+            name: str = df["cornerName"].iloc[0]
+            start_m: int = df["cornerStart_m"].min()
+            apex_m: int = df["cornerApex_m"].min()
+            end_m: int = df["cornerEnd_m"].min()
+
+            return CornerMetadata(
+                id=corner_id,
+                name=name,
+                start_m=start_m,
+                apex_m=apex_m,
+                end_m=end_m
+            )
+
+        meta_data = _get_corner_meta_data(df)
+        corner_metrics = CornerAnalyzer(df).analyze()
 
         return Corner(
-            id=corner_meta_data["id"],
-            name=corner_meta_data["name"],
-            start_m=corner_meta_data["start_m"],
-            apex_m=corner_meta_data["apex_m"],
-            end_m=corner_meta_data["end_m"],
+            id=meta_data.id,
+            name=meta_data.name,
+            start_m=meta_data.start_m,
+            apex_m=meta_data.apex_m,
+            end_m=meta_data.end_m,
             metrics=corner_metrics
         )
-
-

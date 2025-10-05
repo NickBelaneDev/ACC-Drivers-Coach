@@ -17,23 +17,24 @@ class EmptyDataFrameError(Exception):
 
 class DataFrameValidator:
     @staticmethod
-    def validate_df(df: pd.DataFrame, cols: list[str]) -> bool:
+    def validate_df(df: pd.DataFrame, cols: list[str]=None) -> bool:
         """Check if the DataFrame is not empty and has all cols. Raises a DataFrameColumnError if not."""
         if df.empty:
             raise EmptyDataFrameError(f"Empty DataFrame!")
+        to_check_cols = ["Distance", "Time"]
+
+        if cols:
+            to_check_cols = cols
 
         df_cols = df.columns
 
         if "Distance" not in df_cols:
             raise MissingColumnError("Distance")
 
-        #if df[df["Distance"] == 0].all():
-        #    raise MissingColumnError("Distance")
-
         if pd.api.types.is_float_dtype(df["Distance"]):
             raise TypeError(f"'Distance' Column is type float!")
 
-        for col in cols:
+        for col in to_check_cols:
             if col not in df_cols:
                 raise MissingColumnError(f"col: {col} is missing!")
 

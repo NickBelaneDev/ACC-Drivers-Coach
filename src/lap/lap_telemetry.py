@@ -5,14 +5,14 @@ from src.logger import get_logger
 from src.telemetry.telemetry_calculator import TelemetryCalculator
 from src.telemetry.telemetry_loader import TelemetryLoader
 from src.lap.analyzer.lap_analyzer import LapAnalyzer
-from src.telemetry.telemetry_utils import get_corner_df_from_df
+from src.telemetry.telemetry_utils import get_raw_corner_df_from_df
 
 log = get_logger(to_console=False, log_file="../lap_telemetry_log.log")
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
-hot_lap_file_path = "../assets/MoTec/spa/Spa-ferrari_296_gt3-fastest_lap_glat-float.csv"
-user_lap_file_path = "../assets/MoTec/spa/Spa-ferrari_296_gt3-8-hotlap_2-17-880.csv"
+hot_lap_file_path = "../assets/MoTec/spa/Spa-ferrari_296_gt3-fastest_lap_2-16-650.csv"
+user_lap_file_path = "../assets/MoTec/spa/Spa-ferrari_296_gt3-hotlap_2-17-880.csv"
 
 class LapTelemetry:
     def __init__(self, lap_df: pd.DataFrame):
@@ -46,7 +46,7 @@ class LapTelemetry:
         for corner_id in corner_ids:
             # if corner_id is invalid
 
-            _corner_df = get_corner_df_from_df(corner_id, df)
+            _corner_df = get_raw_corner_df_from_df(corner_id, df)
             _corner = self.analyze.corner(_corner_df)
             _corners.append(_corner)
 

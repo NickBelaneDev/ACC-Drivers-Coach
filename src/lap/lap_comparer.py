@@ -3,7 +3,7 @@ import pandas as pd
 from src.lap.analyzer.lap_analyzer import LapAnalyzer
 from src.telemetry.telemetry_calculator import TelemetryCalculator
 
-from src.telemetry.telemetry_utils import get_corner_df_from_df, get_segment_df_from_lap_fd, segment_to_df, corner_to_df
+from src.telemetry.telemetry_utils import get_raw_corner_df_from_df, get_segment_df_from_lap_fd, segment_to_df, corner_to_df
 from src.logger import get_logger
 
 # LapCompare bekommt zwei DFs der ganzen Lap und vergleicht die Analysedaten der Kurven und Segmente.
@@ -55,7 +55,7 @@ class LapCompare:
             log.debug(f"{lap_df.info()=}")
         corners: list = []
         for _id in sorted(lap_df["corner_id"].dropna().unique()):
-            _corner_df = get_corner_df_from_df(_id, lap_df)
+            _corner_df = get_raw_corner_df_from_df(_id, lap_df)
             _corner = self.analyze.corner(_corner_df)
             _corner_metrics = _corner.metrics
             corner_df = corner_to_df(_corner, _corner_metrics)

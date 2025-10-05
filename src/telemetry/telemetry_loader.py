@@ -7,12 +7,15 @@ from pathlib import Path
 from .telemetry_calculator import TelemetryCalculator
 log = get_logger(to_console=False)
 
-file_path_user = "../assets/MoTec/spa/Spa-ferrari_296_gt3-8-hotlap_2-17-880.csv"
+file_path_user = "../assets/MoTec/spa/Spa-ferrari_296_gt3-hotlap_2-17-880.csv"
 file_path_fastest_lap = "../../old/Spa-ferrari_296_gt3-fastest_lap.csv"
 
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+print(f"PROJECT_ROOT: {PROJECT_ROOT}")
+BASE_DIR = PROJECT_ROOT
 
 class TelemetryLoader:
-    def __init__(self, base_dir: Path):
+    def __init__(self, base_dir: Path=BASE_DIR):
         self.telemetry_lap_df: pd.DataFrame | None = None
         self.base_dir = base_dir
 
@@ -82,6 +85,7 @@ class TelemetryLoader:
 
         # TODO: The calculation of the gForceVector and more need their own class!
         full_telemetry_df = TelemetryCalculator.calc_g_force_vector(full_telemetry_df)
+        log.info(f"Successfully loaded the DataFrame!")
         return full_telemetry_df
 
     @staticmethod
