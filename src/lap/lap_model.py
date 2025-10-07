@@ -1,23 +1,22 @@
 import pandas as pd
 from typing import Literal
 
-from .adapter import DataAdapter
-from .analyzer.corner_analyzer import CornerAnalyzer, CornerBuilder
-from .analyzer.lap_analyzer import LapAnalyzer
+from .analyzer.corner_analyzer import CornerBuilder
+
 from .corner.corner_enums import ReturnFormat
 from .dataframe_validation import EmptyDataFrameError
-from .lap_dataclasses import Corner, CornerMetrics
+from .analyzer.lap_analyzer import LapAnalyzer
 from src.logger import get_logger
 from src.telemetry.telemetry_calculator import TelemetryCalculator
 from src.telemetry.telemetry_utils import get_raw_corner_df_from_df, get_segment_df_from_lap_fd, segment_to_df, corner_to_df
 from .corner.corner_model import CornerModel
 log = get_logger("Lap - logger", to_console=False)
 
-class Lap:
+class LapModel:
     def __init__(self, raw_lap_df: pd.DataFrame, track_name: str, driver: str = "User"):
         """Initial API Object for working with laps."""
         self._raw_df: pd.DataFrame = TelemetryCalculator.calc_g_force_vector(raw_lap_df)
-        self._analyze = LapAnalyzer(self._raw_df)
+        self._analyze = LapAnalyzer(df=self._raw_df)
         self._corner_builder = CornerBuilder()
 
         # --- public settings ---
@@ -25,7 +24,7 @@ class Lap:
         self.lap_time_s: float = self._raw_df["Time"].iloc[-1] - self._raw_df["Time"].iloc[0]
         self.corner_ids = self._raw_df["corner_id"].dropna().unique().tolist()
         self.segment_ids = self._raw_df["segment_id_x"].dropna().unique().tolist()
-        self.corners = self._load_corner_models() # ACHGTUNG DEBUG HIER!
+        self.corner_models: dict[int, CornerModel] = self._load_corner_models()
 
         self.segments_df = self._load_segments()
         self.driver = driver
@@ -46,7 +45,7 @@ class Lap:
         if corner_id not in self.corner_ids:
             raise ValueError(f"{id=}, not in self.corner_ids!")
 
-        _corner = self.corners[corner_id]
+        _corner = self.corner_models[corner_id]
 
         if _corner.is_empty():
             raise ValueError("Empty Corner!")
@@ -89,11 +88,17 @@ class Lap:
 
         return corners_dict
 
+    def _create_lap_dataclass(self):
+        raise NotImplementedError
+
     FRMT = Literal["DataFrame", "dict"]
     def get_corner_model(self, corner_id: int) -> CornerModel:
 
         self._dirty_corner_validation(corner_id)
-        return self.corners[corner_id]
+        return self.corner_models[corner_id]
+
+    def get_all_corner_models(self) -> dict[int, CornerModel]:
+        return self.corner_models
 
     def get_analyzed_corner_df(self, corner_id: int) -> pd.DataFrame:
         """Returns all calculated and meta corner data in a single row DataFrame."""
@@ -104,7 +109,7 @@ class Lap:
         return corner_model.get_corner(mode=ReturnFormat.DATAFRAME)
 
     def get_all_analyzed_corners_as_df(self) -> pd.DataFrame:
-        corners_list = [c.get_corner(mode=ReturnFormat.DATAFRAME) for _, c in self.corners.items()]
+        corners_list = [c.get_corner(mode=ReturnFormat.DATAFRAME) for _, c in self.corner_models.items()]
         corners_df = pd.concat(corners_list)
         if corners_df.empty:
             raise EmptyDataFrameError()

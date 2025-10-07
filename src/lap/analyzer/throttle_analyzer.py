@@ -59,6 +59,7 @@ class ThrottleAnalyzer:
         was_not_accelerating = throttle_df["THROTTLE"].shift(1).fillna(0) <= threshold
         is_accelerating = throttle_df["THROTTLE"] > threshold
         acceleration_window_df: pd.DataFrame = throttle_df[is_accelerating & was_not_accelerating]
+
         acceleration_rate: float = TelemetryCalculator.average_change_rate(acceleration_window_df, "THROTTLE")
         acceleration_delta_m: float = acceleration_window_df["Distance"].max() - acceleration_window_df["Distance"].min()
         acceleration_delta_s: float = acceleration_window_df["Time"].max() - acceleration_window_df["Time"].min()

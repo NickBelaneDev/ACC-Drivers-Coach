@@ -28,13 +28,13 @@
       "segment_id": 4,
       "segmentDescription": "Les Fanges onto Campus and Paul Frere.",
       "segmentStart_m": 4200,
-      "segmentEnd_m": 5350,
+      "segmentEnd_m": 5400,
       "corner_ids": [1008, 1009, 1010, 1011]
     },
     {
       "segment_id": 5,
       "segmentDescription": "Long straight Blanchimont into Bus Stop right-left Chicane onto long start/finish straight.",
-      "segmentStart_m": 5350,
+      "segmentStart_m": 5400,
       "segmentEnd_m": 6938,
       "corner_ids": [1012, 1013]
     }

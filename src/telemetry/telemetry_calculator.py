@@ -135,3 +135,23 @@ class TelemetryCalculator:
             return _df[col].quantile(q=_quantile)
         return 0.0
 
+
+    # Wenn speed_from_rads zu sehr von der eigentlichen Geschwindigkeit abweicht, haben wir ein Übersteuern.
+
+    @staticmethod
+    def calculate_speed_from_rads(rad_per_second: np.ndarray, wheel_radius_m: float) -> np.ndarray:
+        """
+        Calculates speed in km/h from wheel rotation in rad/s.
+
+        Args:
+            rad_per_second: Wheel rotation speed in radians per second.
+            wheel_radius_m: Radius of the wheel in meters.
+
+        Returns:
+            Speed in km/h.
+        """
+        # m/s = rad/s * radius
+        speed_m_per_s = rad_per_second * wheel_radius_m
+        # km/h = m/s * 3.6
+        speed_kmh = speed_m_per_s * 3.6
+        return speed_kmh

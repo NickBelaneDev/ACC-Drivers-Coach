@@ -1,4 +1,4 @@
-from src.lap.lap import Lap
+from src.lap.lap_model import LapModel
 
 from src.lap.lap_dataclasses import Corner, CornerMetrics, SegmentMetrics, Segment
 from pathlib import Path

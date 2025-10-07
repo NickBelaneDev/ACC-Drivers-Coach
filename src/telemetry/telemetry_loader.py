@@ -7,7 +7,7 @@ from pathlib import Path
 from .telemetry_calculator import TelemetryCalculator
 log = get_logger(to_console=False)
 
-file_path_user = "../assets/MoTec/spa/Spa-ferrari_296_gt3-hotlap_2-17-880.csv"
+file_path_user = "../assets/MoTec/spa/telemetry_files/Spa-ferrari_296_gt3-hotlap_2-17-880.csv"
 file_path_fastest_lap = "../../old/Spa-ferrari_296_gt3-fastest_lap.csv"
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -54,7 +54,7 @@ class TelemetryLoader:
         # Red the telemetry.csv
         orig_hotlap_path = self.base_dir / hotlap_path
 
-        _telemetry_df = pd.read_csv(orig_hotlap_path, skiprows=14, low_memory=False).drop(0)
+        _telemetry_df = pd.read_csv(orig_hotlap_path, skiprows=14, low_memory=False, engine="c").drop(0)
         telemetry_df = self._resample_df(_telemetry_df)
 
         telemetry_df_sorted = telemetry_df.sort_values("Distance")

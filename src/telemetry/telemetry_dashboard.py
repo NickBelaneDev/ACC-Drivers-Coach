@@ -10,7 +10,7 @@ if str(PROJECT_ROOT.parent) not in sys.path:
     sys.path.append(str(PROJECT_ROOT.parent))
 
 from telemetry_loader import TelemetryLoader
-from src.lap.lap import Lap
+from src.lap.lap_model import LapModel
 
 
 def _get_tracks() -> List[str]:
@@ -30,7 +30,7 @@ def load_lap(track: str, csv_file: str) -> pd.DataFrame:
     """Load telemetry for track and csv file and return processed dataframe."""
     loader = TelemetryLoader(base_dir=PROJECT_ROOT)
     df = loader.telemetry_from_csv(f"assets/MoTec/{track}/{csv_file}", track)
-    lap = Lap(df, track)
+    lap = LapModel(df, track)
     return lap.get_raw_lap_df()
 
 

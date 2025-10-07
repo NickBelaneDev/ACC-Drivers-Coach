@@ -392,7 +392,25 @@ class Corner(Emptyable):
         )
 
 
+@dataclass(frozen=True)
+class Lap(Emptyable):
+    #raise NotImplementedError
+    id: int
+    name: str
+    file: Optional[str]
+    driver: Optional[str]
+    segment_time_deltas: Optional[float]
+    corners: Optional[list[Corner]]
 
+    status: StatusEnum = StatusEnum.ok
+    reason: str = None
+
+    @classmethod
+    def empty(cls, reason="missing-information"):
+        return cls(
+            id=0, name="", file="", driver="", corners=[], segment_time_deltas=math.nan,
+            status=StatusEnum.empty, reason=reason
+        )
 
 
 

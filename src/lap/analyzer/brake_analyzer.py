@@ -56,6 +56,7 @@ class BrakeAnalyzer:
             is_braking = brake_df["BRAKE"] >= threshold
             _braking_zone_df = brake_df[is_braking & was_not_braking] # This is the area where the car is under braking
             return _braking_zone_df if not _braking_zone_df.empty else pd.DataFrame
+
         braking_zone_df = _find_braking_window()
         if braking_zone_df.empty:
             return BrakeMetrics.empty("no-brake-point-detected")
@@ -91,7 +92,7 @@ class BrakeAnalyzer:
         brake_delta_s = brake_release_s - brake_point_s
 
         brake_point_speed = braking_zone_df["SPEED"].iloc[0]
-        brake_release_speed = braking_zone_df["SPEED"].iloc[-1]
+        brake_release_speed = brake_df[brake_df["Distance"] == brake_release_m]["SPEED"].min()
 
         max_brake = brake_df["BRAKE"].max()
         avg_brake = brake_df[(brake_df["Distance"] >= brake_point_m) & (brake_df["Distance"] <= brake_release_m)][

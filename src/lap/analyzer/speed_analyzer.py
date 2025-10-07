@@ -4,7 +4,9 @@ import math
 from src.lap.dataframe_validation import DataFrameValidator, MissingColumnError, EmptyDataFrameError
 from ..lap_dataclasses import SpeedMetrics
 from ...telemetry.telemetry_calculator import TelemetryCalculator
+from ...logger import get_logger
 
+log = get_logger("SpeedAnalyzer", to_console=True, log_file="speed_analyzer.log")
 
 class SpeedAnalyzer:
     @staticmethod
@@ -16,6 +18,7 @@ class SpeedAnalyzer:
         """
 
         cols = ["SPEED", "Distance", "cornerStart_m", "cornerApex_m", "cornerEnd_m"]
+        log.debug(f"{cols=}")
         try:
             DataFrameValidator.validate_df(df, cols)
         except MissingColumnError as d_c_e:
@@ -28,14 +31,20 @@ class SpeedAnalyzer:
         #speed_df = speed_df.set_index("Distance", drop=False) # For safety reasons we don't drop the 'Distance' col
 
         speed_s: pd.Series = speed_df["SPEED"].copy()
-        entry_point: float = df["cornerStart_m"].min()
-        apex_point: float = df["cornerApex_m"].min()
-        end_point: float = df["cornerEnd_m"].min()
+        entry_point: int = df["cornerStart_m"].min()
+        apex_point: int = df["cornerApex_m"].min()
+        end_point: int = df["cornerEnd_m"].min()
 
         # Calculate and get the appropriate data from the DataFrame
-        entry_speed_kmh: float = speed_df.loc[speed_df["Distance"] == entry_point, "SPEED"].iloc[0]
-        apex_speed_kmh: float = speed_df.loc[speed_df["Distance"] == apex_point, "SPEED"].iloc[0]
-        exit_speed_kmh: float = speed_df.loc[speed_df["Distance"] == end_point, "SPEED"].iloc[0]
+        entry_idx = (speed_df["Distance"] - entry_point).abs().idxmin()
+        entry_speed_kmh: float = speed_df.loc[entry_idx, "SPEED"]
+
+        apex_idx = (speed_df["Distance"] - apex_point).abs().idxmin()
+        apex_speed_kmh: float = speed_df.loc[apex_idx, "SPEED"]
+
+        exit_idx = (speed_df["Distance"] - end_point).abs().idxmin()
+        exit_speed_kmh: float = speed_df.loc[exit_idx, "SPEED"]
+
         avg_speed_kmh: float = speed_s.mean()
         max_speed_kmh: float = speed_s.max()
         min_speed_kmh: float = speed_s.min()
