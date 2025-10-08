@@ -76,7 +76,7 @@ class DynamicsMeta(Enum):
     """
     Enumeration of meta fields for the overall ``CarDynamics`` object.
 
-    Contains general diagnostic information separate from the specific
+    Contains general diagnostic _information separate from the specific
     metric groups (``Speed`` and ``GForce``). Used to record the status
     and reason for empty or invalid dynamics composites.
 

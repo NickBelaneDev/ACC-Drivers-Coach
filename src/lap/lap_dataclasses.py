@@ -440,7 +440,7 @@ class CornerMetrics(Emptyable):
     reason: str = None
 
     @classmethod
-    def empty(cls, reason="missing-information"):
+    def empty(cls, reason="missing-_information"):
         return cls(
             time_delta_s=math.nan,
             dynamics=CarDynamics.empty(reason=reason),
@@ -505,7 +505,7 @@ class Corner(Emptyable):
     reason: str = None
 
     @classmethod
-    def empty(cls, reason="missing-information"):
+    def empty(cls, reason="missing-_information"):
         return cls(
             id=0, name="", start_m=math.nan, apex_m=math.nan, end_m=math.nan,
             status=StatusEnum.empty, reason=reason
@@ -560,7 +560,7 @@ class Lap(Emptyable):
     reason: str = None
 
     @classmethod
-    def empty(cls, reason="missing-information"):
+    def empty(cls, reason="missing-_information"):
         return cls(
             id=0, name="", file="", driver="", corners=[], segment_time_deltas=math.nan,
             status=StatusEnum.empty, reason=reason
@@ -619,7 +619,7 @@ class SegmentMetrics(Emptyable):
         reason: str = None
 
         @classmethod
-        def empty(cls, reason="missing-information"):
+        def empty(cls, reason="missing-_information"):
             return cls(
                 time_delta_s=math.nan,
                 dynamics=CarDynamics.empty(reason=reason),
@@ -683,7 +683,7 @@ class SegmentMetrics(Emptyable):
         reason: str = None
 
         @classmethod
-        def empty(cls, reason="missing-information"):
+        def empty(cls, reason="missing-_information"):
             return cls(
                 id=0, name="", start_m=math.nan, apex_m=math.nan, end_m=math.nan,
                 status=StatusEnum.empty, reason=reason
@@ -737,7 +737,7 @@ class SegmentMetrics(Emptyable):
         reason: str = None
 
         @classmethod
-        def empty(cls, reason="missing-information"):
+        def empty(cls, reason="missing-_information"):
             return cls(
                 id=0, name="", file="", driver="", corners=[], segment_time_deltas=math.nan,
                 status=StatusEnum.empty, reason=reason
@@ -800,7 +800,7 @@ class SegmentMetrics(Emptyable):
     reason: str = None
 
     @classmethod
-    def empty(cls, reason="missing-information"):
+    def empty(cls, reason="missing-_information"):
         return cls(
             id=0, start_speed_kmh=math.nan, end_speed_kmh=math.nan,
             avg_speed_kmh=math.nan, max_speed_kmh=math.nan,
@@ -855,7 +855,7 @@ class Segment(Emptyable):
     reason: str = None
 
     @classmethod
-    def empty(cls, reason="missing-information"):
+    def empty(cls, reason="missing-_information"):
         return cls(
             id=0, start_m=math.nan, end_m=math.nan,
             description="", corner_ids=[],

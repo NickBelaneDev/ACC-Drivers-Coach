@@ -31,7 +31,7 @@ class CornerModel:
         High-level interface for handling and analyzing telemetry data of a single corner.
 
         The ``CornerModel`` acts as an access layer around the lower-level telemetry analyzers,
-        providing structured access to both meta-information (corner geometry, name, IDs)
+        providing structured access to both meta-_information (corner geometry, name, IDs)
         and performance metrics (speed, steering, braking, throttle, g-forces, etc.).
 
         It automatically validates and builds a full ``Corner`` dataclass instance upon
@@ -279,7 +279,7 @@ class CornerModel:
         :raises KeyError:
             If the provided mode is not supported by the available strategies.
         :return:
-            CarDynamics information in the selected format.
+            CarDynamics _information in the selected format.
         :rtype: dataclass | dict | pandas.DataFrame | str
         """
         if mode not in STRATEGIES:
@@ -289,7 +289,7 @@ class CornerModel:
 
     def get_corner_meta_data(self, mode:ReturnFormat=ReturnFormat.DATACLASS):
         """
-        Returns meta-information about the current corner.
+        Returns meta-_information about the current corner.
 
         This includes descriptive and positional data such as corner name,
         start distance, apex distance, and end distance. It does not contain

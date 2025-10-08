@@ -23,7 +23,7 @@ class SegmentAnalyzer:
         """
         Analyze a telemetry DataFrame for a single track segment.
 
-        This method extracts structural information (segment ID, corner IDs,
+        This method extracts structural _information (segment ID, corner IDs,
         distances, and description) as well as aggregated driving metrics
         (speed, throttle, brake). It summarizes the driver’s performance
         over the segment in a ``SegmentMetrics`` object and wraps it into
@@ -58,7 +58,7 @@ class SegmentAnalyzer:
         if segment_df.empty:
             print("segment_df is empty!")
         try:
-            # --- Extract meta information
+            # --- Extract meta _information
             seg_id = segment_df["segment_id_x"].iloc[0]
             corner_ids = segment_df["corner_ids"].iloc[0]
             seg_start = segment_df["Distance"].iloc[0]

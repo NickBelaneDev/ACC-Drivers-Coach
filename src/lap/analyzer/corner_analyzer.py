@@ -195,7 +195,7 @@ class CornerBuilder:
         :param df:
             A DataFrame consisting only of the associated area of the corner.
         :return:
-            ``Corner`` dataclass with meta information and analyzed metrics.
+            ``Corner`` dataclass with meta _information and analyzed metrics.
         """
 
         def _get_corner_meta_data() -> CornerMetadata:
