@@ -176,7 +176,7 @@ class BrakeAnalyzer:
             brake_point_speed=brake_point_speed,
             brake_release_m=brake_release_m,
             brake_release_speed=brake_release_speed,
-            brake_delta_s=brake_delta_s,
+            brake_window_s=brake_delta_s,
             max_brake=max_brake,
             avg_brake=avg_brake,
             overall_brake_force=overall_brake_force,

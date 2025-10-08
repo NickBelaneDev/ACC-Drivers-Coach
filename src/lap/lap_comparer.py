@@ -1,6 +1,6 @@
 import pandas as pd
 
-from src.lap.analyzer.lap_analyzer import LapAnalyzer
+from src.lap.analyzer._OLD_lap_analyzer import LapAnalyzer
 from src.telemetry.telemetry_calculator import TelemetryCalculator
 
 from src.telemetry.telemetry_utils import get_raw_corner_df_from_df, get_segment_df_from_lap_fd, segment_to_df, corner_to_df

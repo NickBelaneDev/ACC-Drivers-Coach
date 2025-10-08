@@ -26,9 +26,11 @@ user_lap_file_path = "assets/MoTec/spa/telemetry_files/Spa-ferrari_296_gt3-hotla
 if __name__ == "__main__":
 
     # Loads the basic Telemetry File and converts it to a normed DataFrame
-    t_loader = TelemetryLoader()#(base_dir=PROJECT_ROOT / "src")                     # nutzt den absolut gesetzten MOTEC_FOLDER
+    t_loader = TelemetryLoader()
 
-    telemetry_files = [file for file in os.listdir("src/assets/MoTec/spa/telemetry_files/") if "-17-" in file or "-16-" in file]
+    telemetry_files = [file for file in os.listdir("src/assets/MoTec/spa/telemetry_files/")
+                       if "-17-" in file
+                       or "-16-" in file]
     lap_df_list = []
     all_files_len = len(telemetry_files)
     counted = 0
@@ -39,12 +41,15 @@ if __name__ == "__main__":
         #try:
         file_path = os.path.join("assets/MoTec/spa/telemetry_files/", f)
         raw_telemetry_df = t_loader.telemetry_from_csv(file_path, "Spa")
-        lap = LapModel(raw_telemetry_df, "Spa", "Stuntman Mike")
+        lap = LapModel(raw_telemetry_df,
+                       "Spa",
+                       "Stuntman Mike")
         lap_df = lap.get_all_analyzed_corners_as_df()
 
 
 
         lap_df["lap_file"] = f
+        lap_df["lap_time"] = lap.lap_time_s
         lap_df_list.append(lap_df)
         print(f"{f} successfully loaded")
         #except Exception as e:
