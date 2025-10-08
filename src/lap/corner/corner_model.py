@@ -1,14 +1,22 @@
 import pandas as pd
 from typing import Literal
 from .corner_enums import ReturnFormat
-import src.lap.metrics_enums as me
-from .return_strategies import DictStrategy, DataclassStrategy, DataFrameStrategy, JsonStrategy
+# import src.lap.metrics_enums as me
+from .return_strategies import (
+    DictStrategy,
+    DataclassStrategy,
+    DataFrameStrategy,
+    JsonStrategy
+)
 
 from src.lap.analyzer.corner_analyzer import CornerBuilder
-from src.lap.dataframe_validation import DataFrameValidator, EmptyDataFrameError
+from src.lap.dataframe_validation import (
+    DataFrameValidator,
+    EmptyDataFrameError
+)
 
 from src.lap.lap_dataclasses import Corner
-from src.telemetry.telemetry_utils import get_df_from_area
+
 
 MODE = Literal["DataFrame", "dict", "json", "dataclass"]
 
@@ -19,20 +27,89 @@ STRATEGIES = {ReturnFormat.DATAFRAME: DataFrameStrategy,
               ReturnFormat.JSON: JsonStrategy}
 
 class CornerModel:
-    def __init__(self, raw_corner_df: pd.DataFrame):
+    """
+        High-level interface for handling and analyzing telemetry data of a single corner.
+
+        The ``CornerModel`` acts as an access layer around the lower-level telemetry analyzers,
+        providing structured access to both meta-information (corner geometry, name, IDs)
+        and performance metrics (speed, steering, braking, throttle, g-forces, etc.).
+
+        It automatically validates and builds a full ``Corner`` dataclass instance upon
+        initialization, which is then exposed through convenience getters allowing
+        multiple return formats (dataclass, dict, DataFrame, JSON).
+
+        Typical usage example:
+            >>> model = CornerModel(raw_corner_df)
+            >>> metrics = model.get_corner_metrics(mode=ReturnFormat.DICT)
+            >>> performance = model.get_driver_performance()
+        """
+    def __init__(self,
+                 raw_corner_df: pd.DataFrame):
+        """
+        Initialize a new ``CornerModel`` from a raw telemetry DataFrame.
+
+        The constructor validates the provided DataFrame for structure and emptiness,
+        and then constructs a ``Corner`` object using the internal ``CornerBuilder``.
+        This ensures that the model is ready for querying meta and performance data
+        in various formats.
+
+        :param raw_corner_df:
+            The unprocessed corner telemetry DataFrame restricted to the distance range
+            of a single corner (usually derived from track segment slicing).
+        :type raw_corner_df: pandas.DataFrame
+        :raises EmptyDataFrameError:
+            If the input DataFrame is empty or invalid.
+        """
         DataFrameValidator.validate_df(raw_corner_df)
         self.raw_corner_df = raw_corner_df
         self._corner_builder = CornerBuilder
         self.corner = self._load_corner_object_from_raw_df()
 
     def _load_corner_object_from_raw_df(self):
+        """
+        Internal helper method that builds a fully analyzed ``Corner`` object
+        from the raw telemetry DataFrame.
+
+        The method delegates the data parsing and metric computation to
+        the ``CornerBuilder`` and ``CornerAnalyzer`` classes.
+
+        :return:
+            The analyzed ``Corner`` dataclass representing the full set of corner data.
+        :rtype: Corner
+        """
         corner = self._corner_builder.build_corner(self.raw_corner_df)
         return corner
 
     def is_empty(self):
+        """
+        Checks if the current ``Corner`` object contains valid data.
+
+        This is a lightweight utility to verify that the corner analysis succeeded
+        and produced valid numerical results rather than placeholders.
+
+        :return:
+            ``True`` if the corner is empty or invalid, otherwise ``False``.
+        :rtype: bool
+        """
         return self.corner.is_empty()
 
     def get_raw_corner_df(self, cols: list=None) -> pd.DataFrame | None:
+        """
+        Returns the raw telemetry DataFrame used for this corner.
+
+        Optionally filters the DataFrame to include only the specified columns.
+        This is useful for debugging or for direct access to the underlying
+        telemetry signals without any analysis applied.
+
+        :param cols:
+            A list of column names to include. If ``None``, all columns are returned.
+        :type cols: list[str] | None
+        :raises MissingColumnError:
+            If any requested column is not found in the DataFrame.
+        :return:
+            The raw telemetry DataFrame (possibly column-filtered).
+        :rtype: pandas.DataFrame | None
+        """
         if not cols:
             return self.raw_corner_df
         if cols:
@@ -46,12 +123,11 @@ class CornerModel:
 
     CORNER_WINDOW_CHECKPOINTS = Literal["brake_point", "start", "apex", "end"]
 
-    def get_raw_corner_df_window(
-            self,
-            start: CORNER_WINDOW_CHECKPOINTS="brake_point",
-            end: CORNER_WINDOW_CHECKPOINTS="end",
-            cols: list[str] | str = None
-    ) -> pd.DataFrame:
+    def get_raw_corner_df_window(self,
+                                 start: CORNER_WINDOW_CHECKPOINTS="brake_point",
+                                 end: CORNER_WINDOW_CHECKPOINTS="end",
+                                 cols: list[str] | str = None)\
+            -> pd.DataFrame:
         """
         Returns a section of the raw corner telemetry DataFrame between two defined checkpoints.
 
@@ -165,7 +241,8 @@ class CornerModel:
         strategy = STRATEGIES[mode]
         return strategy.get(self.corner.metrics)
 
-    def get_driver_performance(self, mode:ReturnFormat=ReturnFormat.DATACLASS):
+    def get_driver_performance(self,
+                               mode:ReturnFormat=ReturnFormat.DATACLASS):
         """
         Returns the driver-specific performance data for this corner.
 
@@ -179,7 +256,7 @@ class CornerModel:
         :raises KeyError:
             If the selected mode is not supported.
         :return:
-            Driver performance metrics in the chosen format.
+            DriverPerformance metrics in the chosen format.
         :rtype: dataclass | dict | pandas.DataFrame | str
         """
         if mode not in STRATEGIES:
@@ -187,7 +264,8 @@ class CornerModel:
         strategy = STRATEGIES[mode]
         return strategy.get(self.corner.metrics.driver)
 
-    def get_car_dynamics(self, mode:ReturnFormat=ReturnFormat.DATACLASS):
+    def get_car_dynamics(self,
+                         mode:ReturnFormat=ReturnFormat.DATACLASS):
         """
         Returns the physical dynamics of the car throughout this corner.
 
@@ -201,7 +279,7 @@ class CornerModel:
         :raises KeyError:
             If the provided mode is not supported by the available strategies.
         :return:
-            Car dynamics information in the selected format.
+            CarDynamics information in the selected format.
         :rtype: dataclass | dict | pandas.DataFrame | str
         """
         if mode not in STRATEGIES:
@@ -238,5 +316,4 @@ class CornerModel:
             end_m=self.corner.end_m,
             metrics=None
         )
-
         return strategy.get(meta_data_corner)

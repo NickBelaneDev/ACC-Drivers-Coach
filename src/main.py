@@ -28,7 +28,7 @@ if __name__ == "__main__":
     # Loads the basic Telemetry File and converts it to a normed DataFrame
     t_loader = TelemetryLoader()#(base_dir=PROJECT_ROOT / "src")                     # nutzt den absolut gesetzten MOTEC_FOLDER
 
-    telemetry_files = [file for file in os.listdir("src/assets/MoTec/spa/telemetry_files/")]# if "-17-" in file or "-16-" in file]
+    telemetry_files = [file for file in os.listdir("src/assets/MoTec/spa/telemetry_files/") if "-17-" in file or "-16-" in file]
     lap_df_list = []
     all_files_len = len(telemetry_files)
     counted = 0
@@ -41,6 +41,9 @@ if __name__ == "__main__":
         raw_telemetry_df = t_loader.telemetry_from_csv(file_path, "Spa")
         lap = LapModel(raw_telemetry_df, "Spa", "Stuntman Mike")
         lap_df = lap.get_all_analyzed_corners_as_df()
+
+
+
         lap_df["lap_file"] = f
         lap_df_list.append(lap_df)
         print(f"{f} successfully loaded")
@@ -50,10 +53,12 @@ if __name__ == "__main__":
         counted += 1
         print(f"{counted} / {all_files_len}")
 
-    all_laps_df = pd.concat(lap_df_list, ignore_index=True)
-    all_laps_df = all_laps_df.sort_values(by=me.LapMeta.ID.value, ascending=True)
 
-    with pd.ExcelWriter("all_laps.xlsx", engine="openpyxl") as writer:
+    all_laps_df = pd.concat(lap_df_list, ignore_index=True)
+    all_laps_df = all_laps_df.sort_values(by=me.LapMeta.ID.value, ascending=True, kind="mergesort")
+
+
+    with pd.ExcelWriter("all_laps_with_straights.xlsx", engine="openpyxl") as writer:
         all_laps_df.to_excel(writer, sheet_name="all_laps", index=False)
 
 

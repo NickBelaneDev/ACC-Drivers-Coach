@@ -12,8 +12,13 @@ log = get_logger(to_console=False)
 # TODO: 1) The dataclasses have been changed! We need to overwork the dataclass_to_df() functions!
 #       2) Add logging for every function.
 
-def get_df_from_area(start_m: int, end_m: int, data: list[str] | str, df: pd.DataFrame):
-    lap_df = df
+def get_df_from_area(start_m: int,
+                     end_m: int,
+                     data: list[str] | str,
+                     df: pd.DataFrame)\
+        -> pd.DataFrame:
+
+    #lap_df = df
 
     if isinstance(data, str):
         if "Distance" in data:
@@ -29,22 +34,25 @@ def get_df_from_area(start_m: int, end_m: int, data: list[str] | str, df: pd.Dat
     else:
         return pd.DataFrame()
 
-    _df = lap_df[
-        (lap_df["Distance"] >= start_m) &
-        (lap_df["Distance"] <= end_m)
+    _df = df[
+        (df["Distance"] >= start_m) &
+        (df["Distance"] <= end_m)
         ]
 
     return _df[columns] if not _df.empty else pd.DataFrame()
 
-def get_raw_corner_df_from_df(corner_id: int, df: pd.DataFrame) -> pd.DataFrame:
+def get_raw_corner_df_from_df(corner_id: int,
+                              df: pd.DataFrame) \
+        -> pd.DataFrame:
     """
     To get the corner specific area from the main raw DataFrame, you can use this function.
+    It filters the given DataFrame by the corner_id parameter and returns the corresponding DataFrame.
+
+
     :param corner_id: The id of the corner you want to get. The id must be in 'df'.
-    :param df: Raw DataFrame with all the telemetry data and corner meta data loaded.
+    :param df: Raw DataFrame with all the telemetry data and corner meta-data loaded.
     :return: The area of the corner from the DataFrame.
     """
-
-    # load all relevant raw corner_data
 
     _corner_df = df[df["corner_id"] == corner_id]
     if _corner_df.empty:
@@ -52,11 +60,14 @@ def get_raw_corner_df_from_df(corner_id: int, df: pd.DataFrame) -> pd.DataFrame:
         _corner_df = df[df["corner_id"] == float(corner_id)]
 
     if _corner_df.empty:
-        log.warning(f"Segment {df}: corner_id {corner_id} nicht gefunden (Typproblem?)")
+        log.warning(f"Segment {df}: corner_id {corner_id} not found (Type-Problem?)")
 
     return _corner_df
 
-def get_segment_df_from_lap_fd(segment_id: int, df: pd.DataFrame) -> pd.DataFrame:
+def get_segment_df_from_lap_fd(segment_id: int,
+                               df: pd.DataFrame) \
+        -> pd.DataFrame:
+
     _segment_df = df[df["segment_id_x"] == segment_id]
     if _segment_df.empty:
         _segment_df = df[df["segment_id_x"] == float(segment_id)]
@@ -66,7 +77,9 @@ def get_segment_df_from_lap_fd(segment_id: int, df: pd.DataFrame) -> pd.DataFram
 
     return _segment_df
 
-def corner_to_df(corner: dataclass, corner_metrics: dataclass) -> pd.DataFrame:
+def corner_to_df(corner: dataclass,
+                 corner_metrics: dataclass) \
+        -> pd.DataFrame:
     """Returns a dictionary with the corner and corner metrics in one format."""
     _corner_dict = asdict(corner)
     _corner_dict.pop("metrics", None)
@@ -76,7 +89,10 @@ def corner_to_df(corner: dataclass, corner_metrics: dataclass) -> pd.DataFrame:
     _corner_dict |= asdict(corner_metrics.brake_metrics)
     return pd.DataFrame([_corner_dict])
 
-def segment_to_df(segment: dataclass, segment_metrics: dataclass) -> pd.DataFrame:
+def segment_to_df(segment: dataclass,
+                  segment_metrics: dataclass) \
+        -> pd.DataFrame:
+
     _segment_dict = asdict(segment)
     _segment_dict |= asdict(segment_metrics)
     return pd.DataFrame([_segment_dict])

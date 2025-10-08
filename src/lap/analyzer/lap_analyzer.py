@@ -161,6 +161,7 @@ class LapAnalyzer:
         )
 
         return corner_instance
+
     def segment(self, segment_df: pd.DataFrame) -> tuple[Segment, SegmentMetrics]:
         if segment_df.empty:
             print("segment_df is empty!")
@@ -201,6 +202,14 @@ class LapAnalyzer:
             min_speed_kmh=min_speed_kmh,
             avg_throttle=avg_throttle,
             avg_brake=avg_brake)
+
+        analyzed_segment = Segment(
+            id=seg_id,
+            corner_ids=corner_ids,
+            start_m=seg_start,
+            end_m=seg_end,
+            description=description,
+            metrics=analyzed_segment_metrics)
 
         return analyzed_segment, analyzed_segment_metrics
 

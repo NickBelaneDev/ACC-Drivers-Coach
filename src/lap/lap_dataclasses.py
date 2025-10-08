@@ -7,29 +7,9 @@ from abc import ABC, abstractmethod
 from enum import Enum
 
 
-@dataclass(frozen=True)
-class Segment:
-    id: int
-    start_m: int
-    end_m: int
-    description: str
-    corner_ids: list
-@dataclass(frozen=True)
 
-class SegmentMetrics:
-    id: int
-    start_speed_kmh: Optional[float]
-    end_speed_kmh: Optional[float] = 0.0
 
-    avg_speed_kmh: Optional[float] = 0.0
-    max_speed_kmh: Optional[float] = 0.0
-    min_speed_kmh: Optional[float] = 0.0
 
-    avg_throttle: Optional[float] = 0.0
-    avg_brake: Optional[float] = 0.0
-
-    time_delta_s: Optional[float] = 0.0
-    total_cpi_score: Optional[float] = 0.0
 
 # ====================================================
 # version 1.01, date: 09.30.2025, © written by Robert Millotat
@@ -413,6 +393,55 @@ class Lap(Emptyable):
         )
 
 
+@dataclass(frozen=True)
+class SegmentMetrics(Emptyable):
+    id: int
+    start_speed_kmh: float
+    end_speed_kmh: float
+
+    avg_speed_kmh: float
+    max_speed_kmh: float
+    min_speed_kmh: float
+
+    avg_throttle: float
+    avg_brake: float
+
+    time_delta_s: float
+    #total_cpi_score: float
+
+    status: StatusEnum = StatusEnum.ok
+    reason: str = None
+
+    @classmethod
+    def empty(cls, reason="missing-information"):
+        return cls(
+            id=0, start_speed_kmh=math.nan, end_speed_kmh=math.nan,
+            avg_speed_kmh=math.nan, max_speed_kmh=math.nan,
+            min_speed_kmh=math.nan, avg_throttle=math.nan,
+            avg_brake=math.nan, time_delta_s=math.nan,
+            status=StatusEnum.empty, reason=reason
+        )
+
+@dataclass(frozen=True)
+class Segment(Emptyable):
+    id: int
+    start_m: int
+    end_m: int
+    description: str
+    corner_ids: list
+    metrics: Optional[SegmentMetrics]
+
+    status: StatusEnum = StatusEnum.ok
+    reason: str = None
+
+    @classmethod
+    def empty(cls, reason="missing-information"):
+        return cls(
+            id=0, start_m=math.nan, end_m=math.nan,
+            description="", corner_ids=[],
+            metrics=SegmentMetrics.empty(reason="empty or invalid Segment object."),
+            status=StatusEnum.empty, reason=reason
+        )
 
 
 

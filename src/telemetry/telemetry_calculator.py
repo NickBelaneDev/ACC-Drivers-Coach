@@ -33,15 +33,23 @@ class TelemetryCalculator:
         return with_vector_df
 
     @staticmethod
-    def average_change_rate(df: pd.DataFrame, col:str, distance_col:str="Distance") -> float:
+    def average_change_rate(df: pd.DataFrame,
+                            col:str,
+                            distance_col:str="Distance") \
+            -> float:
 
         _s = df.sort_values(by=distance_col)[col].reset_index(drop=True).copy()
 
         avg_c_r = _s.diff().mean()
-        return avg_c_r if avg_c_r else math.nan
+        return avg_c_r \
+            if avg_c_r \
+            else math.nan
 
     @staticmethod
-    def change_rate_var(df: pd.DataFrame, col: str, distance_col: str = "Distance") -> float:
+    def change_rate_var(df: pd.DataFrame,
+                        col: str,
+                        distance_col: str="Distance") \
+            -> float:
 
         _s: pd.DataFrame = df.sort_values(by=distance_col)[col].reset_index(drop=True).copy()
 
@@ -49,7 +57,11 @@ class TelemetryCalculator:
         return avg_c_r if avg_c_r else math.nan
 
     @staticmethod
-    def parameter_stability(df: pd.DataFrame, col: str, amplitude_mode: bool=False, distance_col:str= "Distance") -> float:
+    def parameter_stability(df: pd.DataFrame,
+                            col: str,
+                            amplitude_mode: bool=False,
+                            distance_col: str="Distance") \
+            -> float:
         """Standardabweichung der Parameter auf dt"""
         _df = df.sort_values(by=distance_col).reset_index(drop=True).copy()
 
@@ -57,16 +69,23 @@ class TelemetryCalculator:
         delta_t.replace(0, np.nan, inplace=True)
         delta_val = _df[col].diff().div(delta_t)
         delta_val.replace([np.inf, -np.inf], np.nan).dropna()
+
         if amplitude_mode:
             delta_val = delta_val.abs()
 
         if delta_val.empty:
             return 0.0
-        stability = min((delta_val.std(), 1e-6))
-        return round(stability, 4) if stability > 1e-6 else 1e-6
+        stability = max((delta_val.std(), 1e-6))
+        return round(stability, 4) \
+            if stability > 1e-6 \
+            else 1e-6
 
     @staticmethod
-    def parameter_correlation(raw_df: pd.DataFrame, col_01: str, col_02: str, distance_col: str = 'Distance') -> float:
+    def parameter_correlation(raw_df: pd.DataFrame,
+                              col_01: str,
+                              col_02: str,
+                              distance_col: str="Distance") \
+            -> float:
         """
         Calculates the Input-Response Correlation Coefficient (IRK).
 
@@ -109,7 +128,11 @@ class TelemetryCalculator:
         return round(correlation_score, 4) if pd.notna(correlation_score) else 0.0
 
     @staticmethod
-    def get_integral(df: pd.DataFrame, col: str, amplitude_mode=False, distance_col:str= "Distance") -> float:
+    def get_integral(df: pd.DataFrame,
+                     col: str,
+                     amplitude_mode=False,
+                     distance_col: str="Distance") \
+            -> float:
 
         _df = df.sort_values(by=distance_col).copy()
         dist_col = _df[distance_col]
@@ -122,7 +145,12 @@ class TelemetryCalculator:
         return round(trapz, 4)
 
     @staticmethod
-    def quantile(df: pd.DataFrame, col: str, quantile:int=0.95, distance_col:str = "Distance") -> float:
+    def quantile(df: pd.DataFrame,
+                 col: str,
+                 quantile: int=0.95,
+                 distance_col: str="Distance") \
+            -> float:
+
         _quantile = quantile
         if quantile > 1:
             _quantile = 1
@@ -139,7 +167,9 @@ class TelemetryCalculator:
     # Wenn speed_from_rads zu sehr von der eigentlichen Geschwindigkeit abweicht, haben wir ein Übersteuern.
 
     @staticmethod
-    def calculate_speed_from_rads(rad_per_second: np.ndarray, wheel_radius_m: float) -> np.ndarray:
+    def calculate_speed_from_rads(rad_per_second: np.ndarray,
+                                  wheel_radius_m: float) \
+            -> np.ndarray:
         """
         Calculates speed in km/h from wheel rotation in rad/s.
 

@@ -7,13 +7,13 @@
       "segment_id": 1,
       "segmentDescription": "La Source and Eau-Rouge, Raidillon to Kemmel-straight",
       "segmentStart_m": 0,
-      "segmentEnd_m": 1800,
+      "segmentEnd_m": 1380,
       "corner_ids": [1001, 1002]
     },
     {
       "segment_id": 2,
       "segmentDescription": "Kemmel straight going into Les Combes and Malmedy",
-      "segmentStart_m": 1800,
+      "segmentStart_m": 1380,
       "segmentEnd_m": 2740,
       "corner_ids": [1003, 1004]
     },
