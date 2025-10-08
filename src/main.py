@@ -1,9 +1,4 @@
-from logging import exception
-
 import pandas as pd
-
-from src.lap.adapter import DataAdapter
-
 from src.lap.corner.corner_enums import ReturnFormat
 from src.telemetry.telemetry_loader import TelemetryLoader
 from src.logger import get_logger
@@ -32,6 +27,7 @@ if __name__ == "__main__":
                        if "-17-" in file
                        or "-16-" in file]
     lap_df_list = []
+    lap_corner_model_list = []
     all_files_len = len(telemetry_files)
     counted = 0
 
@@ -45,19 +41,19 @@ if __name__ == "__main__":
                        "Spa",
                        "Stuntman Mike")
         lap_df = lap.get_all_analyzed_corners_as_df()
-
-
+        lap_corner_models = lap.get_all_corner_models()
+        lap_corner_model_list.append(lap_corner_models)
 
         lap_df["lap_file"] = f
         lap_df["lap_time"] = lap.lap_time_s
         lap_df_list.append(lap_df)
-        print(f"{f} successfully loaded")
+
+        print(f">>> {f} successfully loaded!")
         #except Exception as e:
         #    print(f"{f} failed to load! Exception: {e}")
 
         counted += 1
         print(f"{counted} / {all_files_len}")
-
 
     all_laps_df = pd.concat(lap_df_list, ignore_index=True)
     all_laps_df = all_laps_df.sort_values(by=me.LapMeta.ID.value, ascending=True, kind="mergesort")

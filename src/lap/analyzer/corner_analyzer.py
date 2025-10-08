@@ -17,11 +17,19 @@ from ..lap_dataclasses import (
     DriverPerformance,
     CornerMetrics,
     Corner)
+from ...logger import get_logger
 
+log = get_logger(
+    name="CornerAnalyzer",
+    log_file="src/lap/analyzer/log/corner_analyzer.log",
+    to_console=False
+)
 REQUIRED_COLS = {"Distance", "Time"}
 class CornerAnalyzer:
-    def __init__(self,
-                 corner_df: pd.DataFrame):
+    def __init__(
+            self,
+            corner_df: pd.DataFrame
+    ):
         """
         Initialize the analyzer for a single corner's telemetry window.
 

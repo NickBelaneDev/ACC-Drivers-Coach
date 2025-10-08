@@ -6,7 +6,7 @@ from ..lap_dataclasses import SpeedMetrics
 from ...telemetry.telemetry_calculator import TelemetryCalculator
 from ...logger import get_logger
 
-log = get_logger("SpeedAnalyzer", to_console=True, log_file="speed_analyzer.log")
+log = get_logger("SpeedAnalyzer", to_console=False, log_file="src/lap/analyzer/log/speed_analyzer.log")
 
 class SpeedAnalyzer:
     """
@@ -56,7 +56,7 @@ class SpeedAnalyzer:
         - Empty sub-windows (e.g., when no pure acceleration phase exists) yield NaN rates.
         """
         cols = ["SPEED", "Distance", "cornerStart_m", "cornerApex_m", "cornerEnd_m"]
-        log.debug(f"{cols=}")
+
         try:
             DataFrameValidator.validate_df(df, cols)
         except MissingColumnError as d_c_e:
@@ -102,7 +102,7 @@ class SpeedAnalyzer:
             if not acceleration_window.empty
             else math.nan
         )
-
+        log.info("Successfully created all data for SpeedMetrics!")
         return SpeedMetrics(
             entry_speed_kmh=entry_speed_kmh,
             apex_speed_kmh=apex_speed_kmh,
