@@ -5,8 +5,10 @@ from pathlib import Path
 import os
 import pandas as pd
 import pprint
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
 from src.telemetry.telemetry_loader import TelemetryLoader
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
 def load_all_files(base_dir:Path=PROJECT_ROOT, track:str="spa"):
     p = base_dir / "assets" / "MoTeC" / track.lower()
     csv_files: list[Path] = list(p.glob("**\*.csv"))

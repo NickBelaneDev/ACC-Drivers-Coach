@@ -15,26 +15,102 @@ print(f"PROJECT_ROOT: {PROJECT_ROOT}")
 BASE_DIR = PROJECT_ROOT
 
 class TelemetryLoader:
-    def __init__(self, base_dir: Path=BASE_DIR):
+    """
+    Load and normalize MoTeC lap telemetry, enriched with track map metadata.
+
+    This loader:
+      1) reads a MoTeC CSV (single lap) and resamples it to a 1 m distance grid,
+      2) loads track **segments** and **corners** from JSON, sorted by their start markers,
+      3) merges telemetry with segments (asof on ``segmentStart_m``) and corners
+         (asof on ``brakeArea_m``) to attach IDs/descriptions to each row,
+      4) computes the resultant g-force vector and returns a single, merged DataFrame.
+
+    The result is a **normalized, integer-meter “Distance”** DataFrame with sufficient
+    metadata to run corner/segment analyzers downstream.
+    """
+    def __init__(self,
+                 base_dir: Path=BASE_DIR):
+        """
+              Initialize the loader with a project root.
+
+              Parameters
+              ----------
+              base_dir : pathlib.Path, optional
+                  Base directory used to resolve relative asset paths
+                  (track JSONs, MoTeC CSVs). Defaults to repository base.
+              """
         self.telemetry_lap_df: pd.DataFrame | None = None
         self.base_dir = base_dir
 
-    def telemetry_from_csv(self, hotlap_path: str, track: str) -> DataFrame | None:
+    def telemetry_from_csv(self,
+                           telemetry_file: str,
+                           track: str) \
+            -> DataFrame | None:
         """
+               Load, resample, and enrich a MoTeC hotlap CSV with segments & corners.
 
-        :param hotlap_path: path to the hotlap.csv file from MoTec
-        :param track: name of the track the hotlap corresponds to
-        :return: A sorted DataFrame with the complete raw telemetry and track meta-data normed to Distance by 1m.
-        """
+               Workflow
+               --------
+               1) Resolve asset paths for the given track (segments & corners JSON).
+               2) Read MoTeC CSV (skipping MoTeC header rows), drop first empty row.
+               3) Resample all channels to a 1 m ``Distance`` grid via linear interpolation.
+               4) Merge ``segments`` by as-of join on ``segmentStart_m`` (backward).
+               5) Merge ``corners`` by as-of join on ``brakeArea_m`` (backward).
+               6) Clean corner metadata beyond ``cornerEnd_m`` → set to NaN.
+               7) Compute ``gForceVector`` and return the full DataFrame.
+
+               Parameters
+               ----------
+               telemetry_file : str
+                   Relative path to the MoTeC CSV file (from ``base_dir``).
+               track : str
+                   Track key (e.g., ``"spa"`` or ``"donnington"``). Case-insensitive.
+
+               Returns
+               -------
+               pandas.DataFrame | None
+                   Telemetry enriched with segment & corner metadata, resampled to
+                   1 m **integer** ``Distance``. Also available on ``self.telemetry_lap_df``.
+
+               Raises
+               ------
+               ValueError
+                   If ``track`` is not recognized.
+               FileNotFoundError
+                   If CSV or JSON files do not exist at the resolved locations.
+               json.JSONDecodeError
+                   If the track JSON files are malformed.
+               KeyError
+                   If expected keys are missing in the JSON maps.
+
+               Notes
+               -----
+               - The CSV is read with ``skiprows=14`` to skip MoTeC header meta.
+               - Corner metadata is nulled (NaN) after ``cornerEnd_m`` to avoid leakage
+                 of the previous corner’s labels into the next segment.
+               - ``corner_id`` is converted to integer where present.
+               """
         if track.lower() not in ["spa", "donnington"]:
             raise ValueError(f"track: {track} could not be found!")
 
         def _get_file_paths(_track: str):
-
             """
+            Resolve asset file paths for track segments and corners.
 
-            :param _track: Name of the racetrack
-            :return: segments_file_path, corners_file_path
+            Parameters
+            ----------
+            _track : str
+                Track key.
+
+            Returns
+            -------
+            tuple[pathlib.Path, pathlib.Path]
+                (segments_file_path, corners_file_path)
+
+            Notes
+            -----
+            Raises are not suppressed here; upstream callers will see
+            file/JSON errors as-is for easier debugging.
             """
 
             try:
@@ -52,7 +128,7 @@ class TelemetryLoader:
         segments_df, corners_df  = self._load_map(segments_path, corners_path)
 
         # Red the telemetry.csv
-        orig_hotlap_path = self.base_dir / hotlap_path
+        orig_hotlap_path = self.base_dir / telemetry_file
 
         _telemetry_df = pd.read_csv(orig_hotlap_path, skiprows=14, low_memory=False, engine="c").drop(0)
         telemetry_df = self._resample_df(_telemetry_df)
@@ -91,10 +167,39 @@ class TelemetryLoader:
     @staticmethod
     def _load_map(file_path_segments, file_path_corners) -> tuple[pd.DataFrame, pd.DataFrame]:
         """
-        Returns the segments- and corners-JSON converted to a DataFrame.
-        :param file_path_segments:
-        :param file_path_corners:
-        :return: segments_df, corners_df
+        Load track **segments** and **corners** JSON files as DataFrames.
+
+        The JSON structure is expected to contain a top-level ``"segments"`` or
+        ``"corners"`` key whose value is a list of dictionaries (one per item).
+        Data is normalized via ``pd.json_normalize`` and sorted by the respective
+        alignment columns used for as-of merges.
+
+        Parameters
+        ----------
+        file_path_segments : str | pathlib.Path
+            Path to the segments JSON file.
+        file_path_corners : str | pathlib.Path
+            Path to the corners JSON file.
+
+        Returns
+        -------
+        tuple[pandas.DataFrame, pandas.DataFrame]
+            ``(segments_df_sorted, corners_df_sorted)``:
+              - segments sorted by ``segmentStart_m``,
+              - corners sorted by ``brakeArea_m``.
+
+        Raises
+        ------
+        FileNotFoundError
+            If paths cannot be opened.
+        json.JSONDecodeError
+            If JSON content is malformed.
+        KeyError
+            If expected top-level keys (``"segments"``, ``"corners"``) are missing.
+
+        See Also
+        --------
+        pandas.json_normalize : Flattens nested JSON into tabular form.
         """
         with open(file_path_segments, "r") as f:
             segments = json.load(f)
@@ -110,8 +215,38 @@ class TelemetryLoader:
         return segments_df_sorted, corners_df_sorted
 
     @staticmethod
-    def _resample_df(lap_data: DataFrame, step=1.0) -> pd.DataFrame:
-        """Resamples the samplerate the length of the racetrack."""
+    def _resample_df(lap_data: DataFrame,
+                     step=1.0) \
+            -> pd.DataFrame:
+        """
+        Resample a MoTeC lap to an integer-meter distance grid (linear interp).
+
+        Given irregularly spaced samples (by ``Distance``), this method builds an
+        integer grid from ``floor(min(Distance))`` to ``ceil(max(Distance))`` with
+        the provided step (default 1.0 m) and linearly interpolates **all channels**
+        onto this grid. The output ``Distance`` is cast to ``int``.
+
+        Parameters
+        ----------
+        lap_data : pandas.DataFrame
+            Raw MoTeC CSV content after header removal. Must contain ``Distance``
+            and all channels to be resampled.
+        step : float, optional
+            Grid spacing in meters. Defaults to 1.0.
+
+        Returns
+        -------
+        pandas.DataFrame
+            Resampled telemetry where:
+              - ``Distance`` is integer meters (int),
+              - all other numeric channels are linearly interpolated.
+
+        Notes
+        -----
+        - Non-numeric channel values are coerced to NaN prior to interpolation.
+        - Rows with missing ``Distance`` are dropped before resampling.
+        - This function makes a defensive copy of the input DataFrame.
+        """
         telemetry = lap_data.copy()
         telemetry["Distance"] = pd.to_numeric(telemetry["Distance"], errors="coerce")
         telemetry = telemetry.dropna(subset=["Distance"]).sort_values("Distance")

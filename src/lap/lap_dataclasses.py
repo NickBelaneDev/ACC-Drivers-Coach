@@ -1,15 +1,9 @@
-
 from dataclasses import dataclass, field
 from typing import Optional
 
 import math
 from abc import ABC, abstractmethod
 from enum import Enum
-
-
-
-
-
 
 # ====================================================
 # version 1.01, date: 09.30.2025, © written by Robert Millotat

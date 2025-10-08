@@ -2,11 +2,60 @@ from dataclasses import is_dataclass
 from enum import Enum
 import pandas as pd
 import json
+from typing import Any
 
 class DataAdapter:
+    """
+    Universal adapter for serializing dataclass-based telemetry objects.
 
+    ``DataAdapter`` provides consistent conversion utilities that transform
+    nested dataclasses, Enums, and lists into Python dictionaries, JSON strings,
+    or pandas DataFrames. It is primarily used by analyzer layers and export
+    functions to flatten structured telemetry data for storage or display.
+
+    Features
+    --------
+    - Recursive traversal of dataclasses (handles nested dataclasses and lists)
+    - Enum support (uses ``.value`` instead of object representation)
+    - Flattened output for DataFrame export via ``pandas.json_normalize``
+
+    Typical usage
+    -------------
+    >>> from src.lap.lap_dataclasses import Corner
+    >>> corner_obj = Corner(id=1, name="Eau Rouge", start_m=200, apex_m=245, end_m=300)
+    >>> dict_obj = DataAdapter.to_dict(corner_obj)
+    >>> json_str = DataAdapter.to_json(corner_obj)
+    >>> df = DataAdapter.to_dataframe(corner_obj)
+    """
     @staticmethod
-    def to_dict(data_object):
+    def to_dict(data_object) \
+            -> dict | list | str | Any:
+        """
+        Recursively convert dataclass objects into nested dictionaries.
+
+        Supported input types
+        ---------------------
+        - Dataclass instances → converted field-by-field
+        - Lists of dataclasses → recursively handled
+        - Enum members → replaced by their ``.value`` strings
+        - Primitives and other objects → returned as-is
+
+        Parameters
+        ----------
+        data_object : Any
+            The object to serialize (dataclass, list, Enum, or primitive).
+
+        Returns
+        -------
+        dict | list | str | Any
+            A Python object suitable for JSON serialization or tabular
+            normalization (depending on the input structure).
+
+        Notes
+        -----
+        This method is the internal base for all other conversions
+        (``to_json`` and ``to_dataframe``).
+        """
         if is_dataclass(data_object):
             return {fld: DataAdapter.to_dict(getattr(data_object, fld)) for fld in data_object.__dataclass_fields__}
 
@@ -20,12 +69,64 @@ class DataAdapter:
             return data_object
 
     @classmethod
-    def to_json(cls, data_object, indent: int=4):
+    def to_json(cls, data_object,
+                indent: int=4)\
+            -> str:
+        """
+        Serialize a dataclass (or nested structure) into a JSON string.
+
+        Parameters
+        ----------
+        data_object : Any
+            Dataclass, list, or nested structure to be serialized.
+        indent : int, optional
+            Indentation level for JSON pretty-printing. Default is 4.
+
+        Returns
+        -------
+        str
+            JSON-encoded string representation of the input object.
+
+        Example
+        -------
+        >>> json_str = DataAdapter.to_json(corner_obj, indent=2)
+        >>> print(json_str)
+        {
+          "id": 1,
+          "name": "Eau Rouge",
+          "start_m": 200,
+          ...
+        }
+        """
         obj_dict = cls.to_dict(data_object)
         return json.dumps(obj_dict, indent=indent)
 
     @classmethod
     def to_dataframe(cls, data_object):
+        """
+        Convert a dataclass or list of dataclasses into a pandas DataFrame.
+
+        The structure is first serialized into a nested dictionary and then
+        flattened using ``pandas.json_normalize`` with underscore-based keys.
+        Nested objects appear as column names in the format
+        ``parent_child_field``.
+
+        Parameters
+        ----------
+        data_object : Any
+            A dataclass or nested structure (single object or list).
+
+        Returns
+        -------
+        pandas.DataFrame
+            Flattened DataFrame suitable for analytics, comparison, or export.
+
+        Example
+        -------
+        >>> df = DataAdapter.to_dataframe(corner_obj)
+        >>> print(df.columns)
+        Index(['id', 'name', 'start_m', 'apex_m', 'end_m', ...], dtype='object')
+        """
         obj_dict = cls.to_dict(data_object)
         return pd.json_normalize(obj_dict, sep="_")
 

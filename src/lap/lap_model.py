@@ -6,7 +6,10 @@ from .analyzer.corner_analyzer import CornerBuilder
 from .analyzer.segment_analyzer import SegmentAnalyzer
 
 from .corner.corner_enums import ReturnFormat
-from .dataframe_validation import DataFrameValidator, EmptyDataFrameError
+from .dataframe_validation import (
+    DataFrameValidator,
+    EmptyDataFrameError
+)
 
 from src.logger import get_logger
 from src.telemetry.telemetry_calculator import TelemetryCalculator
@@ -324,9 +327,9 @@ class LapModel:
         """
         corners_list = [c.get_corner(mode=ReturnFormat.DATAFRAME) for _, c in self.corner_models.items()]
         corners_df = pd.concat(corners_list)
-        DataFrameValidator.validate_df(corners_df)
-        #if corners_df.empty:
-        #    raise EmptyDataFrameError()
+
+        if corners_df.empty:
+            raise EmptyDataFrameError()
         return corners_df
 
     def get_raw_lap_df(self,
