@@ -56,8 +56,7 @@ if __name__ == "__main__":
     """
     all_laps_csv = PROJECT_ROOT / "test_output" / "all_laps_with_straights_2132.csv"
     all_laps_df = pd.read_csv(str(all_laps_csv))
-    #all_laps_df = pd.concat(lap_df_list, ignore_index=True)
-    #all_laps_df = all_laps_df.sort_values(by=me.LapMeta.ID.value, ascending=True, kind="mergesort")
+
 
     X = all_laps_df[
         [
