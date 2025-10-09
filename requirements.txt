@@ -1,5 +1,6 @@
 pandas
 numpy
 pydantic
+scikit-learn
 pytest
 pytest-cov

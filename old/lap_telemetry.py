@@ -11,8 +11,8 @@ log = get_logger(to_console=False, log_file="../lap_telemetry_log.log")
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
-hot_lap_file_path = "../assets/MoTec/spa/telemetry_files/Spa-ferrari_296_gt3-fastest_lap_2-16-650.csv"
-user_lap_file_path = "../assets/MoTec/spa/telemetry_files/Spa-ferrari_296_gt3-hotlap_2-17-880.csv"
+hot_lap_file_path = "../src/assets/MoTec/spa/telemetry_files/Spa-ferrari_296_gt3-fastest_lap_2-16-650.csv"
+user_lap_file_path = "../src/assets/MoTec/spa/telemetry_files/Spa-ferrari_296_gt3-hotlap_2-17-880.csv"
 
 class LapTelemetry:
     def __init__(self, lap_df: pd.DataFrame):

@@ -165,9 +165,11 @@ class CornerMetadata(BaseModel):
     """
     id: int
     name: str
+    brake_area_m: int
     start_m: int
     apex_m: int
     end_m: int
+    length_m: int
 
 class CornerBuilder:
     """
@@ -202,16 +204,20 @@ class CornerBuilder:
 
             corner_id: int = df["corner_id"].min()
             name: str = df["cornerName"].iloc[0]
+            brake_area_m: int = df["brakeArea_m"].min()
             start_m: int = df["cornerStart_m"].min()
             apex_m: int = df["cornerApex_m"].min()
             end_m: int = df["cornerEnd_m"].min()
+            length_m: int = end_m - start_m
 
             return CornerMetadata(
                 id=corner_id,
                 name=name,
+                brake_area_m=brake_area_m,
                 start_m=start_m,
                 apex_m=apex_m,
-                end_m=end_m
+                end_m=end_m,
+                length_m=length_m
             )
 
         meta_data = _get_corner_meta_data()
@@ -220,8 +226,10 @@ class CornerBuilder:
         return Corner(
             id=meta_data.id,
             name=meta_data.name,
+            brake_area_m=meta_data.brake_area_m,
             start_m=meta_data.start_m,
             apex_m=meta_data.apex_m,
             end_m=meta_data.end_m,
+            length_m=meta_data.length_m,
             metrics=corner_metrics
         )

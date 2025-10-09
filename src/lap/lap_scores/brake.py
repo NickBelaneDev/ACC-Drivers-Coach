@@ -13,7 +13,6 @@ from src.lap.analyzer.brake_analyzer import BrakeAnalyzer
 import pandas as pd
 import numpy as np
 
-from src.telemetry.telemetry_calculator import TelemetryCalculator
 log = get_logger(to_console=False, log_file="brake_score_log.log", level="DEBUG")
 
 class BrakeScore:

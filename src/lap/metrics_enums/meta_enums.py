@@ -19,9 +19,11 @@ class LapMeta(Enum):
       - ``NAME`` → Human-readable label (e.g., "Pouhon", "Lap 16").
 
     **Geometry**
+      - ``BRAKE_AREA_M`` → Brake_Area distance in meters (track coordinate).
       - ``START_M`` → Start distance in meters (track coordinate).
-      - ``APEX_M`` → Apex point distance in meters.
-      - ``END_M`` → End distance in meters.
+      - ``APEX_M`` → Apex point distance in meters (track coordinate).
+      - ``END_M`` → End distance in meters (track coordinate).
+      - ``LENGTH`` → Length of the corner window in meters.
 
     **Lifecycle / Status**
       - ``STATUS`` → Object-level validity (``ok``, ``empty``, ``invalid``).
@@ -37,7 +39,7 @@ class LapMeta(Enum):
     These constants ensure consistent naming when:
       - exporting structured dataclasses (e.g., ``Corner``, ``Lap``),
       - building pandas DataFrames or feature sets,
-      - serializing and deserializing telemetry analyses.
+      - serializing and deserializing telemetry analysis.
 
     Example
     -------
@@ -47,9 +49,11 @@ class LapMeta(Enum):
     """
     ID = "id"
     NAME = "name"
+    BRAKE_AREA_M = "brake_area_m"
     START_M = "start_m"
     APEX_M = "apex_m"
     END_M = "end_m"
+    LENGTH_M = "length_m"
     STATUS = "status"
     REASON = "reason"
     TIME_DELTA_S = "metrics_time_delta_s"

@@ -20,6 +20,7 @@ class DynamicsSpeed(Enum):
       - Car-dynamics dashboards,
       - Model input features for load-based performance analysis.
     """
+    BRAKE_AREA_SPEED_KMH = "metrics_dynamics_brake_area_speed_kmh"
     ENTRY_SPEED_KMH = "metrics_dynamics_speed_entry_speed_kmh"
     APEX_SPEED_KMH = "metrics_dynamics_speed_apex_speed_kmh"
     EXIT_SPEED_KMH = "metrics_dynamics_speed_exit_speed_kmh"
@@ -27,6 +28,7 @@ class DynamicsSpeed(Enum):
     MAX_SPEED_KMH = "metrics_dynamics_speed_max_speed_kmh"
     MIN_SPEED_KMH = "metrics_dynamics_speed_min_speed_kmh"
     MIN_SPEED_M = "metrics_dynamics_speed_min_speed_m"
+    SPEED_INTEGRAL = "metrics_dynamics_speed_integral"
     DECELERATION_RATE = "metrics_dynamics_speed_deceleration_rate"
     ACCELERATION_RATE = "metrics_dynamics_speed_acceleration_rate"
 

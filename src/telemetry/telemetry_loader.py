@@ -11,7 +11,7 @@ file_path_user = "../assets/MoTec/spa/telemetry_files/Spa-ferrari_296_gt3-hotlap
 file_path_fastest_lap = "../../old/Spa-ferrari_296_gt3-fastest_lap.csv"
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-print(f"PROJECT_ROOT: {PROJECT_ROOT}")
+#print(f"PROJECT_ROOT: {PROJECT_ROOT}")
 BASE_DIR = PROJECT_ROOT
 
 class TelemetryLoader:

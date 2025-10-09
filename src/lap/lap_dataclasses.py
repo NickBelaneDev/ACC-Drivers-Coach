@@ -69,6 +69,7 @@ class SpeedMetrics(Emptyable):
     speed, and coarse acceleration/deceleration rates across the corner window.
     """
 
+    brake_area_speed_kmh: float
     entry_speed_kmh: float
     apex_speed_kmh: float
     exit_speed_kmh: float
@@ -77,6 +78,7 @@ class SpeedMetrics(Emptyable):
     min_speed_kmh: float
     min_speed_m: float
 
+    integral: float
     deceleration_rate: float
     acceleration_rate: float
 
@@ -86,9 +88,19 @@ class SpeedMetrics(Emptyable):
     @classmethod
     def empty(cls, reason:str="no-speed-measurements-detected"):
         return cls(
-            entry_speed_kmh=math.nan, apex_speed_kmh=math.nan, exit_speed_kmh=math.nan,
-            avg_speed_kmh=math.nan, max_speed_kmh=math.nan, min_speed_kmh=math.nan,
-            min_speed_m=math.nan, deceleration_rate=math.nan, acceleration_rate=math.nan, reason=reason, status=StatusEnum.empty
+            brake_area_speed_kmh=math.nan,
+            entry_speed_kmh=math.nan,
+            apex_speed_kmh=math.nan,
+            exit_speed_kmh=math.nan,
+            avg_speed_kmh=math.nan,
+            max_speed_kmh=math.nan,
+            min_speed_kmh=math.nan,
+            min_speed_m=math.nan,
+            integral=math.nan,
+            deceleration_rate=math.nan,
+            acceleration_rate=math.nan,
+            reason=reason,
+            status=StatusEnum.empty
         )
 
 @dataclass(frozen=True)
@@ -240,10 +252,13 @@ class BrakeMetrics(Emptyable):
     brake_release_m: float
     brake_release_speed: float
     brake_window_s: float
+    brake_window_m: float
 
     max_brake: float
     avg_brake: float
 
+    brake_force_per_m: float
+    brake_force_per_s: float
     overall_brake_force: float
     tbf95_s: float
     trail_brake: TrailBrakeMetrics
@@ -263,22 +278,31 @@ class BrakeMetrics(Emptyable):
         d = self.brake_window_s
         return self.overall_brake_force / d if (d != 0 and not math.isnan(d)) else math.nan
 
-    @property
-    def brake_window_m(self) -> float:
-        """Distance from brake onset to full release (meters)."""
-        if math.isnan(self.brake_release_m) or math.isnan(self.brake_point_m):
-            return math.nan
-        return self.brake_release_m - self.brake_point_m
+    #@property
+    #def brake_window_m(self) -> float:
+    #    """Distance from brake onset to full release (meters)."""
+    #    if math.isnan(self.brake_release_m) or math.isnan(self.brake_point_m):
+    #        return math.nan
+    #    return self.brake_release_m - self.brake_point_m
 
     @classmethod
     def empty(cls, reason: str = "no-braking-detected") -> "BrakeMetrics":
         return cls(
-            brake_point_m=math.nan, brake_point_speed=math.nan,
-            brake_release_m=math.nan, brake_release_speed=math.nan,
-            brake_window_s=math.nan, max_brake=math.nan, avg_brake=math.nan,
+            brake_point_m=math.nan,
+            brake_point_speed=math.nan,
+            brake_release_m=math.nan,
+            brake_release_speed=math.nan,
+            brake_window_s=math.nan,
+            brake_window_m=math.nan,
+            max_brake=math.nan,
+            avg_brake=math.nan,
+            overall_brake_force=math.nan,
+            brake_force_per_m=math.nan,
+            brake_force_per_s=math.nan,
             trail_brake=TrailBrakeMetrics.empty(reason=reason),
-            overall_brake_force=0.0, tbf95_s=math.nan,
-            status=StatusEnum.empty, reason=reason
+            tbf95_s=math.nan,
+            status=StatusEnum.empty,
+            reason=reason
         )
 
 @dataclass(frozen=True)
@@ -469,12 +493,16 @@ class Corner(Emptyable):
             Unique corner identifier (track-model dependent).
         name : str
             Human-readable name (e.g., "Pouhon", "T1 Hairpin").
+        brake_area_m : float
+            Track distance at braking zone start.
         start_m : float
             Track distance at corner start (meters along lap distance).
         apex_m : float
             Track distance at the geometric/telemetry apex (meters).
         end_m : float
             Track distance where the corner ends (meters).
+        length_m: float
+            Length of the corner (end_m - brake_area_m).
         metrics : Optional[CornerMetrics]
             Computed metric bundle. Defaults to an **empty** placeholder so that
             downstream code can safely access fields without Nones.
@@ -491,10 +519,11 @@ class Corner(Emptyable):
     """
     id: int
     name: str
+    brake_area_m: float
     start_m: float
     apex_m: float
     end_m: float
-
+    length_m: float
     metrics: Optional[CornerMetrics] = field(
     default_factory=lambda: CornerMetrics.empty(
         reason="optional-default-corner-metrics-in-corner-dataclass"
@@ -507,8 +536,15 @@ class Corner(Emptyable):
     @classmethod
     def empty(cls, reason="missing-_information"):
         return cls(
-            id=0, name="", start_m=math.nan, apex_m=math.nan, end_m=math.nan,
-            status=StatusEnum.empty, reason=reason
+            id=0,
+            name="",
+            start_m=math.nan,
+            apex_m=math.nan,
+            end_m=math.nan,
+            brake_area_m=math.nan,
+            length_m=math.nan,
+            status=StatusEnum.empty,
+            reason=reason
         )
 
 

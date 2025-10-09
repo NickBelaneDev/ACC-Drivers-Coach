@@ -23,9 +23,11 @@ if __name__ == "__main__":
     # Loads the basic Telemetry File and converts it to a normed DataFrame
     t_loader = TelemetryLoader()
 
-    telemetry_files = [file for file in os.listdir("src/assets/MoTec/spa/telemetry_files/")
-                       if "-17-" in file
-                       or "-16-" in file]
+    telemetry_files = [
+        file for file in os.listdir("src/assets/MoTec/spa/telemetry_files/")
+        #if "-17-" in file
+        #or "-16-" in file
+    ]
     lap_df_list = []
     lap_corner_model_list = []
     all_files_len = len(telemetry_files)
@@ -58,10 +60,9 @@ if __name__ == "__main__":
     all_laps_df = pd.concat(lap_df_list, ignore_index=True)
     all_laps_df = all_laps_df.sort_values(by=me.LapMeta.ID.value, ascending=True, kind="mergesort")
 
-
-    with pd.ExcelWriter("all_laps_with_straights.xlsx", engine="openpyxl") as writer:
+    all_laps_df.to_csv("test_output/all_laps_with_straights_2132.csv")
+    with pd.ExcelWriter("test_output/all_laps_with_straights_2132.xlsx", engine="openpyxl") as writer:
         all_laps_df.to_excel(writer, sheet_name="all_laps", index=False)
-
 
 
     raw_record_df = t_loader.telemetry_from_csv(hot_lap_file_path, "spa")

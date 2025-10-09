@@ -157,7 +157,9 @@ class BrakeAnalyzer:
             return BrakeMetrics.empty("invalid-brake-interval")
 
         # --- Core metrics
-        brake_delta_s = brake_release_s - brake_point_s
+        brake_window_s = brake_release_s - brake_point_s
+        brake_window_m = brake_release_m - brake_point_m
+
         brake_point_speed = braking_zone_df["SPEED"].iloc[0]
         brake_release_speed = brake_df[brake_df["Distance"] == brake_release_m]["SPEED"].min()
         max_brake = brake_df["BRAKE"].max()
@@ -168,6 +170,8 @@ class BrakeAnalyzer:
         trail_brake_metrics = self._trail_brake_zone(brake_df)
         overall_brake_force = TelemetryCalculator.get_integral(brake_df, "BRAKE")
 
+        brake_force_per_m = overall_brake_force / brake_window_m
+        brake_force_per_s = overall_brake_force / brake_window_s
         # Time to reach full braking (95%)
         tbf95_s = brake_df[brake_df["BRAKE"] >= 95]["Time"].max() - brake_df[brake_df["BRAKE"] >= 95]["Time"].min()
 
@@ -176,10 +180,13 @@ class BrakeAnalyzer:
             brake_point_speed=brake_point_speed,
             brake_release_m=brake_release_m,
             brake_release_speed=brake_release_speed,
-            brake_window_s=brake_delta_s,
+            brake_window_s=brake_window_s,
+            brake_window_m=brake_window_m,
             max_brake=max_brake,
             avg_brake=avg_brake,
             overall_brake_force=overall_brake_force,
+            brake_force_per_m=brake_force_per_m,
+            brake_force_per_s=brake_force_per_s,
             tbf95_s=tbf95_s,
             trail_brake=trail_brake_metrics,
         )

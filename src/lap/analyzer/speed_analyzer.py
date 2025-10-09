@@ -38,7 +38,7 @@ class SpeedAnalyzer:
         ----------
         df : pandas.DataFrame
             Telemetry data for the current corner. Must include the columns:
-            ``["SPEED", "Distance", "cornerStart_m", "cornerApex_m", "cornerEnd_m"]``.
+            ``["SPEED", "Distance", "brakeArea_m", "cornerStart_m", "cornerApex_m", "cornerEnd_m"]``.
 
         Returns
         -------
@@ -55,7 +55,7 @@ class SpeedAnalyzer:
           monotonic regions of the speed curve.
         - Empty sub-windows (e.g., when no pure acceleration phase exists) yield NaN rates.
         """
-        cols = ["SPEED", "Distance", "cornerStart_m", "cornerApex_m", "cornerEnd_m"]
+        cols = ["SPEED", "Distance", "brakeArea_m", "cornerStart_m", "cornerApex_m", "cornerEnd_m"]
 
         try:
             DataFrameValidator.validate_df(df, cols)
@@ -68,11 +68,16 @@ class SpeedAnalyzer:
         speed_df:pd.DataFrame = df[cols].sort_values(by="Distance").copy()
 
         speed_s: pd.Series = speed_df["SPEED"].copy()
+
+        brake_area_point: int = df["brakeArea_m"].min()
         entry_point: int = df["cornerStart_m"].min()
         apex_point: int = df["cornerApex_m"].min()
         end_point: int = df["cornerEnd_m"].min()
 
         # Locate speed values closest to the defined geometric reference points
+        brake_area_idx = (speed_df["Distance"] - brake_area_point).abs().idxmin()
+        brake_area_speed_kmh: float = speed_df.loc[brake_area_idx, "SPEED"]
+
         entry_idx = (speed_df["Distance"] - entry_point).abs().idxmin()
         entry_speed_kmh: float = speed_df.loc[entry_idx, "SPEED"]
 
@@ -87,6 +92,7 @@ class SpeedAnalyzer:
         max_speed_kmh: float = speed_s.max()
         min_speed_kmh: float = speed_s.min()
         min_speed_m: float = speed_df.loc[speed_df["SPEED"].idxmin(), "Distance"]
+        speed_integral: float = TelemetryCalculator.get_integral(speed_df, "SPEED")
 
         # Derive acceleration/deceleration characteristics
         deceleration_window: pd.DataFrame = speed_df[speed_df["SPEED"] < speed_df["SPEED"].shift()]
@@ -104,6 +110,7 @@ class SpeedAnalyzer:
         )
         log.info("Successfully created all data for SpeedMetrics!")
         return SpeedMetrics(
+            brake_area_speed_kmh=brake_area_speed_kmh,
             entry_speed_kmh=entry_speed_kmh,
             apex_speed_kmh=apex_speed_kmh,
             exit_speed_kmh=exit_speed_kmh,
@@ -111,6 +118,7 @@ class SpeedAnalyzer:
             max_speed_kmh=max_speed_kmh,
             min_speed_kmh=min_speed_kmh,
             min_speed_m=min_speed_m,
+            integral=speed_integral,
             deceleration_rate=deceleration_rate,
             acceleration_rate=acceleration_rate
         )
