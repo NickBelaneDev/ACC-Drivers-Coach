@@ -1,0 +1,298 @@
+{
+  "main": {
+    "id": "102ac9aee01895d5",
+    "type": "split",
+    "children": [
+      {
+        "id": "4f8222844f1f6bc3",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "1b027bcb32a4c3ef",
+            "type": "leaf",
+            "state": {
+              "type": "localgraph",
+              "state": {
+                "file": "SimMagic Alpha Ultimate + Wheel.md",
+                "options": {
+                  "collapse-filter": true,
+                  "search": "",
+                  "localJumps": 1,
+                  "localBacklinks": true,
+                  "localForelinks": true,
+                  "localInterlinks": false,
+                  "showTags": false,
+                  "showAttachments": false,
+                  "hideUnresolved": false,
+                  "collapse-color-groups": true,
+                  "colorGroups": [],
+                  "collapse-display": true,
+                  "showArrow": false,
+                  "textFadeMultiplier": 0,
+                  "nodeSizeMultiplier": 1,
+                  "lineSizeMultiplier": 1,
+                  "collapse-forces": true,
+                  "centerStrength": 0.518713248970312,
+                  "repelStrength": 10,
+                  "linkStrength": 1,
+                  "linkDistance": 250,
+                  "scale": 1,
+                  "close": false
+                }
+              },
+              "icon": "lucide-git-fork",
+              "title": "Graph of SimMagic Alpha Ultimate + Wheel"
+            }
+          },
+          {
+            "id": "d6ab57574a68c37f",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "LLM.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "LLM"
+            }
+          },
+          {
+            "id": "910d9abcdf021d98",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "BrakeAnalysis/Brake Dataclasses.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Brake Dataclasses"
+            }
+          },
+          {
+            "id": "7cb6ac9cf206d197",
+            "type": "leaf",
+            "state": {
+              "type": "bases",
+              "state": {
+                "file": "Untitled.base",
+                "viewName": "Table"
+              },
+              "icon": "lucide-table",
+              "title": "Untitled"
+            }
+          },
+          {
+            "id": "f8e6bc12684f0bd2",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Sim Racing/SimMagic Alpha Ultimate + Wheel.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "SimMagic Alpha Ultimate + Wheel"
+            }
+          },
+          {
+            "id": "c938c2c85f46b9b1",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Sim Racing/Spa.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Spa"
+            }
+          },
+          {
+            "id": "661be09f9f66cd6f",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Sim Racing/Fahrverhalten.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Fahrverhalten"
+            }
+          }
+        ],
+        "currentTab": 6
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "6b4a1e38494d1b98",
+    "type": "split",
+    "children": [
+      {
+        "id": "94daa673b29a565a",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "52016f473bda817a",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "7759dcb5afb3515c",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "c2be3dce9456caee",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "c1af093010ef6c63",
+    "type": "split",
+    "children": [
+      {
+        "id": "a577e5e6f4efa8e6",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "edc7de21d20c34e3",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks"
+            }
+          },
+          {
+            "id": "c0e61cad6250dad6",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links"
+            }
+          },
+          {
+            "id": "f03fd949f4dbb621",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "cdb55ce52f76dc89",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "661be09f9f66cd6f",
+  "lastOpenFiles": [
+    "Sim Racing/Spa.md",
+    "Sim Racing/Fahrverhalten.md",
+    "Untitled",
+    "Sim Racing/SimMagic Alpha Ultimate + Wheel.md",
+    "Module/LapAnalyzer.md",
+    "Sim Racing",
+    "Untitled.base",
+    "Module/BrakeAnalysis/Brake Dataclasses.md",
+    "Module/LLM.md",
+    "Module/BrakeAnalysis",
+    "Welcome.md",
+    "Untitled.canvas",
+    "Module/Canvas.canvas",
+    "Module/Telemetry Modul.md",
+    "Module/Lap Scores.md",
+    "Module/Lap Modul.md",
+    "Untitled 1",
+    "create a link.md",
+    "Module"
+  ]
+}

@@ -1,0 +1,16 @@
+
+**Instruktionen**
+
+Da du hier der Lehrer bist, sollst du mir nun erklären, wie man bei so etwas im Thema Coding-/Programmierer-workflow standardgemäß vorgeht.
+
+
+
+**Ziel**
+
+Wir wollen am Ende einen auswertbaren Datensatz im JSON Format haben, den wir unserem LLM zur Analyse geben.
+
+
+
+**Vorgehensweise**
+
+Um den Datensatz für jeglichen anderen Track verwenden zu können, müssen wir ihn dynamisch gestalten. Die json Dateien der Tracks werden unterschiedlich viele Segmente und Kurven beinhalten, aber immer die gleichen Felder pro Entität.
