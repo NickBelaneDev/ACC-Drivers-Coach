@@ -1,0 +1,157 @@
+{
+  "track": "Nurburgring",
+  "layout": "GP",
+  "corners": [
+    {
+      "corner_id": 1,
+      "segment_id": 1,
+      "cornerName": "T1 La Source",
+      "cornerDescription": "Hairpin to the start/finish straight.",
+      "brakeArea_m": 1,
+      "cornerStart_m": 342,
+      "cornerApex_m": 388,
+      "cornerEnd_m": 730
+    },
+    {
+      "corner_id": 2,
+      "segment_id": 1,
+      "cornerName": "T2-4 Eau Rouge/Raidillon",
+      "cornerDescription": "Downhill high-speed left-right with compression.",
+      "brakeArea_m": 730,
+      "cornerStart_m": 930,
+      "cornerApex_m": 1123,
+      "cornerEnd_m": 1380
+    },
+        {
+      "corner_id": 3,
+      "segment_id": 2,
+      "cornerName": "Kemmel Straight",
+      "cornerDescription": "Long straight after Eau Rouge/Raidillon.",
+      "brakeArea_m": 1380,
+      "cornerStart_m": 1480,
+      "cornerApex_m": 2000,
+      "cornerEnd_m": 2100
+    },
+
+    {
+      "corner_id": 4,
+      "segment_id": 2,
+      "cornerName": "T5-6 Les Combes",
+      "cornerDescription": "Right-left chicane at the hilltop.",
+      "brakeArea_m": 2100,
+      "cornerStart_m": 2300,
+      "cornerApex_m": 2481,
+      "cornerEnd_m": 2550
+    },
+    {
+      "corner_id": 5,
+      "segment_id": 2,
+      "cornerName": "T7 Malmedy",
+      "cornerDescription": "Medium right onto short straight.",
+      "brakeArea_m": 2550,
+      "cornerStart_m": 2590,
+      "cornerApex_m": 2641,
+      "cornerEnd_m": 2740
+    },
+    {
+      "corner_id": 6,
+      "segment_id": 3,
+      "cornerName": "T8 Bruxelles Turn 01",
+      "cornerDescription": "Long downhill right-hander.",
+      "brakeArea_m": 2740,
+      "cornerStart_m": 2928,
+      "cornerApex_m": 3048,
+      "cornerEnd_m": 3150
+    },
+    {
+      "corner_id": 7,
+      "segment_id": 3,
+      "cornerName": "T9 Bruxelles Turn 02",
+      "cornerDescription": "Important left onto medium straight.",
+      "brakeArea_m": 3150,
+      "cornerStart_m": 3221,
+      "cornerApex_m": 3294,
+      "cornerEnd_m": 3470
+    },
+    {
+      "corner_id": 8,
+      "segment_id": 3,
+      "cornerName": "T10-11 Double Gauche",
+      "cornerDescription": "Fast double left (Pouhon).",
+      "brakeArea_m": 3470,
+      "cornerStart_m": 3700,
+      "cornerApex_m": 3828,
+      "cornerEnd_m": 4200
+    },
+    {
+      "corner_id": 9,
+      "segment_id": 4,
+      "cornerName": "T12 Les Fagnes Turn 01",
+      "cornerDescription": "Right before quick left.",
+      "brakeArea_m": 4200,
+      "cornerStart_m": 4445,
+      "cornerApex_m": 4500,
+      "cornerEnd_m": 4580
+    },
+    {
+      "corner_id": 10,
+      "segment_id": 4,
+      "cornerName": "T13 Les Fagnes Turn 02",
+      "cornerDescription": "Quick left out of Fagnes.",
+      "brakeArea_m": 4580,
+      "cornerStart_m": 4609,
+      "cornerApex_m": 4665,
+      "cornerEnd_m": 4760
+    },
+    {
+      "corner_id": 11,
+      "segment_id": 4,
+      "cornerName": "T14 Campus",
+      "cornerDescription": "Key right onto long full-throttle section.",
+      "brakeArea_m": 4760,
+      "cornerStart_m": 4860,
+      "cornerApex_m": 4922,
+      "cornerEnd_m": 5060
+    },
+    {
+      "corner_id": 12,
+      "segment_id": 4,
+      "cornerName": "T15 Paul Frere",
+      "cornerDescription": "Fast right onto the back straight.",
+      "brakeArea_m": 5060,
+      "cornerStart_m": 5141,
+      "cornerApex_m": 5222,
+      "cornerEnd_m": 5400
+    },
+    {
+      "corner_id": 13,
+      "segment_id": 5,
+      "cornerName": "T16-17 Blanchimont",
+      "cornerDescription": "High-speed left, usually flat in GT3.",
+      "brakeArea_m": 5400,
+      "cornerStart_m": 5500,
+      "cornerApex_m": 5800,
+      "cornerEnd_m": 5900
+    },
+    {
+      "corner_id": 14,
+      "segment_id": 5,
+      "cornerName": "T16-17 Blanchimont",
+      "cornerDescription": "High-speed left, usually flat in GT3.",
+      "brakeArea_m": 5900,
+      "cornerStart_m": 6130,
+      "cornerApex_m": 6235,
+      "cornerEnd_m": 6400
+    },
+    {
+      "corner_id": 15,
+      "segment_id": 5,
+      "cornerName": "T18-19 Bus Stop Chicane",
+      "cornerDescription": "Right-left chicane onto the start/finish straight.",
+      "brakeArea_m": 6400,
+      "cornerStart_m": 6712,
+      "cornerApex_m": 6736,
+      "cornerEnd_m": 6938
+    }
+  ]
+}

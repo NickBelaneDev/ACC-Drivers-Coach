@@ -1,6 +1,6 @@
 # app.py
 import streamlit as st
-import pandas as pd
+
 
 # --- Seitenkonfiguration ---
 st.set_page_config(page_title="Mein Projekt", page_icon="✨", layout="wide")
@@ -72,6 +72,7 @@ elif seite == "Daten":
             with target:
                 st.subheader(label)
                 st.line_chart(plot_df, use_container_width=True)
+                
 # --- Einstellungen ---
 elif seite == "Einstellungen":
     st.title("⚙️ Einstellungen")

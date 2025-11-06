@@ -1,0 +1,140 @@
+{
+  "track": "Brands Hatch",
+  "layout": "GP",
+  "corners": [
+    {
+      "corner_id": 1,
+      "segment_id": 1,
+      "cornerName": "T1 Paddock Hill Bend",
+      "cornerDescription": "",
+      "brakeArea_m": 1,
+      "cornerStart_m": 180,
+      "cornerApex_m": 260,
+      "cornerEnd_m": 430
+    },
+
+    {
+      "corner_id": 2,
+      "segment_id": 1,
+      "cornerName": "T2 Druids",
+      "cornerDescription": "Hairpin right-hander.",
+      "brakeArea_m": 430,
+      "cornerStart_m": 550,
+      "cornerApex_m": 611,
+      "cornerEnd_m": 715
+    },
+
+    {
+      "corner_id": 3,
+      "segment_id": 1,
+      "cornerName": "T3 Graham Hill Bend",
+      "cornerDescription": "Downhill tight left turn.",
+      "brakeArea_m": 715,
+      "cornerStart_m": 810,
+      "cornerApex_m": 855,
+      "cornerEnd_m": 1036
+    },
+
+    {
+      "corner_id": 4,
+      "segment_id": 1,
+      "cornerName": "T4 Surtees",
+      "cornerDescription": "Closing left turn slightly uphill.",
+      "brakeArea_m": 1036,
+      "cornerStart_m": 1150,
+      "cornerApex_m": 1247,
+      "cornerEnd_m": 1355
+    },
+
+    {
+      "corner_id": 5,
+      "segment_id": 2,
+      "cornerName": "Pilgrim's Drop",
+      "cornerDescription": "Straight",
+      "brakeArea_m": 1355,
+      "cornerStart_m": 1600,
+      "cornerApex_m": 1750,
+      "cornerEnd_m": 1880
+    },
+    {
+      "corner_id": 6,
+      "segment_id": 2,
+      "cornerName": "T5 Hawthorn Bend",
+      "cornerDescription": "High speed long right hander",
+      "brakeArea_m": 1880,
+      "cornerStart_m": 1950,
+      "cornerApex_m": 2040,
+      "cornerEnd_m": 2191
+    },
+
+    {
+      "corner_id": 7,
+      "segment_id": 2,
+      "cornerName": "T6 Westfield Bend",
+      "cornerDescription": "Fast right turn.",
+      "brakeArea_m": 2192,
+      "cornerStart_m": 2285,
+      "cornerApex_m": 2338,
+      "cornerEnd_m": 2542
+    },
+
+    {
+      "corner_id": 8,
+      "segment_id": 2,
+      "cornerName": "T7 Sheene's",
+      "cornerDescription": "Fast blind right turn onto straight.",
+      "brakeArea_m": 2542,
+      "cornerStart_m": 2600,
+      "cornerApex_m": 2700,
+      "cornerEnd_m": 2880
+    },
+
+
+    {
+      "corner_id": 9,
+      "segment_id": 3,
+      "cornerName": "T8 Stirling's",
+      "cornerDescription": "Left turn onto long straight.",
+      "brakeArea_m": 2880,
+      "cornerStart_m": 2941,
+      "cornerApex_m": 2978,
+      "cornerEnd_m": 3110
+    },
+
+
+    {
+      "corner_id": 10,
+      "segment_id": 3,
+      "cornerName": "Clearways",
+      "cornerDescription": "Straight",
+      "brakeArea_m": 3110,
+      "cornerStart_m": 3200,
+      "cornerApex_m": 3250,
+      "cornerEnd_m": 3300
+    },
+
+
+    {
+      "corner_id": 11,
+      "segment_id": 3,
+      "cornerName": "T9 Clark Curve",
+      "cornerDescription": "Fast right turn onto main straight.",
+      "brakeArea_m": 3300,
+      "cornerStart_m": 3400,
+      "cornerApex_m": 3440,
+      "cornerEnd_m": 3645
+    },
+
+
+    {
+      "corner_id": 12,
+      "segment_id": 3,
+      "cornerName": "Brabham Straight",
+      "cornerDescription": "Straight",
+      "brakeArea_m": 3645,
+      "cornerStart_m": 3700,
+      "cornerApex_m": 3800,
+      "cornerEnd_m": 3894
+    }
+  ]
+}

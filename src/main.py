@@ -12,11 +12,6 @@ log = get_logger(to_console=False,log_file="lap_telemetry_log.log")
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
-hot_lap_file_path = "assets/MoTec/spa/telemetry_files/Spa-ferrari_296_gt3-fastest_lap_2-16-650.csv"
-#user_lap_file_path = "assets/MoTec/spa/Spa-ferrari_296_gt3-8-hotlap_2-21-304.csv"
-user_lap_file_path = "assets/MoTec/spa/telemetry_files/Spa-ferrari_296_gt3-hotlap_2-17-880.csv"
-
-
 
 if __name__ == "__main__":
 
@@ -24,7 +19,7 @@ if __name__ == "__main__":
     t_loader = TelemetryLoader()
 
     telemetry_files = [
-        file for file in os.listdir("src/assets/MoTec/spa/telemetry_files/")
+        file for file in os.listdir("src/assets/MoTec/brands_hatch/telemetry_files/")
         #if "-17-" in file
         #or "-16-" in file
     ]
@@ -37,10 +32,10 @@ if __name__ == "__main__":
     for f in telemetry_files:
 
         #try:
-        file_path = os.path.join("assets/MoTec/spa/telemetry_files/", f)
-        raw_telemetry_df = t_loader.telemetry_from_csv(file_path, "Spa")
+        file_path = os.path.join("assets/MoTec/brands_hatch/telemetry_files/", f)
+        raw_telemetry_df = t_loader.telemetry_from_csv(file_path, "brands_hatch")
         lap = LapModel(raw_telemetry_df,
-                       "Spa",
+                       "Brands Hatch",
                        "Stuntman Mike")
         lap_df = lap.get_all_analyzed_corners_as_df()
         lap_corner_models = lap.get_all_corner_models()
@@ -60,26 +55,7 @@ if __name__ == "__main__":
     all_laps_df = pd.concat(lap_df_list, ignore_index=True)
     all_laps_df = all_laps_df.sort_values(by=me.LapMeta.ID.value, ascending=True, kind="mergesort")
 
-    all_laps_df.to_csv("test_output/all_laps_with_straights_2132.csv")
-    with pd.ExcelWriter("test_output/all_laps_with_straights_2132.xlsx", engine="openpyxl") as writer:
+    all_laps_df.to_csv("test_output/brands_hatch.csv")
+    with pd.ExcelWriter("test_output/brands_hatch.xlsx", engine="openpyxl") as writer:
         all_laps_df.to_excel(writer, sheet_name="all_laps", index=False)
 
-
-    raw_record_df = t_loader.telemetry_from_csv(hot_lap_file_path, "spa")
-    raw_user_df = t_loader.telemetry_from_csv(user_lap_file_path, "spa")
-
-    user_lap = LapModel(raw_user_df, "Spa", "Stuntman Mike")
-    record_lap = LapModel(raw_record_df, "Spa", "Record Man")
-
-    user_corners_df = user_lap.get_all_analyzed_corners_as_df()
-    record_corners_df = record_lap.get_all_analyzed_corners_as_df()
-
-    u_corner_04_model = user_lap.get_corner_model(4)
-
-    print(u_corner_04_model.get_driver_performance(mode=ReturnFormat.DICT))
-
-    print(user_corners_df[[me.LapMeta.NAME.value, me.DriverBrake.BRAKE_RELEASE_M.value, me.DriverSteer.INTEGRAL.value]],
-          record_corners_df[[me.LapMeta.NAME.value, me.DriverBrake.BRAKE_RELEASE_M.value, me.DriverSteer.INTEGRAL.value]])
-
-    #with open("corner_columns.txt", "w") as f:
-    #    f.write(str(corners_df.columns))

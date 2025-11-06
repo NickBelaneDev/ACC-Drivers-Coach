@@ -13,7 +13,7 @@ file_path_fastest_lap = "../../old/Spa-ferrari_296_gt3-fastest_lap.csv"
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 #print(f"PROJECT_ROOT: {PROJECT_ROOT}")
 BASE_DIR = PROJECT_ROOT
-
+TRACKS = ["spa", "donnington", "brands_hatch"]
 class TelemetryLoader:
     """
     Load and normalize MoTeC lap telemetry, enriched with track map metadata.
@@ -90,8 +90,8 @@ class TelemetryLoader:
                  of the previous corner’s labels into the next segment.
                - ``corner_id`` is converted to integer where present.
                """
-        if track.lower() not in ["spa", "donnington"]:
-            raise ValueError(f"track: {track} could not be found!")
+        if track.lower() not in TRACKS:
+            raise ValueError(f"track: {track=} could not be found!")
 
         def _get_file_paths(_track: str):
             """
@@ -247,11 +247,11 @@ class TelemetryLoader:
         - Rows with missing ``Distance`` are dropped before resampling.
         - This function makes a defensive copy of the input DataFrame.
         """
-        telemetry = lap_data.copy()
-        telemetry["Distance"] = pd.to_numeric(telemetry["Distance"], errors="coerce")
-        telemetry = telemetry.dropna(subset=["Distance"]).sort_values("Distance")
+        telemetry_df: pd.DataFrame = lap_data.copy()
+        telemetry_df["Distance"] = pd.to_numeric(telemetry_df["Distance"], errors="coerce")
+        telemetry_df = telemetry_df.dropna(subset=["Distance"]).sort_values("Distance")
 
-        track_distance = telemetry["Distance"].astype(float).values
+        track_distance = telemetry_df["Distance"].astype(float).values
 
         start_meter = int(np.floor(track_distance.min()))
         end_meter = int(np.ceil(track_distance.max()))
@@ -259,10 +259,10 @@ class TelemetryLoader:
 
         resampled_data = {"Distance": meter_grid}
 
-        for col in telemetry:
+        for col in telemetry_df:
             if col == "Distance":
                 continue
-            channel_values = pd.to_numeric(telemetry[col], errors="coerce")
+            channel_values = pd.to_numeric(telemetry_df[col], errors="coerce")
             resampled_data[col] = np.interp(
                 meter_grid.astype(float),
                 track_distance,

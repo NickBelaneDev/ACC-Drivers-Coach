@@ -95,10 +95,11 @@ system_instruction = """
 
 tool_hashmap = {"get_setup": get_setup}
 
-
+# Wir deklarieren die erste Funktion "get_car_setup" für das LLM.
+# Es wird der Name zum Ansprechen vergeben, eine Beschreibung erstellt und parameter gegeben.
 get_car_setup = types.FunctionDeclaration(
     name="get_setup",
-    description="Use this function to get all necessary data from the ACC setup file.",
+    description="Use this function to get the setup data from the ACC setup file.",
     parameters={
         "type": "OBJECT",
         "properties": {} },
@@ -117,13 +118,10 @@ chat_config = types.GenerateContentConfig(
 chat = client.chats.create(
     model="gemini-2.0-flash",
     config=chat_config,
-
 )
 
 
 # Ab hier beginnt der Chatverlauf.
-
-
 response = chat.send_message(input("Hi, ich bin Speedy-Boy dein Renningenieur, was kann ich für dich tun?\n"))
 
 parts = response.candidates[0].content.parts

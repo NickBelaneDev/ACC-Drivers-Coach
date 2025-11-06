@@ -82,13 +82,13 @@ class LapModel:
         # --- public settings ---
         self.track_name: str = track_name
         self.lap_time_s: float = self._raw_df["Time"].iloc[-1] - self._raw_df["Time"].iloc[0]
-        self.corner_ids = self._raw_df["corner_id"].dropna().unique().tolist()
-        self.segment_ids = self._raw_df["segment_id_x"].dropna().unique().tolist()
-        self.corner_models: dict[int, CornerModel] = self._load_corner_models()
-
-        self.segments_df = self._load_segments()
         self.driver = driver
 
+        self.corner_ids = self._raw_df["corner_id"].dropna().unique().tolist()
+        self.segment_ids = self._raw_df["segment_id_x"].dropna().unique().tolist()
+
+        self.corner_models: dict[int, CornerModel] = self._load_corner_models()
+        self.segments_df = self._load_segments()
 
     def __repr__(self):
         """
