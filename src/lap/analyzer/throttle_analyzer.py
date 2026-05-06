@@ -67,31 +67,6 @@ class ThrottleAnalyzer:
            values indicate a smoother ramp (bounded by a small epsilon).
          """
 
-        # --- Validation: presence of required columns & non-empty frame
-        def _validate_df(to_validate_df:pd.DataFrame,
-                         cols:list[str])\
-                -> pd.DataFrame:
-            """Raises a NotImplementedError when called!"""
-
-            if to_validate_df.empty:
-                log.error("Empty Dataframe!")
-                raise ValueError("DataFrame is empty!")
-
-            # Check if the df contains all cols
-            df_cols = to_validate_df.columns
-            _has_all_cols = True
-            for col in cols:
-                if col not in df_cols:
-                    _has_all_cols = False
-                    #log.error(f"column: {col=} is not in the DataFrame!")
-                    raise ValueError(f"column: {col=} is not in the DataFrame!")
-
-            validated_df: pd.DataFrame = to_validate_df[cols].copy() # throttle_df contains the complete injected DataFrame reduced to the needed cols
-
-            log.debug("All columns inside the DataFrame!")
-            raise NotImplementedError
-            return validated_df
-
         _cols = ["THROTTLE", "Distance", "Time"]
 
         try:
@@ -111,7 +86,7 @@ class ThrottleAnalyzer:
         acceleration_start = throttle_df[is_accelerating & was_not_accelerating]["Distance"].max()
 
         # Acceleration window: from first acceleration point to the end of the corner
-        acceleration_window_df = throttle_df[throttle_df["Distance"] >= acceleration_start]
+        acceleration_window_df: pd.DataFrame = throttle_df[throttle_df["Distance"] >= acceleration_start]
         #log.debug(f"{acceleration_window_df["Distance"]}")
         #log.debug(f"{acceleration_start=}, {throttle_df["Distance"].iloc[-1]}")
 
